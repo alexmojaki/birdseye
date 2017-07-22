@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block head %}
+    <script>
+        $(function () {
+            $('.call-row td').wrapInner(function () {
+                return "<a href='/call/" + this.parentNode.dataset.id + "'></a>";
+            })
+        });
+    </script>
+{% endblock %}
+{% block body %}
+    <h2>Function: <span class="code-font">{{ func.name }}</span></h2>
+    <p><strong>Full path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
+    <p><strong>Line: </strong>{{ func.lineno }}</p>
+
+    <h3>Calls:</h3>
+    <table class="table table-hover table-bordered table-striped">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Start time</th>
+            <th>Arguments</th>
+            <th>Result</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for call, _ in query %}
+            <tr data-id="{{ call.id }}" class="call-row">
+                <td>
+                    {{ call.state_icon }}
+                </td>
+                <td>
+                    {{ call.pretty_start_time }}
+                </td>
+                <td>
+                    {% if call.arguments_list %}
+                        <ul>
+                            {% for k, v in call.arguments_list %}
+                                <li class="code-font">
+                                    {{ k }} = {{ v }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="code-font">
+                    {{ call.result }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

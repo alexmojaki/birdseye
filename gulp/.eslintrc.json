@@ -1,0 +1,11 @@
+{
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "$": false,
+    "hljs": false,
+    "_": false
+  },
+  "extends": "eslint:recommended"
+}

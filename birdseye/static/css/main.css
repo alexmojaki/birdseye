@@ -1,0 +1,98 @@
+.expr {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    border-color: lightgrey;
+}
+
+.expr.has_value {
+    border-color: grey;
+}
+
+.expr.selected {
+    padding: 1px 6px;
+    border: 3px solid #ccc;
+}
+
+.expr.selected.has_value {
+    border-color: #2822ab;
+}
+
+.expr.has_value.value_none {
+    border-style: dashed;
+}
+
+.expr.has_value.exception_node, .expr.has_value.selected.exception_node {
+    padding: 1px 6px;
+    border: 3px solid red;
+}
+
+.expr.hovering {
+    background-color: #c1fdff;
+}
+
+#bottom_panel {
+    position: fixed !important;
+    bottom: 0 !important;
+    margin: 0;
+    width: inherit;
+}
+
+#expr_value, #inspector {
+    border: 1px solid lightgrey;
+    margin: 0;
+    padding: 10px;
+    border-radius: 0;
+    background: white;
+}
+
+#inspector {
+    height: 12em;
+    overflow: auto;
+}
+
+#resize-handle {
+    background-color: lightgrey;
+    height: 10px;
+    width: 100%;
+    cursor: ns-resize;
+    background-image: url("/static/img/handle.png");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#expr_value {
+    height: 3em;
+    overflow: hidden;
+}
+
+#code {
+    margin-bottom: 17em;
+    position: relative;
+    overflow: visible;
+}
+
+.code-font, #inspector ul li.jstree-node {
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.call-row a {
+    display: block;
+}
+
+.args-table tr td:first-child {
+    max-width: 20em;
+}
+
+.loop-label {
+    pointer-events: none;
+}
+
+.loop-navigator > button, .loop-navigator > .btn-group {
+    float: none !important;
+}
+
+.jstree-proton .jstree-icon.jstree-themeicon-custom {
+    margin-right: 8px;
+}

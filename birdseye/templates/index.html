@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body %}
+    <ul>
+        {% for full, short in files %}
+            <li>
+                <a href="{{ url_for('file_view', path=full) }}">{{ short }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

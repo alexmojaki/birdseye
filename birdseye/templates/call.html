@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/hljs.min.css">
+    <script src="/static/js/libs/highlight.pack.js"></script>
+    <script>
+        var call_data = {{ call.data | safe }};
+        var func_data = {{ func.data | safe }};
+    </script>
+    <script src="/static/js/libs/jstree.js"></script>
+    <link rel="stylesheet" href="/static/css/proton/style.css">
+    <script src="/static/js/libs/underscore.js"></script>
+    <script src="/static/js/call.js"></script>
+{% endblock %}
+{% block body %}
+    <h2>Call to function:
+        <a class="code-font"
+           href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+            {{ func.name }}
+        </a>
+    </h2>
+    <p><strong>Full path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
+    <p><strong>Line: </strong>{{ func.lineno }}</p>
+    {% if call.arguments_list %}
+        <p><strong>Arguments:</strong></p>
+        <table class="code-font table table-bordered table-striped args-table">
+            {% for k, v in call.arguments_list %}
+                <tr>
+                    <td>{{ k }}</td>
+                    <td>{{ v }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p><strong>No arguments</strong></p>
+    {% endif %}
+    <p>
+        <strong>Start time:</strong> {{ call.pretty_start_time }}
+    </p>
+    <p><strong>Result:</strong>
+        {% if call.success %}
+            <span class="code-font">{{ call.result }}</span></p>
+        {% else %}
+            </p>
+            <pre>{{ call.traceback }}</pre>
+        {% endif %}
+    <p><strong>Code:</strong></p>
+    <pre id="code" class="python">{{ func.html_body | safe }}</pre>
+    <div id="bottom_panel">
+        <div id="resize-handle" class="text-center"></div>
+        <div id="inspector"></div>
+        <pre id="expr_value"></pre>
+    </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block body %}
+    <h2>File: <span class="code-font">{{ short_path }}</span></h2>
+    <p><strong>Full path: </strong>{{ full_path }}</p>
+    <h3>Functions:</h3>
+    {% for func in funcs %}
+        <li>
+            <a class="code-font"
+               href="{{ url_for('func_view', path=full_path, func_name=func.0) }}">
+                {{ func.0 }}
+            </a>
+        </li>
+    {% endfor %}
+{% endblock %}
