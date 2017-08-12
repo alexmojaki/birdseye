@@ -14,42 +14,47 @@
     <p><strong>Line: </strong>{{ func.lineno }}</p>
 
     <h3>Calls:</h3>
-    <table class="table table-hover table-bordered table-striped">
-        <thead>
-        <tr>
-            <th></th>
-            <th>Start time</th>
-            <th>Arguments</th>
-            <th>Result</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for call, _ in query %}
-            <tr data-id="{{ call.id }}" class="call-row">
-                <td>
-                    {{ call.state_icon }}
-                </td>
-                <td>
-                    {{ call.pretty_start_time }}
-                </td>
-                <td>
-                    {% if call.arguments_list %}
-                        <ul>
-                            {% for k, v in call.arguments_list %}
-                                <li class="code-font">
-                                    {{ k }} = {{ v }}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td class="code-font">
-                    {{ call.result }}
-                </td>
+    {% if calls %}
+        <table class="table table-hover table-bordered table-striped">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Start time</th>
+                <th>Arguments</th>
+                <th>Result</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for call in calls %}
+                    <tr data-id="{{ call.id }}" class="call-row">
+                        <td>
+                            {{ call.state_icon }}
+                        </td>
+                        <td>
+                            {{ call.pretty_start_time }}
+                        </td>
+                        <td>
+                            {% if call.arguments_list %}
+                                <ul>
+                                    {% for k, v in call.arguments_list %}
+                                        <li class="code-font">
+                                            {{ k }} = {{ v }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="code-font">
+                            {{ call.result }}
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    {% else %}
+        <p>No calls yet</p>
+    {% endif %}
 {% endblock %}

@@ -1,3 +1,4 @@
 dist
 TODO.txt
 __pycache__
+*.egg-info/

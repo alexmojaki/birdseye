@@ -13,7 +13,7 @@ setup(name='birdseye',
       packages=['birdseye'],
       install_requires=[
           'flask-humanize',
-          'flask_sqlalchemy',
+          'sqlalchemy',
           'asttokens',
           'littleutils',
           'qualname',

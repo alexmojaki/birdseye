@@ -12,8 +12,8 @@ from threading import Lock
 
 from asttokens import ASTTokens
 
-from birdseye.app import db, Function, Call
 from birdseye.cheap_repr import cheap_repr
+from birdseye.db import Function, Call, session, db_consumer
 from birdseye.tracer import TreeTracerBase, loops, TracedFile
 from birdseye.utils import safe_qualname, correct_type, exception_string
 
@@ -130,8 +130,11 @@ class BirdsEye(TreeTracerBase):
                         num_special_types=type_registry.num_special_types,
                     )),
                     start_time=frame_info.start_time)
-        db.session.add(call)
-        db.session.commit()
+
+        @db_consumer
+        def save_call():
+            session.add(call)
+            session.commit()
 
     def __call__(self, func):
         new_func = super(BirdsEye, self).__call__(func)
@@ -199,12 +202,15 @@ class BirdsEye(TreeTracerBase):
                            ),
                            sort_keys=True,
                        ))
-        db_func = Function.query.filter_by(**db_args).one_or_none()
-        if not db_func:
-            db_func = Function(**db_args)
-            db.session.add(db_func)
-            db.session.commit()
-        self._code_infos[new_func.__code__] = CodeInfo(db_func, traced_file)
+
+        @db_consumer.wait
+        def save_func():
+            db_func = session.query(Function).filter_by(**db_args).one_or_none()
+            if not db_func:
+                db_func = Function(**db_args)
+                session.add(db_func)
+                session.commit()
+            self._code_infos[new_func.__code__] = CodeInfo(db_func, traced_file)
 
         return new_func
 

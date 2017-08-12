@@ -1,13 +1,16 @@
 import os
 
+from flask import Flask
 from flask.templating import render_template
-
-from birdseye.app import app, Call, Function, db
-
+from flask_humanize import Humanize
+from littleutils import strip_required_prefix
 from werkzeug.routing import PathConverter
 
+from birdseye.db import Call, Function, Session
 from birdseye.utils import path_leaf, all_file_paths, short_path
-from littleutils import strip_required_prefix
+
+app = Flask('birdseye')
+Humanize(app)
 
 
 class FileConverter(PathConverter):
@@ -30,28 +33,24 @@ def index():
 @app.route('/file/<file:path>')
 def file_view(path):
     return render_template('file.html',
-                           funcs=sorted(db.session.query(Function.name).filter_by(file=path).distinct()),
+                           funcs=sorted(Session().query(Function.name).filter_by(file=path).distinct()),
                            full_path=path,
                            short_path=short_path(path))
 
 
 @app.route('/file/<file:path>/function/<func_name>')
 def func_view(path, func_name):
-    query = (db.session.query(Call, Function)
-             .join(Function)
-             .filter_by(file=path, name=func_name)
-             .order_by(Call.start_time.desc())
-             [:200])
-
-    func = query[0][1]
+    session = Session()
+    func = session.query(Function).filter_by(file=path, name=func_name).one()
+    calls = func.calls.order_by(Call.start_time.desc())[:200]
     return render_template('function.html',
                            func=func,
-                           query=query)
+                           calls=calls)
 
 
 @app.route('/call/<int:call_id>')
 def call_view(call_id):
-    call = Call.query.filter_by(id=call_id).one()
+    call = Session().query(Call).filter_by(id=call_id).one()
     func = call.function
     return render_template('call.html',
                            call=call,

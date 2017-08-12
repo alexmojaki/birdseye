@@ -2,9 +2,11 @@ import ntpath
 import os
 import traceback
 import types
+from threading import Thread
 
 from littleutils import strip_required_prefix
 from qualname import qualname
+from queue import Queue
 
 
 def path_leaf(path):
@@ -14,8 +16,8 @@ def path_leaf(path):
 
 
 def all_file_paths():
-    from birdseye.app import db, Function
-    return [f[0] for f in db.session.query(Function.file).distinct()]
+    from birdseye.db import Function, Session
+    return [f[0] for f in Session().query(Function.file).distinct()]
 
 
 def short_path(path):
@@ -63,3 +65,23 @@ def iter_get(it, n):
 
 def exception_string(exc):
     return ''.join(traceback.format_exception_only(type(exc), exc))
+
+
+class Consumer(object):
+    def __init__(self):
+        self.queue = Queue()
+
+        def run():
+            while True:
+                func = self.queue.get()
+                func()
+                self.queue.task_done()
+
+        self.thread = Thread(target=run).start()
+
+    def __call__(self, func):
+        self.queue.put(func)
+
+    def wait(self, func):
+        self(func)
+        self.queue.join()
