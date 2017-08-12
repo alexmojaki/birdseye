@@ -11,7 +11,9 @@
 {% block body %}
     <h2>Function: <span class="code-font">{{ func.name }}</span></h2>
     <p><strong>Full path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
-    <p><strong>Line: </strong>{{ func.lineno }}</p>
+    {% if calls %}{# if there are no calls then this may not be the most recent function object #}
+        <p><strong>Line: </strong>{{ func.lineno }}</p>
+    {% endif %}
 
     <h3>Calls:</h3>
     {% if calls %}

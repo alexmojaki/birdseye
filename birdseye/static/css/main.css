@@ -77,6 +77,10 @@
     font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
+#inspector .jstree-anchor {
+    white-space: pre;
+}
+
 .call-row a {
     display: block;
 }

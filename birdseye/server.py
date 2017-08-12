@@ -41,8 +41,18 @@ def file_view(path):
 @app.route('/file/<file:path>/function/<func_name>')
 def func_view(path, func_name):
     session = Session()
-    func = session.query(Function).filter_by(file=path, name=func_name).one()
-    calls = func.calls.order_by(Call.start_time.desc())[:200]
+    query = (session.query(Call, Function)
+             .join(Function)
+             .filter_by(file=path, name=func_name)
+             .order_by(Call.start_time.desc())
+             [:200])
+    if query:
+        func = query[0][1]
+        calls = [p[0] for p in query]
+    else:
+        func = session.query(Function).filter_by(file=path, name=func_name)[0]
+        calls = None
+
     return render_template('function.html',
                            func=func,
                            calls=calls)

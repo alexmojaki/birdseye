@@ -71,10 +71,11 @@ def repr_object(x, helper):
     except Exception:
         return basic_repr(x)
     if len(s) > suppression_threshold:
-        supressed_classes.add(correct_type(x))
+        cls = correct_type(x)
+        supressed_classes.add(cls)
         warnings.warn('%s.__repr__ is too long and has been supressed. '
                       'Register a cheap repr for the class to avoid this warning '
-                      'and see an informative repr again.')
+                      'and see an informative repr again.' % safe_qualname(cls))
     return helper.truncate(s)
 
 
