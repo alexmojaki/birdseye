@@ -1,5 +1,5 @@
 import unittest
-from utils import iter_get
+from birdseye.utils import iter_get
 from random import shuffle
 
 
