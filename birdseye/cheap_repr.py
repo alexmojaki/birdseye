@@ -216,20 +216,20 @@ def repr_int(x, helper):
     return helper.truncate(repr(x))
 
 
-# @try_register_repr('numpy.core.multiarray', 'ndarray')
-# def repr_ndarray(x, helper):
-#     if len(x) == 0:
-#         return repr(x)
-#     return helper.repr_iterable(x, 'array([', '])')
-#
-#
-# @try_register_repr('django.db.models', 'QuerySet')
-# def repr_QuerySet(x, _):
-#     try:
-#         model_name = x.model._meta.object_name
-#     except AttributeError:
-#         model_name = type_name(x.model)
-#     return '<%s instance of %s at %#x>' % (type_name(x), model_name, id(x))
+@try_register_repr('numpy.core.multiarray', 'ndarray')
+def repr_ndarray(x, helper):
+    if len(x) == 0:
+        return repr(x)
+    return helper.repr_iterable(x, 'array([', '])')
+
+
+@try_register_repr('django.db.models', 'QuerySet')
+def repr_QuerySet(x, _):
+    try:
+        model_name = x.model._meta.object_name
+    except AttributeError:
+        model_name = type_name(x.model)
+    return '<%s instance of %s at %#x>' % (type_name(x), model_name, id(x))
 
 
 @try_register_repr('collections', 'ChainMap')
