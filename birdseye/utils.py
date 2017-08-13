@@ -1,12 +1,13 @@
+import atexit
 import ntpath
 import os
 import traceback
 import types
+from queue import Queue
 from threading import Thread
 
 from littleutils import strip_required_prefix
 from qualname import qualname
-from queue import Queue
 
 
 def path_leaf(path):
@@ -64,6 +65,7 @@ def iter_get(it, n):
 
 
 def exception_string(exc):
+    assert isinstance(exc, BaseException)
     return ''.join(traceback.format_exception_only(type(exc), exc))
 
 
@@ -77,7 +79,8 @@ class Consumer(object):
                 func()
                 self.queue.task_done()
 
-        self.thread = Thread(target=run).start()
+        atexit.register(self.queue.join)
+        self.thread = Thread(target=run, daemon=True).start()
 
     def __call__(self, func):
         self.queue.put(func)

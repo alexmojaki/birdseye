@@ -17,7 +17,7 @@ deepContains: function(arr, x) {
 var $code = $('#code');
 hljs.highlightBlock($code[0]);
 
-var expr_values = call_data.expr_values;
+var node_values = call_data.node_values;
 var loop_iterations = call_data.loop_iterations;
 var node_loops = func_data.node_loops;
 var _current_iteration = {};
@@ -137,7 +137,7 @@ $('#inspector').jstree({
 $code.find('span[data-type="expr"]').each(function() {
     var $this = $(this);
     var tree_index = this.dataset.index;
-    $this.toggleClass('expr', tree_index in expr_values);
+    $this.toggleClass('expr', tree_index in node_values);
     $this.click(function() {
         if ($this.hasClass('hovering')) {
             $this.toggleClass('selected');
@@ -176,7 +176,7 @@ function render() {
     findRanges(loop_iterations);
 
     function get_value(tree_index) {
-        var value = expr_values[tree_index];
+        var value = node_values[tree_index];
         var loops = node_loops[tree_index] || [];
         loops.forEach(function(loopIndex) {
             if (value) {
@@ -190,7 +190,7 @@ function render() {
         function () {
             var value;
             var $this = $(this);
-            if (this.dataset.index in expr_values) {
+            if (this.dataset.index in node_values) {
                 $this.toggleClass('expr', true);
                 value = get_value(this.dataset.index);
             }
@@ -211,6 +211,15 @@ function render() {
             }
         }
     );
+
+    $code.find('span[data-type="stmt"],span[data-type="loop"]').each(function () {
+        var value;
+        var $this = $(this);
+        if (this.dataset.index in node_values) {
+            value = get_value(this.dataset.index);
+        }
+        $this.toggleClass('stmt_uncovered', !value);
+    });
 
     $('#inspector').jstree(true).settings.core.data = selected_expressions.map(function(tree_index) {
         var node = index_to_node[tree_index];

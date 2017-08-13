@@ -100,3 +100,9 @@
 .jstree-proton .jstree-icon.jstree-themeicon-custom {
     margin-right: 8px;
 }
+
+#code span span.stmt_uncovered,
+#code span span.stmt_uncovered span[class^="hljs-"] {
+    color: #b3b3b3;
+    font-weight: normal;
+}

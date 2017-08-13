@@ -45,6 +45,7 @@ class BirdsEye(TreeTracerBase):
                     loop.append(Iteration())
                 else:
                     iteration = loop.last()
+        self._set_node_value(node, frame, True)
 
     def after_expr(self, node, frame, value):
         if frame.f_code not in self._code_infos:
@@ -94,12 +95,12 @@ class BirdsEye(TreeTracerBase):
 
         loop_iterations = top_iteration.extract_iterations()['loops']
 
-        expr_values = _deep_dict()
+        node_values = _deep_dict()
 
         def extract_values(iteration, path):
             for k, v in iteration.vals.items():
                 full_path = (k,) + path
-                d = expr_values
+                d = node_values
                 for path_k in full_path[:-1]:
                     d = d[path_k]
                 d[full_path[-1]] = v
@@ -126,7 +127,7 @@ class BirdsEye(TreeTracerBase):
                         exception=exception,
                         traceback=traceback_str,
                         data=json.dumps(dict(
-                            expr_values=expr_values,
+                            node_values=node_values,
                             loop_iterations=loop_iterations,
                             type_names=type_registry.names(),
                             num_special_types=type_registry.num_special_types,
@@ -162,6 +163,8 @@ class BirdsEye(TreeTracerBase):
                     continue
             elif isinstance(node, (ast.While, ast.For)):
                 node_type = 'loop'
+            elif isinstance(node, ast.stmt):
+                node_type = 'stmt'
             else:
                 continue
             assert isinstance(node, ast.AST)
