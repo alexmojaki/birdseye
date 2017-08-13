@@ -118,21 +118,20 @@ class BirdsEye(TreeTracerBase):
         else:
             traceback_str = exception = None
 
-        call = Call(function=db_func,
-                    arguments=frame_info.arguments,
-                    return_value=cheap_repr(exit_info.return_value),
-                    exception=exception,
-                    traceback=traceback_str,
-                    data=json.dumps(dict(
-                        expr_values=expr_values,
-                        loop_iterations=loop_iterations,
-                        type_names=type_registry.names(),
-                        num_special_types=type_registry.num_special_types,
-                    )),
-                    start_time=frame_info.start_time)
-
         @db_consumer
         def save_call():
+            call = Call(function=db_func,
+                        arguments=frame_info.arguments,
+                        return_value=cheap_repr(exit_info.return_value),
+                        exception=exception,
+                        traceback=traceback_str,
+                        data=json.dumps(dict(
+                            expr_values=expr_values,
+                            loop_iterations=loop_iterations,
+                            type_names=type_registry.names(),
+                            num_special_types=type_registry.num_special_types,
+                        )),
+                        start_time=frame_info.start_time)
             session.add(call)
             session.commit()
 
