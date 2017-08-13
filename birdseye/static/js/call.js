@@ -39,7 +39,7 @@ function make_jstree_nodes(prefix, path, val, $node) {
             $node: $node,
         }
     }
-    var val_repr = val[0];
+    var val_repr = _.escape(val[0]).replace(/ /g, '&nbsp;');
     var type_index = val[1];
     var type_name = call_data.type_names[type_index];
     var is_special = type_index < call_data.num_special_types;
@@ -51,9 +51,9 @@ function make_jstree_nodes(prefix, path, val, $node) {
     if (special('NoneType')) {
         text += '<i>None</i>';
     } else if (type_index == -1) { // exception
-        text += '<span style="color: red">' + _.escape(val_repr) + '</span>';
+        text += '<span style="color: red">' + val_repr + '</span>';
     } else {
-        text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + _.escape(val_repr);
+        text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + val_repr;
     }
 
     var icon;

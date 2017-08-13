@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='birdseye',
-      version='0.1.2',
+      version='0.1.3',
       description='Python debugger using the AST',
       classifiers=[
           'Programming Language :: Python :: 3.5',
