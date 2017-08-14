@@ -1,7 +1,9 @@
+from glob import glob
+
 from setuptools import setup
 
 setup(name='birdseye',
-      version='0.1.3',
+      version='0.1.4',
       description='Python debugger using the AST',
       classifiers=[
           'Programming Language :: Python :: 3.5',
@@ -21,5 +23,7 @@ setup(name='birdseye',
       entry_points={
           'console_scripts': ['birdseye=birdseye.server:main'],
       },
-      package_data={'': ['static/**/*', 'templates/*']},
+      package_data={'': [x[len('birdseye/'):]
+                         for x in glob('birdseye/**/*',
+                                       recursive=True)]},
       zip_safe=False)
