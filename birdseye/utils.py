@@ -88,3 +88,10 @@ class Consumer(object):
     def wait(self, func):
         self(func)
         self.queue.join()
+
+
+class SimpleNamespace(object):
+    pass
+
+
+dummy_namespace = SimpleNamespace()

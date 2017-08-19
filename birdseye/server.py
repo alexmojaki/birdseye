@@ -58,7 +58,7 @@ def func_view(path, func_name):
                            calls=calls)
 
 
-@app.route('/call/<int:call_id>')
+@app.route('/call/<call_id>')
 def call_view(call_id):
     call = Session().query(Call).filter_by(id=call_id).one()
     func = call.function

@@ -90,7 +90,7 @@ function make_jstree_nodes(prefix, path, val, $node) {
         }
     };
 
-    var rest = val.slice(2);
+    var rest = val.slice(_.isObject(val[2]) && !_.isArray(val[2]) ? 3 : 2);
     if (rest.length && !(_(rest).isEqual(['len() = 0']) && is_special)) {
         result.children = rest.map(function(child) {
             if (typeof child === "string") {
@@ -138,6 +138,9 @@ $code.find('span[data-type="expr"]').each(function() {
     var $this = $(this);
     var tree_index = this.dataset.index;
     $this.toggleClass('expr', tree_index in node_values);
+    $this.toggleClass(
+        'has-inner',
+        (JSON.stringify(node_values[tree_index]) || '').indexOf(',{"inner_call":"') != -1);
     $this.click(function() {
         if ($this.hasClass('hovering')) {
             $this.toggleClass('selected');
@@ -206,6 +209,13 @@ function render() {
                 });
                 $this.toggleClass('exception_node', value[1] == -1);
                 $this.toggleClass('value_none', value[1] == 0);
+                if (value[2] && value[2].inner_call) {
+                    $this.append('<a class="inner-call" href="/call/' + value[2].inner_call + '">' +
+                                    '<span class="glyphicon glyphicon-share-alt"></span>' +
+                                 '</a>')
+                } else {
+                    $this.children('a.inner-call').remove()
+                }
             } else {
                 $this.off('mouseover mouseout');
             }

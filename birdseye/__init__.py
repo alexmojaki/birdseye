@@ -9,13 +9,14 @@ from datetime import datetime
 from functools import partial
 from itertools import chain, islice
 from threading import Lock
+from uuid import uuid4
 
 from asttokens import ASTTokens
 
 from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session, db_consumer
 from birdseye.tracer import TreeTracerBase, loops, TracedFile
-from birdseye.utils import safe_qualname, correct_type, exception_string
+from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file')
 
@@ -47,15 +48,21 @@ class BirdsEye(TreeTracerBase):
                     iteration = loop.last()
         self._set_node_value(node, frame, True)
 
+    def before_expr(self, node, frame):
+        self.stack[frame].inner_call = None
+
     def after_expr(self, node, frame, value):
         if frame.f_code not in self._code_infos:
             return
-        if is_obvious_builtin(node, self.stack[frame]):
+        frame_info = self.stack[frame]
+        if is_obvious_builtin(node, frame_info):
             return
 
-        self._set_node_value(
-            node, frame,
-            expand(value, level=max(1, 3 - len(node._loops))))
+        value = expand(value, level=max(1, 3 - len(node._loops)))
+        if frame_info.inner_call:
+            value.insert(2, {'inner_call': frame_info.inner_call})
+            frame_info.inner_call = None
+        self._set_node_value(node, frame, value)
 
     def _set_node_value(self, node, frame, value):
         iteration = self.stack[frame].iteration
@@ -85,6 +92,7 @@ class BirdsEye(TreeTracerBase):
         f_locals = arg_info[3].copy()
         arguments = [(name, f_locals.pop(name)) for name in arg_names if name] + list(f_locals.items())
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
+        self.stack.get(frame.f_back, dummy_namespace).inner_call = frame_info.call_id = uuid4().hex
 
     def exit_call(self, exit_info):
         frame = exit_info.current_frame
@@ -121,17 +129,21 @@ class BirdsEye(TreeTracerBase):
 
         @db_consumer
         def save_call():
-            call = Call(function=db_func,
+            call = Call(id=frame_info.call_id,
+                        function=db_func,
                         arguments=frame_info.arguments,
                         return_value=cheap_repr(exit_info.return_value),
                         exception=exception,
                         traceback=traceback_str,
-                        data=json.dumps(dict(
-                            node_values=node_values,
-                            loop_iterations=loop_iterations,
-                            type_names=type_registry.names(),
-                            num_special_types=type_registry.num_special_types,
-                        )),
+                        data=json.dumps(
+                            dict(
+                                node_values=node_values,
+                                loop_iterations=loop_iterations,
+                                type_names=type_registry.names(),
+                                num_special_types=type_registry.num_special_types,
+                            ),
+                            separators=(',', ':')
+                        ),
                         start_time=frame_info.start_time)
             session.add(call)
             session.commit()
@@ -288,9 +300,8 @@ type_registry = TypeRegistry()
 
 
 def expand(val, level=3):
-    result = []
     type_index = type_registry[val]
-    result += [cheap_repr(val), type_index]
+    result = [cheap_repr(val), type_index]
     if type_index < type_registry.num_basic_types or level == 0:
         return result
     exp = partial(expand, level=level - 1)

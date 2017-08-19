@@ -28,7 +28,7 @@ Base = declarative_base(cls=Base)
 
 
 class Call(Base):
-    id = Column(Integer, Sequence('call_id_seq'), primary_key=True)
+    id = Column(Text(length=32), primary_key=True)
     function_id = Column(Integer, ForeignKey('function.id'))
     function = relationship('Function', backref=backref('calls', lazy='dynamic'))
     arguments = Column(Text)
