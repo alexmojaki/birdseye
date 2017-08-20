@@ -12,6 +12,7 @@ from threading import Lock
 from uuid import uuid4
 
 from asttokens import ASTTokens
+from littleutils import group_by_key_func
 
 from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session, db_consumer
@@ -194,6 +195,28 @@ class BirdsEye(TreeTracerBase):
             positions.append((end, 0, node._depth, '</span>'))
             if node._loops:
                 node_loops[node._tree_index] = [n._tree_index for n in node._loops]
+
+        comprehensions = group_by_key_func([comp for comp in traced_file.nodes
+                                            if isinstance(comp, ast.comprehension)],
+                                           lambda c: c.first_token.line)
+
+        def get_start(n):
+            return traced_file.tokens.get_text_range(n)[0]
+
+        for comp_list in comprehensions.values():
+            prev_start = None
+            for comp in sorted(comp_list, key=lambda c: c.first_token.startpos):
+                if comp is comp.parent.generators[0]:
+                    start = get_start(comp.parent)
+                    if prev_start is not None and start < prev_start:
+                        start = get_start(comp)
+                else:
+                    start = get_start(comp)
+                if prev_start is not None:
+                    positions.append((start, 1, 0, '\n '))
+                    end_lineno += 1
+                prev_start = start
+
         positions.append((len(traced_file.source), None, None, ''))
         positions.sort()
 
