@@ -117,3 +117,7 @@
 .inner-call .glyphicon {
     transform: rotate(45deg);
 }
+
+body > .container {
+    margin-left: 100px;
+}
