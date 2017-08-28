@@ -4,15 +4,15 @@ import inspect
 from collections import namedtuple
 from copy import deepcopy
 from functools import partial
+from itertools import takewhile
 
 from littleutils import file_to_string
+
+from birdseye.utils import of_type, safe_next
 
 
 class TracedFile(object):
     def __init__(self, tracer, source, filename):
-        self.tracer = tracer
-        self.source = source
-        self.filename = filename
         root = ast.parse(source, filename)
 
         def set_basic_node_attributes():
@@ -26,18 +26,20 @@ class TracedFile(object):
 
         set_basic_node_attributes()
 
-        new_root = self.tracer.parse_extra(root, source, filename)
+        new_root = tracer.parse_extra(root, source, filename)
         if new_root is not None:
             root = new_root
 
         set_basic_node_attributes()
 
+        new_root = deepcopy(root)
+        new_root = _NodeVisitor().visit(new_root)
+
+        self.code = compile(new_root, filename, "exec")
         self.root = root
-
-        root = deepcopy(root)
-        root = _NodeVisitor().visit(root)
-
-        self.code = compile(root, filename, "exec")
+        self.tracer = tracer
+        self.source = source
+        self.filename = filename
 
 
 class FrameInfo(object):
@@ -46,6 +48,7 @@ class FrameInfo(object):
         self.expression_stack = []
         self.expression_values = {}
         self.return_node = None
+        self.comprehension_frames = {}
 
 
 EnterCallInfo = namedtuple('EnterCallInfo', 'call_node enter_node caller_frame current_frame')
@@ -54,6 +57,8 @@ ExitCallInfo = namedtuple('ExitCallInfo', 'call_node return_node caller_frame cu
 
 
 class TreeTracerBase(object):
+    SPECIAL_COMPREHENSION_TYPES = (ast.ListComp, ast.DictComp, ast.SetComp)
+
     def __init__(self):
         self.stack = {}
 
@@ -115,12 +120,19 @@ class TreeTracerBase(object):
 
     def _treetrace_hidden_before_expr(self, traced_file, _tree_index):
         node = traced_file.nodes[_tree_index]
-        assert isinstance(node, ast.expr)
         frame = inspect.currentframe().f_back
 
         frame_info = self.stack.get(frame)
         if frame_info is None:
-            return None
+            frame_info = FrameInfo()
+            self.stack[frame] = frame_info
+            owner_frame = frame
+            while owner_frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
+                owner_frame = owner_frame.f_back
+            if owner_frame != frame:
+                comprehension = safe_next(of_type(self.SPECIAL_COMPREHENSION_TYPES,
+                                                  ancestors(node)))
+                self.stack[owner_frame].comprehension_frames[comprehension] = frame
 
         frame_info.expression_stack.append(node)
 
@@ -133,7 +145,10 @@ class TreeTracerBase(object):
         frame = inspect.currentframe().f_back
         self.stack[frame].expression_stack.pop()
         self.stack[frame].expression_values[node] = value
-        self.after_expr(node, frame, value)
+        result = self.after_expr(node, frame, value)
+        if result is not None:
+            assert isinstance(result, self.ChangeValue), "after_expr must return None or an instance of ChangeValue"
+            value = result.value
         return value
 
     def _enter_call(self, enter_node, current_frame):
@@ -170,6 +185,8 @@ class TreeTracerBase(object):
 
     def parse_extra(self, root, source, filename):
         pass
+
+    ChangeValue = namedtuple('ChangeValue', 'value')
 
 
 class _NodeVisitor(ast.NodeTransformer):
@@ -268,7 +285,9 @@ class _StmtContext:
                                           exc_tb
                                           ))
 
-            tracer.stack.pop(frame)
+            del tracer.stack[frame]
+            for comprehension_frame in frame_info.comprehension_frames.values():
+                del tracer.stack[comprehension_frame]
         return result
 
 
@@ -302,10 +321,30 @@ def loops(node):
             break
         if isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
             break
+
         is_containing_loop = (isinstance(parent, ast.For) and parent.iter is not node or
                               isinstance(parent, ast.While) and parent.test is not node)
         if is_containing_loop:
             result.append(parent)
+
+        elif isinstance(parent, (ast.ListComp,
+                                 ast.GeneratorExp,
+                                 ast.DictComp,
+                                 ast.SetComp)):
+            if isinstance(parent, ast.DictComp):
+                is_comprehension_element = node in (parent.key, parent.value)
+            else:
+                is_comprehension_element = node is parent.elt
+            if is_comprehension_element:
+                result.extend(reversed(parent.generators))
+
+            if node in parent.generators:
+                result.extend(reversed(list(takewhile(node.__ne__, parent.generators))))
+
+        elif isinstance(parent, ast.comprehension) and node in parent.ifs:
+            result.append(parent)
+
         node = parent
+
     result.reverse()
     return tuple(result)

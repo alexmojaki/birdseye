@@ -16,7 +16,8 @@ from littleutils import group_by_key_func
 
 from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session, db_consumer
-from birdseye.tracer import TreeTracerBase, loops, TracedFile
+from birdseye.tracer import TreeTracerBase, TracedFile
+from birdseye import tracer
 from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file')
@@ -29,7 +30,7 @@ class BirdsEye(TreeTracerBase):
 
     def parse_extra(self, root, source, filename):
         for node in ast.walk(root):
-            node._loops = loops(node)
+            node._loops = tracer.loops(node)
 
     def compile(self, source, filename):
         traced_file = super(BirdsEye, self).compile(source, filename)
@@ -40,30 +41,56 @@ class BirdsEye(TreeTracerBase):
         if frame.f_code not in self._code_infos:
             return
         if isinstance(node.parent, (ast.For, ast.While)) and node is node.parent.body[0]:
-            iteration = self.stack[frame].iteration
-            for i, loop_node in enumerate(node._loops):
-                loop = iteration.loops[loop_node._tree_index]
-                if i == len(node._loops) - 1:
-                    loop.append(Iteration())
-                else:
-                    iteration = loop.last()
+            self._add_iteration(node._loops, frame)
         self._set_node_value(node, frame, True)
+
+    def _add_iteration(self, loops, frame):
+        iteration = self.stack[frame].iteration
+        for i, loop_node in enumerate(loops):
+            loop = iteration.loops[loop_node._tree_index]
+            if i == len(loops) - 1:
+                loop.append(Iteration())
+            else:
+                iteration = loop.last()
 
     def before_expr(self, node, frame):
         self.stack[frame].inner_call = None
 
     def after_expr(self, node, frame, value):
+        original_frame = frame
+        while frame.f_code.co_name in ('<listcomp>',
+                                       '<dictcomp>',
+                                       '<setcomp>'):
+            frame = frame.f_back
+
         if frame.f_code not in self._code_infos:
             return
-        frame_info = self.stack[frame]
-        if is_obvious_builtin(node, frame_info):
+
+        if is_obvious_builtin(node, self.stack[original_frame]):
             return
 
-        value = expand(value, level=max(1, 3 - len(node._loops)))
+        frame_info = self.stack[frame]
+        expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
         if frame_info.inner_call:
-            value.insert(2, {'inner_call': frame_info.inner_call})
+            expanded_value.insert(2, {'inner_call': frame_info.inner_call})
             frame_info.inner_call = None
-        self._set_node_value(node, frame, value)
+        self._set_node_value(node, frame, expanded_value)
+
+        is_special_comprehension_iter = (isinstance(node.parent, ast.comprehension) and
+                                         node is node.parent.iter and
+                                         not isinstance(node.parent.parent, ast.GeneratorExp))
+        if not is_special_comprehension_iter:
+            return
+
+        self._set_node_value(node.parent, frame, True)
+
+        def comprehension_iter_proxy():
+            loops = node._loops + (node.parent,)
+            for item in value:
+                self._add_iteration(loops, frame)
+                yield item
+
+        return self.ChangeValue(comprehension_iter_proxy())
 
     def _set_node_value(self, node, frame, value):
         iteration = self.stack[frame].iteration
@@ -174,14 +201,15 @@ class BirdsEye(TreeTracerBase):
                         isinstance(getattr(node, 'ctx', None),
                                    (ast.Store, ast.Del))):
                     continue
-            elif isinstance(node, (ast.While, ast.For)):
+            elif (isinstance(node, (ast.While, ast.For, ast.comprehension))
+                  and not isinstance(node.parent, ast.GeneratorExp)):
                 node_type = 'loop'
             elif isinstance(node, ast.stmt):
                 node_type = 'stmt'
             else:
                 continue
             assert isinstance(node, ast.AST)
-            if not start_lineno <= node.lineno <= end_lineno:
+            if not start_lineno <= node.first_token.start[0] <= end_lineno:
                 continue
             if (isinstance(node, ast.UnaryOp) and
                     isinstance(node.op, (ast.UAdd, ast.USub)) and

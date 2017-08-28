@@ -95,3 +95,17 @@ class SimpleNamespace(object):
 
 
 dummy_namespace = SimpleNamespace()
+
+
+def of_type(type_or_tuple, iterable):
+    return (x for x in iterable if isinstance(x, type_or_tuple))
+
+
+def safe_next(it):
+    """
+    next() can raise a StopIteration which can cause strange bugs inside generators.
+    """
+    try:
+        return next(it)
+    except StopIteration as e:
+        raise RuntimeError from e

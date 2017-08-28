@@ -250,7 +250,7 @@ function render() {
             role: "group",
         }).css({
             position: 'absolute',
-            top: loop_span.offsetTop,
+            top: $(loop_span).offset().top - $code.offset().top,
             right: ($code[0].offsetWidth + 5) + 'px',
         });
 
