@@ -102,8 +102,12 @@ class BirdsEye(TreeTracerBase):
     def after_stmt(self, node, frame, exc_value, exc_traceback):
         if frame.f_code not in self._code_infos:
             return
-        expression_stack = self.stack[frame].expression_stack
+        frame_info = self.stack[frame]
+        expression_stack = frame_info.expression_stack
         if expression_stack:
+            while isinstance(expression_stack[-1], self.SPECIAL_COMPREHENSION_TYPES):
+                inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
+                expression_stack = self.stack[inner_frame].expression_stack
             self._set_node_value(
                 expression_stack[-1], frame,
                 [exception_string(exc_value), -1])
