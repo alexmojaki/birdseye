@@ -3,7 +3,7 @@ from glob import glob
 from setuptools import setup
 
 setup(name='birdseye',
-      version='0.1.4',
+      version='0.1.5',
       description='Python debugger using the AST',
       classifiers=[
           'Programming Language :: Python :: 3.5',
