@@ -31,6 +31,8 @@ class BirdsEye(TreeTracerBase):
     def parse_extra(self, root, source, filename):
         for node in ast.walk(root):
             node._loops = tracer.loops(node)
+            if isinstance(node, ast.expr):
+                node._is_interesting_expression = is_interesting_expression(node)
 
     def compile(self, source, filename):
         traced_file = super(BirdsEye, self).compile(source, filename)
@@ -57,24 +59,25 @@ class BirdsEye(TreeTracerBase):
         self.stack[frame].inner_call = None
 
     def after_expr(self, node, frame, value):
-        original_frame = frame
-        while frame.f_code.co_name in ('<listcomp>',
-                                       '<dictcomp>',
-                                       '<setcomp>'):
-            frame = frame.f_back
+        if node._is_interesting_expression:
+            original_frame = frame
+            while frame.f_code.co_name in ('<listcomp>',
+                                           '<dictcomp>',
+                                           '<setcomp>'):
+                frame = frame.f_back
 
-        if frame.f_code not in self._code_infos:
-            return
+            if frame.f_code not in self._code_infos:
+                return
 
-        if is_obvious_builtin(node, self.stack[original_frame]):
-            return
+            if is_obvious_builtin(node, self.stack[original_frame]):
+                return
 
-        frame_info = self.stack[frame]
-        expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
-        if frame_info.inner_call:
-            expanded_value.insert(2, {'inner_call': frame_info.inner_call})
-            frame_info.inner_call = None
-        self._set_node_value(node, frame, expanded_value)
+            frame_info = self.stack[frame]
+            expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
+            if frame_info.inner_call:
+                expanded_value.insert(2, {'inner_call': frame_info.inner_call})
+                frame_info.inner_call = None
+            self._set_node_value(node, frame, expanded_value)
 
         is_special_comprehension_iter = (isinstance(node.parent, ast.comprehension) and
                                          node is node.parent.iter and
@@ -124,7 +127,10 @@ class BirdsEye(TreeTracerBase):
         f_locals = arg_info[3].copy()
         arguments = [(name, f_locals.pop(name)) for name in arg_names if name] + list(f_locals.items())
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
-        self.stack.get(frame.f_back, dummy_namespace).inner_call = frame_info.call_id = uuid4().hex
+        self.stack.get(frame.f_back, dummy_namespace).inner_call = frame_info.call_id = self._call_id()
+
+    def _call_id(self):
+        return uuid4().hex
 
     def exit_call(self, exit_info):
         frame = exit_info.current_frame
@@ -201,9 +207,7 @@ class BirdsEye(TreeTracerBase):
         for node in traced_file.nodes:
             if isinstance(node, ast.expr):
                 node_type = 'expr'
-                if (isinstance(node, (ast.Num, ast.Str)) or
-                        isinstance(getattr(node, 'ctx', None),
-                                   (ast.Store, ast.Del))):
+                if not node._is_interesting_expression:
                     continue
             elif (isinstance(node, (ast.While, ast.For, ast.comprehension))
                   and not isinstance(node.parent, ast.GeneratorExp)):
@@ -214,10 +218,6 @@ class BirdsEye(TreeTracerBase):
                 continue
             assert isinstance(node, ast.AST)
             if not start_lineno <= node.first_token.start[0] <= end_lineno:
-                continue
-            if (isinstance(node, ast.UnaryOp) and
-                    isinstance(node.op, (ast.UAdd, ast.USub)) and
-                    isinstance(node.operand, ast.Num)):
                 continue
             start, end = traced_file.tokens.get_text_range(node)
             if start == end == 0:
@@ -404,24 +404,22 @@ def expand(val, level=3):
     return result
 
 
+def is_interesting_expression(node):
+    return (isinstance(node, ast.expr) and
+            not (isinstance(node, (ast.Num, ast.Str, getattr(ast, 'NameConstant', ()))) or
+                 isinstance(getattr(node, 'ctx', None),
+                            (ast.Store, ast.Del)) or
+                 (isinstance(node, ast.UnaryOp) and
+                  isinstance(node.op, (ast.UAdd, ast.USub)) and
+                  isinstance(node.operand, ast.Num)) or
+                 (isinstance(node, (ast.List, ast.Tuple, ast.Dict)) and
+                  not any(is_interesting_expression(n) for n in ast.iter_child_nodes(node)))))
+
+
 def is_obvious_builtin(node, frame_info):
-    try:
-        value = frame_info.expression_values[node]
-        # noinspection PyUnresolvedReferences
-        is_top_level_builtin = ((isinstance(node, ast.Name) and
-                                 node.id in __builtins__ and
-                                 __builtins__[node.id] is value) or
-                                isinstance(node, ast.NameConstant))
-        if is_top_level_builtin:
-            return True
-            # if not isinstance(node, ast.Attribute):
-            #     return False
-            # name = node.attr
-            # if name != value.__name__:
-            #     return False
-            # if value.__self__ is not frame_info.expression_values[node.value]:
-            #     return False
-            # TODO complete for methods
-    except AttributeError:
-        # return False
-        raise
+    value = frame_info.expression_values[node]
+    # noinspection PyUnresolvedReferences
+    return ((isinstance(node, ast.Name) and
+             node.id in __builtins__ and
+             __builtins__[node.id] is value) or
+            isinstance(node, ast.NameConstant))

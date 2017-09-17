@@ -6,12 +6,21 @@ from markupsafe import Markup
 from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from birdseye.utils import Consumer
 
-engine = create_engine(os.environ.get('BIRDSEYE_DB',
-                                      'sqlite:///' + os.path.join(os.path.expanduser('~'),
-                                                                  '.birdseye.db')))
+DB_URI = os.environ.get('BIRDSEYE_DB',
+                        'sqlite:///' + os.path.join(os.path.expanduser('~'),
+                                                    '.birdseye.db'))
+
+if os.environ.get('BIRDSEYE_TESTING_IN_MEMORY'):
+    engine_kwargs = dict(connect_args={'check_same_thread': False},
+                         poolclass=StaticPool)
+else:
+    engine_kwargs = {}
+
+engine = create_engine(DB_URI, **engine_kwargs)
 
 Session = sessionmaker(bind=engine)
 session = Session()

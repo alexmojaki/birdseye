@@ -36,10 +36,7 @@ class TestCheapRepr(unittest.TestCase):
         self.assertEqual(cheap_repr(x), expected_repr)
 
     def test_numpy_array(self):
-        try:
-            import numpy
-        except ImportError:
-            return
+        import numpy
         self.assert_usual_repr(numpy.array([1, 2, 3]))
         self.assert_cheap_repr(numpy.array(range(9)),
                                'array([0, 1, 2, 3, 4, 5, ...])')

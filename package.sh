@@ -8,5 +8,5 @@ read -p "Upload? " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-  python3.5 setup.py sdist upload
+  BIRDSEYE_DB=sqlite:///:memory: BIRDSEYE_TESTING_IN_MEMORY=true python3.5 setup.py test sdist upload
 fi

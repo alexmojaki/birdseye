@@ -17,13 +17,13 @@ def foo(*args):
     pass
 
 
-class A:
+class A(object):
     def __init__(self):
         self.x = 1
         self.y = 2
 
 
-class B:
+class B(object):
     __slots__ = ('slot1', 'slot2')
 
     def __init__(self):

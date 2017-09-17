@@ -20,6 +20,12 @@ setup(name='birdseye',
           'littleutils',
           'qualname',
       ],
+      tests_require=[
+          'nose',
+          'bs4',
+          'numpy',
+      ],
+      test_suite='nose.collector',
       entry_points={
           'console_scripts': ['birdseye=birdseye.server:main'],
       },
