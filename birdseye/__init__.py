@@ -1,3 +1,9 @@
+from __future__ import absolute_import, division, print_function
+
+from future import standard_library
+from future.utils import iteritems
+
+standard_library.install_aliases()
 import ast
 import html
 import inspect
@@ -15,17 +21,17 @@ from asttokens import ASTTokens
 from littleutils import group_by_key_func
 
 from birdseye.cheap_repr import cheap_repr
-from birdseye.db import Function, Call, session, db_consumer
+from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile
 from birdseye import tracer
-from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace
+from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file')
 
 
 class BirdsEye(TreeTracerBase):
     def __init__(self):
-        super().__init__()
+        super(BirdsEye, self).__init__()
         self._code_infos = {}
 
     def parse_extra(self, root, source, filename):
@@ -165,26 +171,24 @@ class BirdsEye(TreeTracerBase):
         else:
             traceback_str = exception = None
 
-        @db_consumer
-        def save_call():
-            call = Call(id=frame_info.call_id,
-                        function=db_func,
-                        arguments=frame_info.arguments,
-                        return_value=cheap_repr(exit_info.return_value),
-                        exception=exception,
-                        traceback=traceback_str,
-                        data=json.dumps(
-                            dict(
-                                node_values=node_values,
-                                loop_iterations=loop_iterations,
-                                type_names=type_registry.names(),
-                                num_special_types=type_registry.num_special_types,
-                            ),
-                            separators=(',', ':')
+        call = Call(id=frame_info.call_id,
+                    function=db_func,
+                    arguments=frame_info.arguments,
+                    return_value=cheap_repr(exit_info.return_value),
+                    exception=exception,
+                    traceback=traceback_str,
+                    data=json.dumps(
+                        dict(
+                            node_values=node_values,
+                            loop_iterations=loop_iterations,
+                            type_names=type_registry.names(),
+                            num_special_types=type_registry.num_special_types,
                         ),
-                        start_time=frame_info.start_time)
-            session.add(call)
-            session.commit()
+                        separators=(',', ':')
+                    ),
+                    start_time=frame_info.start_time)
+        session.add(call)
+        session.commit()
 
     def __call__(self, func):
         new_func = super(BirdsEye, self).__call__(func)
@@ -272,14 +276,12 @@ class BirdsEye(TreeTracerBase):
                            sort_keys=True,
                        ))
 
-        @db_consumer.wait
-        def save_func():
-            db_func = session.query(Function).filter_by(**db_args).one_or_none()
-            if not db_func:
-                db_func = Function(**db_args)
-                session.add(db_func)
-                session.commit()
-            self._code_infos[new_func.__code__] = CodeInfo(db_func, traced_file)
+        db_func = session.query(Function).filter_by(**db_args).one_or_none()
+        if not db_func:
+            db_func = Function(**db_args)
+            session.add(db_func)
+            session.commit()
+        self._code_infos[new_func.__code__] = CodeInfo(db_func, traced_file)
 
         return new_func
 
@@ -334,8 +336,13 @@ class TypeRegistry(object):
     def __init__(self):
         self.lock = Lock()
         self.data = defaultdict(lambda: len(self.data))
-        basic_types = [type(None), bool, int, float, complex]  # TODO long, unicode
-        special_types = basic_types + [list, dict, tuple, set, frozenset, str, bytes]
+        basic_types = [type(None), bool, int, float, complex]
+        if PY2:
+            basic_types += [long]
+        special_types = basic_types + [list, dict, tuple, set, frozenset, str]
+        if PY2:
+            special_types += [unicode if PY2 else bytes]
+
         self.num_basic_types = len(basic_types)
         self.num_special_types = len(special_types)
         for t in special_types:
@@ -369,7 +376,7 @@ def expand(val, level=3):
     else:
         result += ['len() = %s' % length]
 
-    if isinstance(val, (str, bytes, range)):  # TODO unicode, xrange
+    if isinstance(val, (str, bytes, range) if PY3 else (str, unicode, xrange)):
         return result
     if isinstance(val, Sequence):
         if len(val) <= 8:
@@ -379,7 +386,7 @@ def expand(val, level=3):
         for i in indices:
             result += [(str(i), exp(val[i]))]
     elif isinstance(val, Mapping):
-        for k, v in islice(val.items(), 10):  # TODO iteritems
+        for k, v in islice(iteritems(val), 10):
             result += [(cheap_repr(k), exp(v))]
     elif isinstance(val, Set):
         for i, v in enumerate(islice(val, 6)):
@@ -387,7 +394,7 @@ def expand(val, level=3):
 
     d = getattr(val, '__dict__', None)
     if d:
-        for k, v in islice(d.items(), 50):  # TODO iteritems
+        for k, v in islice(iteritems(d), 50):
             if isinstance(v, TracedFile):
                 continue
             result += [(str(k), exp(v))]
@@ -422,4 +429,4 @@ def is_obvious_builtin(node, frame_info):
     return ((isinstance(node, ast.Name) and
              node.id in __builtins__ and
              __builtins__[node.id] is value) or
-            isinstance(node, ast.NameConstant))
+            isinstance(node, getattr(ast, 'NameConstant', ())))

@@ -1,3 +1,9 @@
+from __future__ import print_function, division, absolute_import
+
+from future import standard_library
+
+standard_library.install_aliases()
+from future.utils import raise_from
 import atexit
 import ntpath
 import os
@@ -5,9 +11,13 @@ import traceback
 import types
 from queue import Queue
 from threading import Thread
+from sys import version_info
 
 from littleutils import strip_required_prefix
 from qualname import qualname
+
+PY2 = version_info.major == 2
+PY3 = not PY2
 
 
 def path_leaf(path):
@@ -61,7 +71,7 @@ def iter_get(it, n):
             n -= 1
         return next(it)
     except StopIteration as e:
-        raise IndexError(n_original) from e
+        raise_from(IndexError(n_original), e)
 
 
 def exception_string(exc):
@@ -72,18 +82,40 @@ def exception_string(exc):
 class Consumer(object):
     def __init__(self):
         self.queue = Queue()
+        self.error = ValueError('There should be an error raised by a consumed task here')
+        self.exiting = False
+        self._run_thread()
+        atexit.register(self._exit)
 
+    def _run_thread(self):
         def run():
             while True:
                 func = self.queue.get()
-                func()
-                self.queue.task_done()
+                try:
+                    func()
+                except BaseException as e:
+                    self.queue = None
+                    self.error = e
+                    if not self.exiting:
+                        raise
+                finally:
+                    self.queue.task_done()
 
-        atexit.register(self.queue.join)
-        self.thread = Thread(target=run, daemon=True).start()
+        self.thread = Thread(target=run, name='Consumer thread')
+        self.thread.daemon = True
+        self.thread.start()
+
+    def _exit(self):
+        self.exiting = True
+        if self.queue:
+            self._run_thread()  # just for good measure
+            self.queue.join()
 
     def __call__(self, func):
-        self.queue.put(func)
+        if self.queue:
+            self.queue.put(func)
+        else:
+            raise self.error  # error raised by task in consumer thread
 
     def wait(self, func):
         self(func)
@@ -108,4 +140,4 @@ def safe_next(it):
     try:
         return next(it)
     except StopIteration as e:
-        raise RuntimeError from e
+        raise_from(RuntimeError, e)

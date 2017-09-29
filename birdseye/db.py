@@ -1,3 +1,8 @@
+from __future__ import print_function, division, absolute_import
+
+from future import standard_library
+
+standard_library.install_aliases()
 import json
 import os
 
@@ -8,23 +13,17 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from birdseye.utils import Consumer
 
 DB_URI = os.environ.get('BIRDSEYE_DB',
                         'sqlite:///' + os.path.join(os.path.expanduser('~'),
                                                     '.birdseye.db'))
 
-if os.environ.get('BIRDSEYE_TESTING_IN_MEMORY'):
-    engine_kwargs = dict(connect_args={'check_same_thread': False},
-                         poolclass=StaticPool)
-else:
-    engine_kwargs = {}
-
-engine = create_engine(DB_URI, **engine_kwargs)
+engine = create_engine(DB_URI,
+                       connect_args={'check_same_thread': False},
+                       poolclass=StaticPool)
 
 Session = sessionmaker(bind=engine)
 session = Session()
-db_consumer = Consumer()
 
 
 class Base(object):

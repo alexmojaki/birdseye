@@ -2,6 +2,8 @@ import unittest
 import sys
 from collections import OrderedDict
 
+import re
+
 from birdseye.cheap_repr import basic_repr, register_repr, cheap_repr
 
 try:
@@ -35,16 +37,10 @@ class TestCheapRepr(unittest.TestCase):
     def assert_cheap_repr(self, x, expected_repr):
         self.assertEqual(cheap_repr(x), expected_repr)
 
-    def test_numpy_array(self):
-        import numpy
-        self.assert_usual_repr(numpy.array([1, 2, 3]))
-        self.assert_cheap_repr(numpy.array(range(9)),
-                               'array([0, 1, 2, 3, 4, 5, ...])')
-
     def test_registered_default_repr(self):
         x = FakeExpensiveReprClass()
         self.assertEqual(repr(x), 'bad')
-        self.assertRegex(cheap_repr(x), '<FakeExpensiveReprClass instance at 0x(.+)>')
+        self.assertTrue(re.match(r'<FakeExpensiveReprClass instance at 0x(.+)>', cheap_repr(x)))
 
     @requires_python_version(3.3)
     def test_chain_map(self):

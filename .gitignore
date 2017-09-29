@@ -2,3 +2,6 @@ dist
 TODO.txt
 __pycache__
 *.egg-info/
+.eggs/
+.tox/
+*.pyc

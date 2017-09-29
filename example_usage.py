@@ -111,7 +111,7 @@ def main():
     use_gen_2(g)
 
     lst = list(range(100))
-    original = lst.copy()
+    original = lst[:]
     shuffle(lst)
     assert lst != original
     assert quicksort(lst) == original

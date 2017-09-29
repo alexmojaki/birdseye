@@ -1,17 +1,18 @@
+from __future__ import print_function, division, absolute_import
+from future import standard_library
+from future.utils import iteritems
+
+standard_library.install_aliases()
 import inspect
 import warnings
 from array import array
 from collections import defaultdict, deque
 from importlib import import_module
 from itertools import islice
-from sys import version_info
 
-from birdseye.utils import safe_qualname, correct_type
+from birdseye.utils import safe_qualname, correct_type, PY2
 
 repr_registry = {}
-
-PY2 = version_info[0] == 2
-PY3 = not PY2
 
 
 def try_register_repr(module_name, class_name):
@@ -86,7 +87,7 @@ class Repr(object):
     def repr(self, x, level=None):
         if level is None:
             level = self.maxlevel
-        for cls in inspect.getmro(x.__class__):
+        for cls in inspect.getmro(correct_type(x)):
             if cls in supressed_classes:
                 return basic_repr(x)[:-1] + ' (expensive repr suppressed)>'
             func = repr_registry.get(cls)
@@ -105,19 +106,20 @@ class ReprHelper(object):
         self.level = level
         self.func = func
 
-    def repr_iterable(self, iterable, left, right, trail=''):
-        n = len(iterable)
-        if self.level <= 0 and n:
+    def repr_iterable(self, iterable, left, right, trail='', length=None):
+        if length is None:
+            length = len(iterable)
+        if self.level <= 0 and length:
             s = '...'
         else:
             newlevel = self.level - 1
             repr1 = self.repr_instance.repr
             max_parts = self.maxparts
             pieces = [repr1(elem, newlevel) for elem in islice(iterable, max_parts)]
-            if n > max_parts:
+            if length > max_parts:
                 pieces.append('...')
             s = ', '.join(pieces)
-            if n == 1 and trail:
+            if length == 1 and trail:
                 right = trail + right
         return left + s + right
 
@@ -246,8 +248,7 @@ def repr_ChainMap(x, helper):
 @maxparts(4)
 def repr_OrderedDict(x, helper):
     helper.level += 1
-    return helper.repr_iterable(x.items(),  # TODO iteritems (len!)
-                                type_name(x) + '(', ')')
+    return helper.repr_iterable(iteritems(x), type_name(x) + '(', ')', length=len(x))
 
 
 @try_register_repr('collections', 'Counter')

@@ -1,14 +1,23 @@
+from __future__ import print_function, division, absolute_import
+
+from future import standard_library
+
+standard_library.install_aliases()
+
 import ast
-import functools
 import inspect
 from collections import namedtuple
 from copy import deepcopy
-from functools import partial
+from functools import partial, update_wrapper
 from itertools import takewhile
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next
+from birdseye.utils import of_type, safe_next, PY3
 
 
 class TracedFile(object):
@@ -57,12 +66,14 @@ ExitCallInfo = namedtuple('ExitCallInfo', 'call_node return_node caller_frame cu
 
 
 class TreeTracerBase(object):
-    SPECIAL_COMPREHENSION_TYPES = (ast.ListComp, ast.DictComp, ast.SetComp)
+    SPECIAL_COMPREHENSION_TYPES = (ast.DictComp, ast.SetComp)
+    if PY3:
+        SPECIAL_COMPREHENSION_TYPES += (ast.ListComp,)
 
     def __init__(self):
         self.stack = {}
 
-    @functools.lru_cache()
+    @lru_cache()
     def compile(self, source, filename):
         return TracedFile(self, source, filename)
 
@@ -71,7 +82,7 @@ class TreeTracerBase(object):
         globs = globs or {}
         locs = locs or {}
         globs = dict(globs, **self._trace_methods_dict(traced_file))
-        exec(traced_file.code, globals=globs, locals=locs)
+        exec (traced_file.code, globs, locs)
 
     def _trace_methods_dict(self, traced_file):
         return {f.__name__: partial(f, traced_file)
@@ -106,10 +117,10 @@ class TreeTracerBase(object):
         new_func_code = code_options[0]
 
         # http://stackoverflow.com/a/13503277/2482744
-        # TODO python 2 methods
-        new_func = type(func)(new_func_code, func.__globals__, func.__name__, func.__defaults__, func.__closure__)
-        new_func = functools.update_wrapper(new_func, func)
-        new_func.__kwdefaults__ = func.__kwdefaults__
+        new_func = FunctionType(new_func_code, func.__globals__, func.__name__, func.__defaults__, func.__closure__)
+        new_func = update_wrapper(new_func, func)
+        if PY3:
+            new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
         new_func.traced_file = traced_file
         return new_func
 
@@ -195,7 +206,7 @@ class _NodeVisitor(ast.NodeTransformer):
             return self.visit_expr(node)
         if isinstance(node, ast.stmt) and not (isinstance(node, ast.ImportFrom) and node.module == "__future__"):
             return self.visit_stmt(node)
-        return super().generic_visit(node)
+        return super(_NodeVisitor, self).generic_visit(node)
 
     def visit_expr(self, node):
         """
@@ -206,8 +217,8 @@ class _NodeVisitor(ast.NodeTransformer):
             _before is function that signals the beginning of evaluation of e
         """
 
-        if isinstance(node, ast.Starred):
-            return super().generic_visit(node)
+        if isinstance(node, getattr(ast, 'Starred', ())):
+            return super(_NodeVisitor, self).generic_visit(node)
 
         before_marker = _create_simple_marker_call(node, TreeTracerBase._treetrace_hidden_before_expr)
         ast.copy_location(before_marker, node)
@@ -217,7 +228,7 @@ class _NodeVisitor(ast.NodeTransformer):
                           ctx=ast.Load()),
             args=[
                 before_marker,
-                super().generic_visit(node),
+                super(_NodeVisitor, self).generic_visit(node),
             ],
             keywords=[],
         )
@@ -227,18 +238,26 @@ class _NodeVisitor(ast.NodeTransformer):
         return after_marker
 
     def visit_stmt(self, node):
-        wrapped = ast.With(
-            items=[ast.withitem(
-                context_expr=_create_simple_marker_call(super().generic_visit(node),
-                                                        TreeTracerBase._treetrace_hidden_with_stmt))],
-            body=[node],
-        )
+        context_expr = _create_simple_marker_call(
+            super(_NodeVisitor, self).generic_visit(node),
+            TreeTracerBase._treetrace_hidden_with_stmt)
+
+        if PY3:
+            wrapped = ast.With(
+                items=[ast.withitem(context_expr=context_expr)],
+                body=[node],
+            )
+        else:
+            wrapped = ast.With(
+                context_expr=context_expr,
+                body=[node],
+            )
         ast.copy_location(wrapped, node)
         ast.fix_missing_locations(wrapped)
         return wrapped
 
 
-class _StmtContext:
+class _StmtContext(object):
     __slots__ = ('tracer', 'node', 'frame')
 
     def __init__(self, tracer, node, frame):
@@ -339,7 +358,7 @@ def loops(node):
                 result.extend(reversed(parent.generators))
 
             if node in parent.generators:
-                result.extend(reversed(list(takewhile(node.__ne__, parent.generators))))
+                result.extend(reversed(list(takewhile(lambda n: n != node, parent.generators))))
 
         elif isinstance(parent, ast.comprehension) and node in parent.ifs:
             result.append(parent)
@@ -348,3 +367,6 @@ def loops(node):
 
     result.reverse()
     return tuple(result)
+
+
+FunctionType = type(loops)
