@@ -3,7 +3,8 @@ from sys import version_info
 
 from setuptools import setup
 
-install_requires = ['flask-humanize',
+install_requires = ['Flask',
+                    'flask-humanize',
                     'sqlalchemy',
                     'asttokens',
                     'littleutils',
