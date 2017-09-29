@@ -1,6 +1,8 @@
 # Bird's Eye
 
-This is a WIP Python debugger which instruments the abstract syntax tree to record the value of expressions in a function call and lets you easily view them after the function exits. For example:
+[![Build Status](https://travis-ci.org/alexmojaki/birdseye.svg?branch=master)](https://travis-ci.org/alexmojaki/birdseye)
+
+This is a Python debugger which instruments the abstract syntax tree to record the value of expressions in a function call and lets you easily view them after the function exits. For example:
 
 ![Hovering over expressions](http://i.imgur.com/7tBGLgU.gif)
 
