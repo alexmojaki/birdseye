@@ -286,6 +286,9 @@ class BirdsEye(TreeTracerBase):
         return new_func
 
 
+eye = BirdsEye()
+
+
 def _deep_dict():
     return defaultdict(_deep_dict)
 

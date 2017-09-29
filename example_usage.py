@@ -1,9 +1,7 @@
 from itertools import islice
 from random import shuffle
 
-from birdseye import BirdsEye
-
-eye = BirdsEye()
+from birdseye import eye
 
 
 @eye

@@ -3,11 +3,10 @@ import unittest
 from collections import namedtuple
 
 from birdseye.utils import PY3, PY2
-from birdseye import BirdsEye
+from birdseye import eye
 from birdseye.db import Call, Session
 from bs4 import BeautifulSoup
 
-eye = BirdsEye()
 session = Session()
 
 
