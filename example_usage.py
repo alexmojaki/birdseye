@@ -29,6 +29,7 @@ class B(object):
         self.slot2 = 4
 
 
+@eye
 def complex_args(pos1, pos2, key1=3, key2=4, *args, **kwargs):
     pass
 
