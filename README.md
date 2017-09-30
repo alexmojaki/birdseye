@@ -42,7 +42,7 @@ def foo():
 The `eye` decorator *must* be applied before any other decorators, i.e. at the bottom of the list.
 
 1. Call the function.
-2. Run `birdseye` or `python -m birdseye` in a terminal.
+2. Run `birdseye` or `python -m birdseye` in a terminal to run the UI server. The command has a single optional argument which is the port number, default 7777.
 3. Open http://localhost:7777 in your browser.
 4. Click on:
     1. The name of the file containing your function

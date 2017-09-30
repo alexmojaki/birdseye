@@ -3,6 +3,7 @@ from future import standard_library
 
 standard_library.install_aliases()
 import os
+import sys
 
 from flask import Flask
 from flask.templating import render_template
@@ -72,7 +73,12 @@ def call_view(call_id):
 
 
 def main():
-    app.run(debug=True, port=7777)
+    try:
+        port = int(sys.argv[1])
+    except IndexError:
+        port = 7777
+
+    app.run(debug=True, port=port)
 
 
 if __name__ == '__main__':
