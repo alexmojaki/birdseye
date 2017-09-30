@@ -1,5 +1,7 @@
 # Bird's Eye
 
+[![Join the chat at https://gitter.im/python_birdseye/Lobby](https://badges.gitter.im/python_birdseye/Lobby.svg)](https://gitter.im/python_birdseye/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/alexmojaki/birdseye.svg?branch=master)](https://travis-ci.org/alexmojaki/birdseye) [![Supports Python versions 2.7, 3.5, and 3.6](https://img.shields.io/pypi/pyversions/birdseye.svg)](https://pypi.python.org/pypi/birdseye)
 
 This is a Python debugger which instruments the abstract syntax tree to record the value of expressions in a function call and lets you easily view them after the function exits. For example:
