@@ -71,13 +71,14 @@ def quicksort(lst):
 
 @eye
 def main():
-    print(factorial(5))
+    factorial(5)
 
     vals = []
     for i in range(100):
         vals.append([])
         for j in range(2 * i):
             vals[-1].append(i + j)
+            vals
 
     for i in range(6):
         try:

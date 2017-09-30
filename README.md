@@ -4,11 +4,11 @@
 
 This is a Python debugger which instruments the abstract syntax tree to record the value of expressions in a function call and lets you easily view them after the function exits. For example:
 
-![Hovering over expressions](http://i.imgur.com/7tBGLgU.gif)
+![Hovering over expressions](https://i.imgur.com/rtZEhHb.gif)
 
 Rather than stepping through lines, move back and forth through loop iterations and see how the values of selected expressions change:
 
-![Stepping through loop iterations](http://i.imgur.com/fZ0P8A1.gif)
+![Stepping through loop iterations](https://i.imgur.com/236Gj2E.gif)
 
 See which expressions raise exceptions, even if they're suppressed:
 
@@ -20,7 +20,7 @@ Expand concrete data structures and objects to see their contents. Lengths and d
 
 Calls are organised into functions (which are organised into files) and organised by time, letting you see what happens at a glance:
 
-![List of function calls](http://i.imgur.com/7PCQPeN.png)
+![List of function calls](https://i.imgur.com/5OrB76I.png)
 
 ## Installation
 
