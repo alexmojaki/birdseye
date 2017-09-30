@@ -392,7 +392,11 @@ def expand(val, level=3):
         for k, v in islice(iteritems(val), 10):
             result += [(cheap_repr(k), exp(v))]
     elif isinstance(val, Set):
-        for i, v in enumerate(islice(val, 6)):
+        if len(val) <= 8:
+            vals = val
+        else:
+            vals = islice(val, 6)
+        for i, v in enumerate(vals):
             result += [('<%s>' % i, exp(v))]
 
     d = getattr(val, '__dict__', None)

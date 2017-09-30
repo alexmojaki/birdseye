@@ -18,7 +18,7 @@
             {{ func.name }}
         </a>
     </h2>
-    <p><strong>Full path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
+    <p><strong>File: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
     <p><strong>Line: </strong>{{ func.lineno }}</p>
     {% if call.arguments_list %}
         <p><strong>Arguments:</strong></p>
