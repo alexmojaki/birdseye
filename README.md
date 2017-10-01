@@ -56,7 +56,7 @@ When viewing a function call, you can:
 - Hover over an item in the inspection panel and it will be highlighted in the code.
 - Drag the bar at the top of the inspection panel to resize it vertically.
 - Click on the arrows next to loops to step back and forth through iterations. Click on the number in the middle for a dropdown to jump straight to a particular iteration.
-- If the function call you're viewing includes a function call that was also traced, the expression where the call happens will have an arrow (![blue curved arrow](https://i.imgur.com/W7DfVeg.png)) in the corner which you can click on to go to that function call.
+- If the function call you're viewing includes a function call that was also traced, the expression where the call happens will have an arrow (![blue curved arrow](https://i.imgur.com/W7DfVeg.png)) in the corner which you can click on to go to that function call. This doesn't work when calling generator functions.
 
 ## Configuration
 
@@ -77,6 +77,8 @@ Every function call is recorded, and every nontrivial expression is traced. This
   - Nested data structures and objects can only be expanded by up to 3 levels. Inside loops, this is decreased.
 
 There is no API at the moment to collect more or less data. Suggestions are welcome as it's not obvious how to deal with the problem. But the idea of this tool is to be as quick and convenient as possible and to work for most cases. If in a particular situation you have to think carefully about how to use it, it may be better to use more conventional debugging methods.
+
+Asynchronous code is not supported.
 
 ## How it works
 
