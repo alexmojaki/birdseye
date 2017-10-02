@@ -39,7 +39,7 @@ from birdseye import eye
 def foo():
 ```
 
-The `eye` decorator *must* be applied before any other decorators, i.e. at the bottom of the list.
+**The `eye` decorator *must* be applied before any other decorators, i.e. at the bottom of the list.**
 
 1. Call the function.
 2. Run `birdseye` or `python -m birdseye` in a terminal to run the UI server. The command has a single optional argument which is the port number, default 7777.
