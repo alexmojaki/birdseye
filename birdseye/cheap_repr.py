@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from importlib import import_module
 from itertools import islice
 
-from birdseye.utils import safe_qualname, correct_type, PY2
+from birdseye.utils import safe_qualname, correct_type, PY2, PY3
 
 repr_registry = {}
 
@@ -204,9 +204,7 @@ def repr_dict(x, helper):
     return '{%s}' % (s,)
 
 
-@try_register_repr('__builtin__', 'unicode')
-@try_register_repr('builtins', 'bytes')
-@register_repr(str)
+@register_repr(str if PY3 else unicode)
 @maxparts(30)
 def repr_str(x, helper):
     return repr(helper.truncate(x))
