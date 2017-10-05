@@ -204,7 +204,8 @@ def repr_dict(x, helper):
     return '{%s}' % (s,)
 
 
-@register_repr(str if PY3 else unicode)
+@try_register_repr('__builtin__', 'unicode')
+@register_repr(str)
 @maxparts(30)
 def repr_str(x, helper):
     return repr(helper.truncate(x))
