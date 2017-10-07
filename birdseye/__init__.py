@@ -191,6 +191,12 @@ class BirdsEye(TreeTracerBase):
         session.commit()
 
     def __call__(self, func):
+        if inspect.isclass(func):
+            for name, meth in func.__dict__.items():
+                if inspect.ismethod(meth) or inspect.isfunction(meth):
+                    setattr(func, name, self.__call__(meth))
+            return func
+
         new_func = super(BirdsEye, self).__call__(func)
         code_info = self._code_infos.get(new_func.__code__)
         if code_info:
@@ -291,7 +297,6 @@ eye = BirdsEye()
 
 def _deep_dict():
     return defaultdict(_deep_dict)
-
 
 class IterationList(object):
     side_len = 3
