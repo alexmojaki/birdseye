@@ -299,6 +299,7 @@ eye = BirdsEye()
 def _deep_dict():
     return defaultdict(_deep_dict)
 
+
 class IterationList(object):
     side_len = 3
 
