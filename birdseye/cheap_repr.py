@@ -63,7 +63,7 @@ class ReprSupressedWarning(Warning):
 
 
 @register_repr(object)
-@maxparts(50)
+@maxparts(60)
 def repr_object(x, helper):
     try:
         s = repr(x)

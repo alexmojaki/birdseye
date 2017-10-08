@@ -1,6 +1,16 @@
 import json
+import re
 import unittest
+import weakref
 from collections import namedtuple
+
+import os
+
+import sys
+from littleutils import json_to_file, file_to_json
+
+from birdseye.cheap_repr import register_repr
+from tests import golden_script
 
 from birdseye.utils import PY3, PY2
 from birdseye import eye
@@ -74,7 +84,7 @@ def get_call_ids(func):
     return ['test_id_%s' % i for i in range(start_id, end_id)]
 
 
-CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data, types')
+CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
 def get_call_stuff(c_id):
@@ -83,13 +93,19 @@ def get_call_stuff(c_id):
     # <pre> makes it preserve whitespace
     soup = BeautifulSoup('<pre>' + call.function.html_body + '</pre>', 'html.parser')
 
-    call_data = json.loads(call.data)
+    call_data = normalise_call_data(call.data)
     func_data = json.loads(call.function.data)
-    types = dict((name, i) for i, name in enumerate(call_data['type_names']))
-    return CallStuff(call, soup, call_data, func_data, types)
+    return CallStuff(call, soup, call_data, func_data)
 
 
 def byteify(x):
+    """
+    This converts unicode objects to plain str so that the diffs in test failures
+    aren't filled with false differences where there's a u prefix.
+    """
+    if PY3:
+        return x
+
     if isinstance(x, dict):
         return dict((byteify(key), byteify(value)) for key, value in x.items())
     elif isinstance(x, list):
@@ -100,12 +116,55 @@ def byteify(x):
         return x
 
 
+def normalise_call_data(call_data):
+    """
+    Replace type indices with type names.
+    Sort non-numeric attributes and dict items inside expanded values.
+    Sort type_names.
+    :type call_data: str
+    :rtype: dict
+    """
+    data = byteify(json.loads(call_data))
+    types = data['type_names']
+
+    def fix(x):
+        if isinstance(x, dict):
+            return dict((key, fix(value)) for key, value in x.items())
+        elif isinstance(x, list):
+            result = [x[0]]
+            type_index = x[1]
+            if type_index == -1:
+                result.append(-1)
+            else:
+                result.append(types[type_index])
+
+            non_numeric = []
+            for y in x[2:]:
+                if isinstance(y, list):
+                    y = [y[0], fix(y[1])]
+                    if y[0].isdigit():
+                        result.append(y)
+                    else:
+                        non_numeric.append(y)
+                else:
+                    result.append(y)
+            non_numeric.sort()
+            result.extend(non_numeric)
+            return result
+        else:
+            return x
+
+    data['node_values'] = fix(data['node_values'], )
+    data['type_names'].sort()
+    return data
+
+
 class TestBirdsEye(unittest.TestCase):
     maxDiff = None
 
     def test_stuff(self):
         call_ids = get_call_ids(foo)
-        call, soup, call_data, func_data, t = get_call_stuff(call_ids[0])
+        call, soup, call_data, func_data = get_call_stuff(call_ids[0])
 
         node_values = call_data['node_values']
         actual_values = {'expr': {}, 'stmt': {}, 'loop': {}}
@@ -124,50 +183,50 @@ class TestBirdsEye(unittest.TestCase):
             if this_node_loops:
                 actual_node_loops[text] = [str(x) for x in this_node_loops]
 
-        bar_value = [repr(bar), t['function']]
+        bar_value = [repr(bar), 'function']
         if PY3:
-            bar_value.append(['__wrapped__', [repr(bar.__wrapped__), t['function']]])
+            bar_value.append(['__wrapped__', [repr(bar.__wrapped__), 'function']])
 
         expected_values = {
             'expr': {
-                'x': ['1', t['int']],
-                'y': ['2', t['int']],
-                'x + y': ['3', t['int']],
-                'x + y > 5': ['False', t['bool']],
-                'x * y': ['2', t['int']],
+                'x': ['1', 'int'],
+                'y': ['2', 'int'],
+                'x + y': ['3', 'int'],
+                'x + y > 5': ['False', 'bool'],
+                'x * y': ['2', 'int'],
                 '2 / 0': ['ZeroDivisionError: division by zero\n', -1],
                 'bar': bar_value,
-                'bar()': ['None', t['NoneType'], {'inner_call': call_ids[1]}],
-                'x + x': ['2', t['int']],
-                'x - y': ['-1', t['int']],
-                'i': {'0': {'0': ['1', t['int']],
-                            '1': ['1', t['int']]},
-                      '1': {'0': ['2', t['int']],
-                            '1': ['2', t['int']]}},
-                'i + j': {'0': {'0': ['4', t['int']],
-                                '1': ['5', t['int']]},
-                          '1': {'0': ['5', t['int']],
-                                '1': ['6', t['int']]}},
-                'j': {'0': {'0': ['3', t['int']],
-                            '1': ['4', t['int']]},
-                      '1': {'0': ['3', t['int']],
-                            '1': ['4', t['int']]}},
-                'k': {'0': {'0': ['5', t['int']]},
-                      '1': {'0': ['5', t['int']]}},
-                '[n for n in [1, 2]]': ['[1, 2]', t['list'],
+                'bar()': ['None', 'NoneType', {'inner_call': call_ids[1]}],
+                'x + x': ['2', 'int'],
+                'x - y': ['-1', 'int'],
+                'i': {'0': {'0': ['1', 'int'],
+                            '1': ['1', 'int']},
+                      '1': {'0': ['2', 'int'],
+                            '1': ['2', 'int']}},
+                'i + j': {'0': {'0': ['4', 'int'],
+                                '1': ['5', 'int']},
+                          '1': {'0': ['5', 'int'],
+                                '1': ['6', 'int']}},
+                'j': {'0': {'0': ['3', 'int'],
+                            '1': ['4', 'int']},
+                      '1': {'0': ['3', 'int'],
+                            '1': ['4', 'int']}},
+                'k': {'0': {'0': ['5', 'int']},
+                      '1': {'0': ['5', 'int']}},
+                '[n for n in [1, 2]]': ['[1, 2]', 'list',
                                         'len() = 2',
-                                        ['0', ['1', t['int']]],
-                                        ['1', ['2', t['int']]]],
-                'n': {'0': ['1', t['int']],
-                      '1': ['2', t['int']]},
+                                        ['0', ['1', 'int']],
+                                        ['1', ['2', 'int']]],
+                'n': {'0': ['1', 'int'],
+                      '1': ['2', 'int']},
                 "{'list': [n for n in [1, 2]]}":
-                    ["{'list': [1, 2]}", t['dict'],
+                    ["{'list': [1, 2]}", 'dict',
                      'len() = 1',
                      ["'list'",
-                      ['[1, 2]', t['list'],
+                      ['[1, 2]', 'list',
                        'len() = 2',
-                       ['0', ['1', t['int']]],
-                       ['1', ['2', t['int']]]]]],
+                       ['0', ['1', 'int']],
+                       ['1', ['2', 'int']]]]],
             },
             'stmt': {
                 'x = 1': True,
@@ -212,9 +271,7 @@ class TestBirdsEye(unittest.TestCase):
                 'for n in [1, 2]': True,
             }
         }
-        if PY2:
-            actual_values = byteify(actual_values)
-        self.assertEqual(actual_values, expected_values)
+        self.assertEqual(byteify(actual_values), expected_values)
 
         expected_node_loops = {
             'i + j': [loops['i'], loops['j']],
@@ -256,24 +313,51 @@ class TestBirdsEye(unittest.TestCase):
                  if isinstance(x, list) and
                  "'t': " in x[0]
                  ][0]
-        t = stuff.types
         self.assertEqual(
             value,
             ["{'t': [(7, 8, [...]), <A>, <B>, 'Hello World!H...d!Hello World!']}",
-             t['dict'], 'len() = 1',
+             'dict', 'len() = 1',
              ["'t'", ["[(7, 8, [9, 10]), <A>, <B>, 'Hello World!H...d!Hello World!']",
-                      t['list'], 'len() = 4',
+                      'list', 'len() = 4',
                       ['0', ['(7, 8, [9, 10])',
-                             t['tuple'], 'len() = 3',
-                             ['0', ['7', t['int']]],
-                             ['1', ['8', t['int']]],
-                             ['2', ['[9, 10]', t['list']]]]],
-                      ['1', ['<A>', t['NormalClass'],
-                             ['x', ['1', t['int']]]]],
-                      ['2', ['<B>', t['SlotClass'],
-                             ['slot1', ['3', t['int']]]]],
+                             'tuple', 'len() = 3',
+                             ['0', ['7', 'int']],
+                             ['1', ['8', 'int']],
+                             ['2', ['[9, 10]', 'list']]]],
+                      ['1', ['<A>', 'NormalClass',
+                             ['x', ['1', 'int']]]],
+                      ['2', ['<B>', 'SlotClass',
+                             ['slot1', ['3', 'int']]]],
                       ['3', ["'Hello World!H...d!Hello World!'",
-                             t['str'], 'len() = 600']]]]])
+                             'str', 'len() = 600']]]]])
+
+    def test_against_files(self):
+
+        @register_repr(weakref.ref)
+        def repr_weakref(*_):
+            return '<weakref>'
+
+        ids = get_call_ids(golden_script.main)
+        calls = [session.query(Call).filter_by(id=c_id).one()
+                 for c_id in ids]
+
+        def normalise_addresses(string):
+            return re.sub(r'at 0x\w+>', 'at 0xABC>', string)
+
+        data = [dict(
+            arguments=byteify(json.loads(normalise_addresses(call.arguments))),
+            return_value=byteify(normalise_addresses(call.return_value)),
+            exception=call.exception,
+            traceback=call.traceback,
+            data=normalise_call_data(normalise_addresses(call.data)),
+        ) for call in calls]
+        version = re.match(r'\d\.\d', sys.version).group()
+        path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
+
+        if 1:  # change to 0 to write new data instead of reading and testing
+            self.assertEqual(data, byteify(file_to_json(path)))
+        else:
+            json_to_file(data, path)
 
     def test_decorate_class(self):
         def fooz(_):
