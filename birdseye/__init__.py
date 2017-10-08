@@ -24,7 +24,7 @@ from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile
 from birdseye import tracer
-from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2
+from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2, one_or_none
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file')
 
@@ -283,7 +283,7 @@ class BirdsEye(TreeTracerBase):
                            sort_keys=True,
                        ))
 
-        db_func = session.query(Function).filter_by(**db_args).one_or_none()
+        db_func = one_or_none(session.query(Function).filter_by(**db_args))
         if not db_func:
             db_func = Function(**db_args)
             session.add(db_func)

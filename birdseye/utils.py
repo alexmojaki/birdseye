@@ -141,3 +141,16 @@ def safe_next(it):
         return next(it)
     except StopIteration as e:
         raise_from(RuntimeError, e)
+
+
+def one_or_none(expression):
+    """Performs a one_or_none on a sqlalchemy expression."""
+    if hasattr(expression, 'one_or_none'):
+        return expression.one_or_none()
+    result = expression.all()
+    if len(result) == 0:
+        return None
+    elif len(result) == 1:
+        return result[0]
+    else:
+        raise Exception("There is more than one item returned for the supplied filter")
