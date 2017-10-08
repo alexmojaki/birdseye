@@ -52,17 +52,8 @@ def use_gen_2(g):
         dummy(y)
 
 
-class MyDict(Mapping):
-    def __len__(self):
-        return 3
-
-    @eye
-    def __iter__(self):
-        yield (7, 8, 9)
-
-    @eye
-    def __getitem__(self, key):
-        return key
+class MyClass(object):
+    pass
 
 
 @eye
@@ -82,8 +73,9 @@ def main():
         except ZeroDivisionError:
             pass
 
-    dummy([[x + y for x in range(100)] for y in range(100)])
-    len(MyDict())
+    c = MyClass()
+    c.list = [[x + y for x in range(100)] for y in range(100)]
+    dummy(c)
 
     complex_args(list(range(1000)),
                  "hello",
