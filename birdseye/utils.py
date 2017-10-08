@@ -144,7 +144,7 @@ def safe_next(it):
 
 
 def one_or_none(expression):
-    """Performs a one_or_none on a sqlalchemy"""
+    """Performs a one_or_none on a sqlalchemy expression."""
     if hasattr(expression, 'one_or_none'):
         return expression.one_or_none()
     result = expression.all()
