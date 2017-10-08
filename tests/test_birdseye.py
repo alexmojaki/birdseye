@@ -275,6 +275,26 @@ class TestBirdsEye(unittest.TestCase):
                       ['3', ["'Hello World!H...d!Hello World!'",
                              t['str'], 'len() = 600']]]]])
 
+    def test_decorate_class(self):
+        def fooz(self):
+            return 'method outside class'
+
+        @eye
+        class Testclass(object):
+
+            call_meth = fooz
+            def barz(self):
+                return 'class decorator test'
+
+        def get_stuff(method):
+            return get_call_stuff(get_call_ids(method)[0]).call
+
+        x = Testclass()
+        call = get_stuff(x.barz)
+        self.assertEqual("'class decorator test'", call.return_value)
+        
+        call = get_stuff(x.call_meth)
+        self.assertEqual("'method outside class'", call.return_value)
 
 if __name__ == '__main__':
     unittest.main()
