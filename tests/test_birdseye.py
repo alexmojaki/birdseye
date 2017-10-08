@@ -359,6 +359,26 @@ class TestBirdsEye(unittest.TestCase):
         else:
             json_to_file(data, path)
 
+    def test_decorate_class(self):
+        def fooz(_):
+            return 'method outside class'
+
+        @eye
+        class Testclass(object):
+
+            call_meth = fooz
+
+            def barz(self):
+                return 'class decorator test'
+
+        def check(method, expected_value):
+            call = get_call_stuff(get_call_ids(method)[0]).call
+            self.assertEqual(expected_value, call.return_value)
+
+        x = Testclass()
+        check(x.barz, "'class decorator test'")
+        check(x.call_meth, "'method outside class'")
+
 
 if __name__ == '__main__':
     unittest.main()
