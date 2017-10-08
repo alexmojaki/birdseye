@@ -289,12 +289,16 @@ class TestBirdsEye(unittest.TestCase):
         def get_stuff(method):
             return get_call_stuff(get_call_ids(method)[0]).call
 
+        def check(expected_value):
+            self.assertEqual(expected_value, call.return_value)
+
+
         x = Testclass()
         call = get_stuff(x.barz)
-        self.assertEqual("'class decorator test'", call.return_value)
+        check("'class decorator test'")
         
         call = get_stuff(x.call_meth)
-        self.assertEqual("'method outside class'", call.return_value)
+        check("'method outside class'")
 
 if __name__ == '__main__':
     unittest.main()
