@@ -228,8 +228,14 @@ class BirdsEye(TreeTracerBase):
             else:
                 continue
             assert isinstance(node, ast.AST)
+            
+            # In particular FormattedValue is missing this
+            if not hasattr(node, 'first_token'):
+                continue
+            
             if not start_lineno <= node.first_token.start[0] <= end_lineno:
                 continue
+
             start, end = traced_file.tokens.get_text_range(node)
             if start == end == 0:
                 continue
