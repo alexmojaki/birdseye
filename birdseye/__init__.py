@@ -191,6 +191,13 @@ class BirdsEye(TreeTracerBase):
         session.commit()
 
     def __call__(self, func):
+        if inspect.isclass(func):
+            cls = func
+            for name, meth in iteritems(cls.__dict__):
+                if inspect.ismethod(meth) or inspect.isfunction(meth):
+                    setattr(cls, name, self.__call__(meth))
+            return cls
+
         new_func = super(BirdsEye, self).__call__(func)
         code_info = self._code_infos.get(new_func.__code__)
         if code_info:
