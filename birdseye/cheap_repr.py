@@ -93,7 +93,8 @@ class Repr(object):
             func = repr_registry.get(cls)
             if func:
                 return func(x, ReprHelper(self, level, func))
-        raise AssertionError
+        return repr(x)
+
 
 
 aRepr = Repr()
