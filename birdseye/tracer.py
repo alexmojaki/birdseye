@@ -93,6 +93,11 @@ class TreeTracerBase(object):
                 ]}
 
     def __call__(self, func):
+        try:
+            if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
+                raise ValueError('You cannot trace async functions')
+        except AttributeError:
+            pass
         filename = inspect.getsourcefile(func)
         source = file_to_string(filename)
         traced_file = self.compile(source, filename)

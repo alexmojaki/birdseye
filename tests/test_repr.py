@@ -1,25 +1,9 @@
+import re
 import unittest
-import sys
 from collections import OrderedDict
 
-import re
-
 from birdseye.cheap_repr import basic_repr, register_repr, cheap_repr
-
-try:
-    from unittest import skipUnless
-except ImportError:
-    def skipUnless(condition, _):
-        if condition:
-            return lambda x: x
-        else:
-            return lambda x: None
-
-
-def requires_python_version(version):
-    version_tuple = tuple(map(int, str(version).split('.')))
-    return skipUnless(sys.version_info >= version_tuple,
-                      'Requires python version %s' % version)
+from tests.utils import requires_python_version
 
 
 class FakeExpensiveReprClass:
