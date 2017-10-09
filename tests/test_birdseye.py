@@ -350,6 +350,12 @@ class TestBirdsEye(unittest.TestCase):
             exception=call.exception,
             traceback=call.traceback,
             data=normalise_call_data(normalise_addresses(call.data)),
+            function=dict(
+                name=call.function.name,
+                html_body=call.function.html_body,
+                lineno=call.function.lineno,
+                data=json.loads(call.function.data),
+            ),
         ) for call in calls]
         version = re.match(r'\d\.\d', sys.version).group()
         path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
