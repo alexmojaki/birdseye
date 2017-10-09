@@ -351,10 +351,10 @@ class TestBirdsEye(unittest.TestCase):
             traceback=call.traceback,
             data=normalise_call_data(normalise_addresses(call.data)),
             function=dict(
-                name=call.function.name,
-                html_body=call.function.html_body,
+                name=byteify(call.function.name),
+                html_body=byteify(call.function.html_body),
                 lineno=call.function.lineno,
-                data=json.loads(call.function.data),
+                data=byteify(json.loads(call.function.data)),
             ),
         ) for call in calls]
         version = re.match(r'\d\.\d', sys.version).group()
