@@ -1,4 +1,4 @@
-import itertools
+from itertools import islice
 
 from birdseye import eye
 
@@ -36,7 +36,7 @@ def gen():
 
 @eye
 def use_gen_1(g):
-    for x in itertools.islice(g, 3):
+    for x in islice(g, 3):
         dummy(x)
 
 
