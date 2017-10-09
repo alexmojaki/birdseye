@@ -1,6 +1,5 @@
-import unittest
-
 import sys
+import unittest
 
 from tests.utils import requires_python_version
 
@@ -10,14 +9,15 @@ class TestTreeTrace(unittest.TestCase):
 
     @requires_python_version(3.5)
     def test_async_forbidden(self):
-        def check(body):
-            with self.assertRaises(ValueError):
-                exec("""
-from birdseye.tracer import TreeTracerBase
-@TreeTracerBase()
-async def f(): """ + body)
-
-        check('pass')
+        from birdseye.tracer import TreeTracerBase
+        tracer = TreeTracerBase()
+        with self.assertRaises(ValueError):
+            exec("""
+@tracer
+async def f(): pass""")
 
         if sys.version_info >= (3, 6):
-            check('yield 1')
+            with self.assertRaises(ValueError):
+                exec("""
+@tracer
+async def f(): yield 1""")
