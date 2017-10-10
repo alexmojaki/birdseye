@@ -2,6 +2,7 @@ from __future__ import print_function, division, absolute_import
 from future import standard_library
 
 standard_library.install_aliases()
+import ntpath
 import os
 import sys
 
@@ -29,7 +30,8 @@ app.url_map.converters['file'] = FileConverter
 def index():
     files = sorted(all_file_paths())
     prefix = os.path.commonprefix(files)
-    files = zip(files, [strip_required_prefix(f, prefix) or path_leaf(f)
+    correctedPrefix = ntpath.split(prefix)[0]
+    files = zip(files, [strip_required_prefix(f, correctedPrefix) or path_leaf(f)
                         for f in files])
     return render_template('index.html',
                            files=files)
