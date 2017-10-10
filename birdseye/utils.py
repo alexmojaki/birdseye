@@ -32,7 +32,11 @@ def all_file_paths():
 
 
 def short_path(path):
-    return strip_required_prefix(path, os.path.commonprefix(all_file_paths())) or path_leaf(path)
+    prefix = os.path.commonprefix(all_file_paths())
+    # Remove everything after final path separator, to exclude filenames
+    # and incomplete dir names.
+    correctedPrefix = ntpath.split(prefix)[0]
+    return strip_required_prefix(path, correctedPrefix) or path_leaf(path)
 
 
 def safe_qualname(obj):
