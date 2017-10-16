@@ -34,6 +34,7 @@ setup(name='birdseye',
       install_requires=install_requires,
       tests_require=[
           'bs4',
+          'selenium',
       ],
       test_suite='tests',
       entry_points={

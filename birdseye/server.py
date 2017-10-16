@@ -5,7 +5,7 @@ standard_library.install_aliases()
 import os
 import sys
 
-from flask import Flask
+from flask import Flask, request
 from flask.templating import render_template
 from flask_humanize import Humanize
 from littleutils import strip_required_prefix
@@ -70,6 +70,15 @@ def call_view(call_id):
     return render_template('call.html',
                            call=call,
                            func=func)
+
+
+@app.route('/kill', methods=['POST'])
+def kill():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return 'Server shutting down...'
 
 
 def main():
