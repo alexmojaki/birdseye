@@ -1,5 +1,6 @@
 from time import sleep
 
+import requests
 from birdseye import eye
 from future.standard_library import install_aliases
 from littleutils import only
@@ -7,7 +8,6 @@ from selenium.webdriver import ActionChains
 
 install_aliases()
 
-from urllib.request import urlopen, Request
 import unittest
 from threading import Thread
 
@@ -128,5 +128,5 @@ class TestInterface(unittest.TestCase):
                          'Call to function: bar')
 
     def tearDown(self):
-        self.assertEqual(urlopen(Request('http://localhost:5000/kill', '')).read(),
+        self.assertEqual(requests.post('http://localhost:5000/kill').text,
                          'Server shutting down...')
