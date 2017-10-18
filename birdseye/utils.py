@@ -31,12 +31,28 @@ def all_file_paths():
     return [f[0] for f in Session().query(Function.file).distinct()]
 
 
-def short_path(path):
-    prefix = os.path.commonprefix(all_file_paths())
-    # Remove everything after final path separator, to exclude filenames
-    # and incomplete dir names.
-    correctedPrefix = ntpath.split(prefix)[0]
-    return strip_required_prefix(path, correctedPrefix) or path_leaf(path)
+def common_ancestor(paths):
+    """
+    Returns a path to a directory that contains all the given absolute paths
+    """
+    prefix = os.path.commonprefix(paths)
+
+    # Ensure that the prefix doesn't end in part of the name of a file/directory
+    prefix = ntpath.split(prefix)[0]
+
+    # Ensure that it ends with a slash
+    first_char_after = paths[0][len(prefix)]
+    if first_char_after in r'\/':
+        prefix += first_char_after
+
+    return prefix
+
+
+def short_path(path, all_paths=None):
+    prefix = common_ancestor(all_paths or all_file_paths())
+    if prefix in r'\/':
+        prefix = ''
+    return strip_required_prefix(path, prefix) or path_leaf(path)
 
 
 def safe_qualname(obj):
