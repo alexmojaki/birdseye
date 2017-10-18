@@ -39,8 +39,9 @@ class TestInterface(unittest.TestCase):
         self.driver = webdriver.PhantomJS(service_args=['--webdriver-loglevel=DEBUG'])
         self.driver.set_window_size(1400, 1000)
         self.driver.implicitly_wait(0.3)
-        Thread(target=app.run).start()
-        sleep(1)
+        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
+            Thread(target=lambda: app.run(port=7777)).start()
+            sleep(1)
 
     def test(self):
         try:
@@ -54,7 +55,7 @@ class TestInterface(unittest.TestCase):
         driver = self.driver
 
         # Navigate to function call
-        driver.get('http://localhost:5000/')
+        driver.get('http://localhost:7777/')
         driver.find_element_by_partial_link_text(os.path.basename(__file__)).click()
         driver.find_element_by_link_text('foo').click()
         driver.find_element_by_css_selector('table a').click()
@@ -128,5 +129,6 @@ class TestInterface(unittest.TestCase):
                          'Call to function: bar')
 
     def tearDown(self):
-        self.assertEqual(requests.post('http://localhost:5000/kill').text,
-                         'Server shutting down...')
+        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
+            self.assertEqual(requests.post('http://localhost:7777/kill').text,
+                             'Server shutting down...')

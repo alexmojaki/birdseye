@@ -4,6 +4,6 @@ python:
   - 2.7
   - 3.5
   - 3.6
-install: pip install Flask
+install: pip install Flask gunicorn
 script:
-  - python setup.py test
+  - travis_test.sh
