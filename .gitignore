@@ -7,3 +7,4 @@ __pycache__
 *.pyc
 error_screenshot.png
 ghostdriver.log
+screen_*.png
