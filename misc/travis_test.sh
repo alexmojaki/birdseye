@@ -2,6 +2,8 @@
 
 set -eux
 
+pip install -e .
+
 rm ~/.birdseye_test.db || true
 
 export BIRDSEYE_SERVER_RUNNING=true
