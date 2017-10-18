@@ -15,8 +15,8 @@ if version_info[0] == 2:
     install_requires += ['backports.functools_lru_cache']
 
 setup(name='birdseye',
-      version='0.1.8',
-      description='Python debugger using the AST',
+      version='0.1.10',
+      description='Quick, convenient, expression-centric, graphical Python debugger using the AST',
       classifiers=[
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python',

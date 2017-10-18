@@ -24,7 +24,7 @@ from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile
 from birdseye import tracer
-from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2
+from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2, one_or_none
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file')
 
@@ -191,6 +191,13 @@ class BirdsEye(TreeTracerBase):
         session.commit()
 
     def __call__(self, func):
+        if inspect.isclass(func):
+            cls = func
+            for name, meth in iteritems(cls.__dict__):
+                if inspect.ismethod(meth) or inspect.isfunction(meth):
+                    setattr(cls, name, self.__call__(meth))
+            return cls
+
         new_func = super(BirdsEye, self).__call__(func)
         code_info = self._code_infos.get(new_func.__code__)
         if code_info:
@@ -221,8 +228,14 @@ class BirdsEye(TreeTracerBase):
             else:
                 continue
             assert isinstance(node, ast.AST)
+            
+            # In particular FormattedValue is missing this
+            if not hasattr(node, 'first_token'):
+                continue
+            
             if not start_lineno <= node.first_token.start[0] <= end_lineno:
                 continue
+
             start, end = traced_file.tokens.get_text_range(node)
             if start == end == 0:
                 continue
@@ -276,7 +289,7 @@ class BirdsEye(TreeTracerBase):
                            sort_keys=True,
                        ))
 
-        db_func = session.query(Function).filter_by(**db_args).one_or_none()
+        db_func = one_or_none(session.query(Function).filter_by(**db_args))
         if not db_func:
             db_func = Function(**db_args)
             session.add(db_func)

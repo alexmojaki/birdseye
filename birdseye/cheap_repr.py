@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from importlib import import_module
 from itertools import islice
 
-from birdseye.utils import safe_qualname, correct_type, PY2
+from birdseye.utils import safe_qualname, correct_type, PY2, PY3
 
 repr_registry = {}
 
@@ -63,7 +63,7 @@ class ReprSupressedWarning(Warning):
 
 
 @register_repr(object)
-@maxparts(50)
+@maxparts(60)
 def repr_object(x, helper):
     try:
         s = repr(x)
@@ -93,7 +93,8 @@ class Repr(object):
             func = repr_registry.get(cls)
             if func:
                 return func(x, ReprHelper(self, level, func))
-        raise AssertionError
+        return repr(x)
+
 
 
 aRepr = Repr()
@@ -205,7 +206,6 @@ def repr_dict(x, helper):
 
 
 @try_register_repr('__builtin__', 'unicode')
-@try_register_repr('builtins', 'bytes')
 @register_repr(str)
 @maxparts(30)
 def repr_str(x, helper):
