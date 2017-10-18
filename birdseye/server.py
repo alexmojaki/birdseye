@@ -1,18 +1,17 @@
 from __future__ import print_function, division, absolute_import
+
 from future import standard_library
 
 standard_library.install_aliases()
-import os
 import sys
 
 from flask import Flask
 from flask.templating import render_template
 from flask_humanize import Humanize
-from littleutils import strip_required_prefix
 from werkzeug.routing import PathConverter
 
 from birdseye.db import Call, Function, Session
-from birdseye.utils import path_leaf, all_file_paths, short_path
+from birdseye.utils import all_file_paths, short_path
 
 app = Flask('birdseye')
 Humanize(app)
@@ -28,9 +27,7 @@ app.url_map.converters['file'] = FileConverter
 @app.route('/')
 def index():
     files = sorted(all_file_paths())
-    prefix = os.path.commonprefix(files)
-    files = zip(files, [strip_required_prefix(f, prefix) or path_leaf(f)
-                        for f in files])
+    files = zip(files, [short_path(f, files) for f in files])
     return render_template('index.html',
                            files=files)
 
