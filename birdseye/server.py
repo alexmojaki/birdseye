@@ -27,6 +27,7 @@ app.url_map.converters['file'] = FileConverter
 @app.route('/')
 def index():
     files = sorted(all_file_paths())
+    print('index:', files)
     files = zip(files, [short_path(f, files) for f in files])
     return render_template('index.html',
                            files=files)

@@ -53,7 +53,7 @@ class TestInterface(unittest.TestCase):
     def _do_test(self):
         foo()
         sleep(1)  # give server time to see call in db
-        print(all_file_paths())
+        print('test:', all_file_paths())
         driver = self.driver
 
         # Navigate to function call
