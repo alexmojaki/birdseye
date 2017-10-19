@@ -2,6 +2,7 @@ from time import sleep
 
 import requests
 from birdseye import eye
+from birdseye.utils import all_file_paths
 from future.standard_library import install_aliases
 from littleutils import only
 from selenium.webdriver import ActionChains
@@ -52,6 +53,7 @@ class TestInterface(unittest.TestCase):
     def _do_test(self):
         foo()
         sleep(1)  # give server time to see call in db
+        print(all_file_paths())
         driver = self.driver
 
         # Navigate to function call
