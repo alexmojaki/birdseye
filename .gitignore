@@ -5,3 +5,6 @@ __pycache__
 .eggs/
 .tox/
 *.pyc
+error_screenshot.png
+ghostdriver.log
+screen_*.png
