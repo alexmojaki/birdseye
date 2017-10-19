@@ -52,13 +52,11 @@ class TestInterface(unittest.TestCase):
 
     def _do_test(self):
         foo()
-        sleep(1)  # give server time to see call in db
-        print('test:', all_file_paths())
         driver = self.driver
 
         # Navigate to function call
         driver.get('http://localhost:7777/')
-        driver.find_element_by_partial_link_text(os.path.basename(__file__)).click()
+        driver.find_element_by_partial_link_text('test_interface').click()
         driver.find_element_by_link_text('foo').click()
         driver.find_element_by_css_selector('table a').click()
 

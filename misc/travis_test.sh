@@ -4,6 +4,8 @@ set -eux
 
 pip install -e .
 
+rm ~/.birdseye_test.db || true
+
 export BIRDSEYE_SERVER_RUNNING=true
 export BIRDSEYE_DB=sqlite:///$HOME/.birdseye_test.db
 gunicorn -b 127.0.0.1:7777 birdseye.server:app &
