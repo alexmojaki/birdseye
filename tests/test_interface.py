@@ -41,7 +41,6 @@ class TestInterface(unittest.TestCase):
         self.driver.implicitly_wait(0.5)
         if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
             Thread(target=lambda: app.run(port=7777)).start()
-            sleep(1)
 
     def test(self):
         try:
@@ -52,6 +51,7 @@ class TestInterface(unittest.TestCase):
 
     def _do_test(self):
         foo()
+        sleep(1)  # give server time to see call in db
         driver = self.driver
 
         # Navigate to function call
