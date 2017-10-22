@@ -12,7 +12,8 @@ install_requires = ['Flask',
                     'future']
 
 if version_info[0] == 2:
-    install_requires += ['backports.functools_lru_cache']
+    install_requires += ['backports.functools_lru_cache',
+                         'typing']
 
 setup(name='birdseye',
       version='0.1.10',

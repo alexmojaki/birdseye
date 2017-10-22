@@ -12,26 +12,48 @@ import types
 from queue import Queue
 from threading import Thread
 from sys import version_info
+from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Dict
+from types import FunctionType
+
+try:
+    from typing import Type
+except ImportError:
+    Type = type
+
+try:
+    from typing import Deque
+except ImportError:
+    from collections import deque as Deque
 
 from littleutils import strip_required_prefix
 from qualname import qualname
 
 PY2 = version_info.major == 2
 PY3 = not PY2
+T = TypeVar('T')
+RT = TypeVar('RT')
+
+if PY2:
+    Text = unicode
+else:
+    Text = str
 
 
 def path_leaf(path):
+    # type: (str) -> str
     # http://stackoverflow.com/a/8384788/2482744
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
 
 
 def all_file_paths():
+    # type: () -> List[str]
     from birdseye.db import Function, Session
     return [f[0] for f in Session().query(Function.file).distinct()]
 
 
 def common_ancestor(paths):
+    # type: (List[str]) -> str
     """
     Returns a path to a directory that contains all the given absolute paths
     """
@@ -49,6 +71,7 @@ def common_ancestor(paths):
 
 
 def short_path(path, all_paths=None):
+    # type: (str, List[str]) -> str
     prefix = common_ancestor(all_paths or all_file_paths())
     if prefix in r'\/':
         prefix = ''
@@ -56,21 +79,23 @@ def short_path(path, all_paths=None):
 
 
 def safe_qualname(obj):
-    result = safe_qualname._cache.get(obj)
+    # type: (Union[Type, FunctionType]) -> str
+    result = _safe_qualname_cache.get(obj)
     if not result:
         try:
             result = qualname(obj)
         except AttributeError:
             result = obj.__name__
         if '<locals>' not in result:
-            safe_qualname._cache[obj] = result
+            _safe_qualname_cache[obj] = result
     return result
 
 
-safe_qualname._cache = {}
+_safe_qualname_cache = {}  # type: Dict[Union[Type, FunctionType], str]
 
 
 def correct_type(obj):
+    # type: (Any) -> type
     # TODO handle case where __class__ has been assigned
     t = type(obj)
     if t is getattr(types, 'InstanceType', None):
@@ -95,6 +120,7 @@ def iter_get(it, n):
 
 
 def exception_string(exc):
+    # type: (BaseException) -> Text
     assert isinstance(exc, BaseException)
     return ''.join(traceback.format_exception_only(type(exc), exc))
 
@@ -150,10 +176,12 @@ dummy_namespace = SimpleNamespace()
 
 
 def of_type(type_or_tuple, iterable):
+    # type: (Union[type, Tuple[Union[type, tuple], ...]], Iterable[Any]) -> Iterator[Any]
     return (x for x in iterable if isinstance(x, type_or_tuple))
 
 
 def safe_next(it):
+    # type: (Iterator[T]) -> T
     """
     next() can raise a StopIteration which can cause strange bugs inside generators.
     """
@@ -161,6 +189,7 @@ def safe_next(it):
         return next(it)
     except StopIteration as e:
         raise_from(RuntimeError, e)
+        raise  # isn't reached
 
 
 def one_or_none(expression):
