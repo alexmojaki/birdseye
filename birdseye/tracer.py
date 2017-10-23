@@ -10,7 +10,7 @@ from collections import namedtuple
 from copy import deepcopy
 from functools import partial, update_wrapper
 from itertools import takewhile
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast
 from types import FrameType, TracebackType, CodeType, FunctionType
 
 try:
@@ -153,14 +153,14 @@ class TreeTracerBase(object):
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
         node = traced_file.nodes[_tree_index]
-        assert isinstance(node, ast.stmt)
+        node = cast(ast.stmt, node)
         frame = inspect.currentframe().f_back  # type: FrameType
         return _StmtContext(self, node, frame)
 
     def _treetrace_hidden_before_expr(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> ast.expr
         node = traced_file.nodes[_tree_index]
-        assert isinstance(node, ast.expr)
+        node = cast(ast.expr, node)
         frame = inspect.currentframe().f_back  # type: FrameType
 
         frame_info = self.stack.get(frame)
