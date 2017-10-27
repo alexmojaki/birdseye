@@ -10,6 +10,8 @@ from collections import namedtuple
 from copy import deepcopy
 from functools import partial, update_wrapper
 from itertools import takewhile
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast
+from types import FrameType, TracebackType, CodeType, FunctionType
 
 try:
     from functools import lru_cache
@@ -17,16 +19,19 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3
+from birdseye.utils import of_type, safe_next, PY3, T, Type
 
 
 class TracedFile(object):
     def __init__(self, tracer, source, filename):
-        root = ast.parse(source, filename)
+        # type: (TreeTracerBase, str, str) -> None
+        root = ast.parse(source, filename)  # type: ast.Module
+
+        self.nodes = []  # type: List[ast.AST]
 
         def set_basic_node_attributes():
-            self.nodes = []
-            for node in ast.walk(root):
+            self.nodes = []  # type: List[ast.AST]
+            for node in ast.walk(root):  # type: ast.AST
                 for child in ast.iter_child_nodes(node):
                     child.parent = node
                 node.traced_file = self
@@ -44,7 +49,7 @@ class TracedFile(object):
         new_root = deepcopy(root)
         new_root = _NodeVisitor().visit(new_root)
 
-        self.code = compile(new_root, filename, "exec")
+        self.code = compile(new_root, filename, "exec")  # type: CodeType
         self.root = root
         self.tracer = tracer
         self.source = source
@@ -53,31 +58,43 @@ class TracedFile(object):
 
 class FrameInfo(object):
     def __init__(self):
-        self.statement = None
-        self.expression_stack = []
-        self.expression_values = {}
-        self.return_node = None
-        self.comprehension_frames = {}
+        self.statement = None  # type: Optional[ast.stmt]
+        self.expression_stack = []  # type: List[ast.expr]
+        self.expression_values = {}  # type: Dict[ast.expr, Any]
+        self.return_node = None  # type: Optional[ast.Return]
+        self.comprehension_frames = {}  # type: Dict[ast.expr, FrameType]
 
 
-EnterCallInfo = namedtuple('EnterCallInfo', 'call_node enter_node caller_frame current_frame')
-ExitCallInfo = namedtuple('ExitCallInfo', 'call_node return_node caller_frame current_frame '
-                                          'return_value exc_value exc_tb')
+EnterCallInfo = NamedTuple('EnterCallInfo', [('call_node', Optional[ast.expr]),
+                                             ('enter_node', ast.AST),
+                                             ('caller_frame', FrameType),
+                                             ('current_frame', FrameType)])
+ExitCallInfo = NamedTuple('ExitCallInfo', [('call_node', Optional[ast.expr]),
+                                           ('return_node', Optional[ast.Return]),
+                                           ('caller_frame', FrameType),
+                                           ('current_frame', FrameType),
+                                           ('return_value', Any),
+                                           ('exc_value', Optional[Exception]),
+                                           ('exc_tb', Optional[TracebackType])])
+
+ChangeValue = namedtuple('ChangeValue', 'value')
 
 
 class TreeTracerBase(object):
-    SPECIAL_COMPREHENSION_TYPES = (ast.DictComp, ast.SetComp)
+    SPECIAL_COMPREHENSION_TYPES = (ast.DictComp, ast.SetComp)  # type: Tuple[Type[ast.expr], ...]
     if PY3:
         SPECIAL_COMPREHENSION_TYPES += (ast.ListComp,)
 
     def __init__(self):
-        self.stack = {}
+        self.stack = {}  # type: Dict[FrameType, FrameInfo]
 
     @lru_cache()
     def compile(self, source, filename):
+        # type: (str, str) -> TracedFile
         return TracedFile(self, source, filename)
 
     def exec_string(self, source, filename, globs=None, locs=None):
+        # type: (str, str, dict, dict) -> None
         traced_file = self.compile(source, filename)
         globs = globs or {}
         locs = locs or {}
@@ -85,6 +102,7 @@ class TreeTracerBase(object):
         exec (traced_file.code, globs, locs)
 
     def _trace_methods_dict(self, traced_file):
+        # type: (TracedFile) -> Dict[str, Callable]
         return {f.__name__: partial(f, traced_file)
                 for f in [
                     self._treetrace_hidden_with_stmt,
@@ -93,20 +111,22 @@ class TreeTracerBase(object):
                 ]}
 
     def __call__(self, func):
+        # type: (FunctionType) -> FunctionType
         try:
             if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
                 raise ValueError('You cannot trace async functions')
         except AttributeError:
             pass
-        filename = inspect.getsourcefile(func)
+        filename = inspect.getsourcefile(func)  # type: str
         source = file_to_string(filename)
         traced_file = self.compile(source, filename)
         func.__globals__.update(self._trace_methods_dict(traced_file))
 
-        code_options = []
+        code_options = []  # type: List[CodeType]
 
         def find_code(root_code):
-            for const in root_code.co_consts:
+            # type: (CodeType) -> None
+            for const in root_code.co_consts:  # type: CodeType
                 if not inspect.iscode(const):
                     continue
                 matches = (const.co_firstlineno == func.__code__.co_firstlineno and
@@ -119,24 +139,29 @@ class TreeTracerBase(object):
         if len(code_options) > 1:
             assert func.__code__.co_name == (lambda: 0).__code__.co_name
             raise ValueError("Failed to trace lambda. Convert the function to a def.")
-        new_func_code = code_options[0]
+        new_func_code = code_options[0]  # type: CodeType
 
         # http://stackoverflow.com/a/13503277/2482744
+        # noinspection PyArgumentList
         new_func = FunctionType(new_func_code, func.__globals__, func.__name__, func.__defaults__, func.__closure__)
-        new_func = update_wrapper(new_func, func)
+        update_wrapper(new_func, func)  # type: FunctionType
         if PY3:
             new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
         new_func.traced_file = traced_file
         return new_func
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
+        # type: (TracedFile, int) -> _StmtContext
         node = traced_file.nodes[_tree_index]
-        frame = inspect.currentframe().f_back
+        node = cast(ast.stmt, node)
+        frame = inspect.currentframe().f_back  # type: FrameType
         return _StmtContext(self, node, frame)
 
     def _treetrace_hidden_before_expr(self, traced_file, _tree_index):
+        # type: (TracedFile, int) -> ast.expr
         node = traced_file.nodes[_tree_index]
-        frame = inspect.currentframe().f_back
+        node = cast(ast.expr, node)
+        frame = inspect.currentframe().f_back  # type: FrameType
 
         frame_info = self.stack.get(frame)
         if frame_info is None:
@@ -147,7 +172,7 @@ class TreeTracerBase(object):
                 owner_frame = owner_frame.f_back
             if owner_frame != frame:
                 comprehension = safe_next(of_type(self.SPECIAL_COMPREHENSION_TYPES,
-                                                  ancestors(node)))
+                                                  ancestors(node)))  # type: ast.expr
                 self.stack[owner_frame].comprehension_frames[comprehension] = frame
 
         frame_info.expression_stack.append(node)
@@ -156,23 +181,24 @@ class TreeTracerBase(object):
         return node
 
     def _treetrace_hidden_after_expr(self, _, node, value):
-        if node is None:
-            return value
-        frame = inspect.currentframe().f_back
+        # type: (TracedFile, ast.expr, Any) -> Any
+        frame = inspect.currentframe().f_back  # type: FrameType
         self.stack[frame].expression_stack.pop()
         self.stack[frame].expression_values[node] = value
         result = self.after_expr(node, frame, value)
         if result is not None:
-            assert isinstance(result, self.ChangeValue), "after_expr must return None or an instance of ChangeValue"
+            assert isinstance(result, ChangeValue), "after_expr must return None or an instance of ChangeValue"
             value = result.value
         return value
 
     def _enter_call(self, enter_node, current_frame):
+        # type: (ast.AST, FrameType) -> None
         caller_frame, call_node = self._get_caller_stuff(current_frame)
         self.stack[current_frame] = FrameInfo()
         self.enter_call(EnterCallInfo(call_node, enter_node, caller_frame, current_frame))
 
     def _get_caller_stuff(self, frame):
+        # type: (FrameType) -> Tuple[FrameType, Optional[ast.expr]]
         caller_frame = frame.f_back
         call_node = None
         if caller_frame in self.stack:
@@ -182,38 +208,46 @@ class TreeTracerBase(object):
         return caller_frame, call_node
 
     def before_expr(self, node, frame):
+        # type: (ast.expr, FrameType) -> None
         pass
 
     def after_expr(self, node, frame, value):
+        # type: (ast.expr, FrameType, Any) -> Optional[ChangeValue]
         pass
 
     def before_stmt(self, node, frame):
+        # type: (ast.stmt, FrameType) -> None
         pass
 
     def after_stmt(self, node, frame, exc_value, exc_traceback):
+        # type: (ast.stmt, FrameType, Exception, TracebackType) -> Optional[bool]
         pass
 
     def enter_call(self, enter_info):
+        # type: (EnterCallInfo) -> None
         pass
 
     def exit_call(self, exit_info):
+        # type: (ExitCallInfo) -> None
         pass
 
     def parse_extra(self, root, source, filename):
+        # type: (ast.Module, str, str) -> Optional[ast.Module]
         pass
-
-    ChangeValue = namedtuple('ChangeValue', 'value')
 
 
 class _NodeVisitor(ast.NodeTransformer):
     def generic_visit(self, node):
+        # type: (ast.AST) -> ast.AST
         if isinstance(node, ast.expr) and not (hasattr(node, "ctx") and not isinstance(node.ctx, ast.Load)):
             return self.visit_expr(node)
-        if isinstance(node, ast.stmt) and not (isinstance(node, ast.ImportFrom) and node.module == "__future__"):
-            return self.visit_stmt(node)
+        if isinstance(node, ast.stmt):
+            if not (isinstance(node, ast.ImportFrom) and node.module == "__future__"):
+                return self.visit_stmt(node)
         return super(_NodeVisitor, self).generic_visit(node)
 
     def visit_expr(self, node):
+        # type: (ast.expr) -> ast.Call
         """
         each expression e gets wrapped like this:
             _after(_before(_tree_index), e)
@@ -243,6 +277,7 @@ class _NodeVisitor(ast.NodeTransformer):
         return after_marker
 
     def visit_stmt(self, node):
+        # type: (ast.stmt) -> ast.With
         context_expr = _create_simple_marker_call(
             super(_NodeVisitor, self).generic_visit(node),
             TreeTracerBase._treetrace_hidden_with_stmt)
@@ -266,6 +301,7 @@ class _StmtContext(object):
     __slots__ = ('tracer', 'node', 'frame')
 
     def __init__(self, tracer, node, frame):
+        # type: (TreeTracerBase, ast.stmt, FrameType) -> None
         self.tracer = tracer
         self.node = node
         self.frame = frame
@@ -282,6 +318,7 @@ class _StmtContext(object):
         tracer.before_stmt(node, frame)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        # type: (Type[Exception], Exception, TracebackType) -> bool
         node = self.node
         tracer = self.tracer
         frame = self.frame
@@ -289,7 +326,7 @@ class _StmtContext(object):
         frame_info = tracer.stack[frame]
         if isinstance(node, ast.Return):
             frame_info.return_node = node
-        parent = node.parent
+        parent = node.parent  # type: ast.AST
         return_node = frame_info.return_node
         exiting = (isinstance(parent, (ast.FunctionDef, ast.Module)) and
                    (node is parent.body[-1] or
@@ -316,9 +353,7 @@ class _StmtContext(object):
 
 
 def _create_simple_marker_call(node, func):
-    """
-    :type func: FunctionType
-    """
+    # type: (ast.AST, Callable) -> ast.Call
     return ast.Call(
         func=ast.Name(id=func.__name__,
                       ctx=ast.Load()),
@@ -328,6 +363,7 @@ def _create_simple_marker_call(node, func):
 
 
 def ancestors(node):
+    # type: (ast.AST) -> Iterator[ast.AST]
     while True:
         try:
             node = node.parent
@@ -337,6 +373,7 @@ def ancestors(node):
 
 
 def loops(node):
+    # type: (ast.AST) -> Tuple[ast.AST, ...]
     result = []
     while True:
         try:
@@ -372,6 +409,3 @@ def loops(node):
 
     result.reverse()
     return tuple(result)
-
-
-FunctionType = type(loops)

@@ -32,7 +32,7 @@ class Base(object):
         return cls.__name__.lower()
 
 
-Base = declarative_base(cls=Base)
+Base = declarative_base(cls=Base)  # type: ignore
 
 
 class Call(Base):
