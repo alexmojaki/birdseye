@@ -1,5 +1,26 @@
 #!/usr/bin/env python3
 
+"""
+This script parses output from mypy and makes it more manageable, particularly
+if lots of warnings are raised that you want to ignore. It's an alternative to
+'# type: ignore' comments and other ways of appeasing mypy that doesn't
+interfere with your source code.
+
+Here is how to use it in this project:
+
+python3 -m mypy -p birdseye --ignore-missing-imports | misc/mypy_filter.py misc/mypy_ignore.txt
+
+This will output all warning messages not found in mypy_ignore.txt. It will also group them
+so that you don't have to read the same message twice. Inspect the output.
+If it contains any legitimate errors, or messages that are generic enough to apply to other
+situations, fix the code to remove them. Once the output looks safe, run the command again
+with 'ok' at the end, i.e:
+
+python3 -m mypy -p birdseye --ignore-missing-imports | misc/mypy_filter.py misc/mypy_ignore.txt ok
+
+This will add any remaining warnings to mypy_ignore.txt so that they are ignored in the future.
+"""
+
 import sys
 import re
 from collections import defaultdict
