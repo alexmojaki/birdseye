@@ -203,3 +203,13 @@ def one_or_none(expression):
         return result[0]
     else:
         raise Exception("There is more than one item returned for the supplied filter")
+
+
+def flatten_list(lst):
+    result = []
+    for x in lst:
+        if isinstance(x, list):
+            result.extend(flatten_list(x))
+        else:
+            result.append(x)
+    return result

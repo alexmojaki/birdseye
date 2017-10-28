@@ -1,21 +1,19 @@
 import json
+import os
 import re
+import sys
 import unittest
 import weakref
 from collections import namedtuple
+from unittest import skipUnless
 
-import os
-
-import sys
-from littleutils import json_to_file, file_to_json
-
-from birdseye.cheap_repr import register_repr
-from tests import golden_script
-
-from birdseye.utils import PY3, PY2
 from birdseye import eye
+from birdseye.cheap_repr import register_repr
 from birdseye.db import Call, Session
+from birdseye.utils import PY2, PY3
 from bs4 import BeautifulSoup
+from littleutils import json_to_file, file_to_json, string_to_file
+from tests import golden_script
 
 session = Session()
 
@@ -371,7 +369,6 @@ class TestBirdsEye(unittest.TestCase):
 
         @eye
         class Testclass(object):
-
             call_meth = fooz
 
             def barz(self):
@@ -384,6 +381,30 @@ class TestBirdsEye(unittest.TestCase):
         x = Testclass()
         check(x.barz, "'class decorator test'")
         check(x.call_meth, "'method outside class'")
+
+    @skipUnless(PY2, 'Nested arguments are only possible in Python 2')
+    def test_nested_arguments(self):
+        # Python 3 sees nested arguments as a syntax error, so I can't
+        # define the function here normally
+        # birdseye requires a source file so I can't just use exec
+        # The file can't just live there because then the test runner imports it
+        path = os.path.join(os.path.dirname(__file__),
+                            'nested_arguments.py')
+        string_to_file(
+            """
+def f((x, y), z):
+    return x, y, z
+""",
+            path)
+
+        try:
+            from .python2_only.nested_arguments import f
+            f = eye(f)
+            call = get_call_stuff(get_call_ids(lambda: f((1, 2), 3))[0]).call
+            self.assertEqual(call.arguments, '[["x", "1"], ["y", "2"], ["z", "3"]]')
+            self.assertEqual(call.result, "(1, 2, 3)")
+        finally:
+            os.remove(path)
 
 
 if __name__ == '__main__':
