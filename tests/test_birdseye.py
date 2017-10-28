@@ -398,7 +398,7 @@ def f((x, y), z):
             path)
 
         try:
-            from .python2_only.nested_arguments import f
+            from .nested_arguments import f
             f = eye(f)
             call = get_call_stuff(get_call_ids(lambda: f((1, 2), 3))[0]).call
             self.assertEqual(call.arguments, '[["x", "1"], ["y", "2"], ["z", "3"]]')
