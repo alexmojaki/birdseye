@@ -1,21 +1,19 @@
 import json
+import os
 import re
+import sys
 import unittest
 import weakref
 from collections import namedtuple
+from unittest import skipUnless
 
-import os
-
-import sys
-from littleutils import json_to_file, file_to_json
-
-from birdseye.cheap_repr import register_repr
-from tests import golden_script
-
-from birdseye.utils import PY3, PY2
 from birdseye import eye
+from birdseye.cheap_repr import register_repr
 from birdseye.db import Call, Session
+from birdseye.utils import PY2, PY3
 from bs4 import BeautifulSoup
+from littleutils import json_to_file, file_to_json, string_to_file
+from tests import golden_script
 
 session = Session()
 
@@ -83,6 +81,10 @@ def get_call_ids(func):
     end_id = call_id + 1
     return ['test_id_%s' % i for i in range(start_id, end_id)]
 
+
+# Do this here to make call ids consistent
+golden_calls = [session.query(Call).filter_by(id=c_id).one()
+                for c_id in get_call_ids(golden_script.main)]
 
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
@@ -337,10 +339,6 @@ class TestBirdsEye(unittest.TestCase):
         def repr_weakref(*_):
             return '<weakref>'
 
-        ids = get_call_ids(golden_script.main)
-        calls = [session.query(Call).filter_by(id=c_id).one()
-                 for c_id in ids]
-
         def normalise_addresses(string):
             return re.sub(r'at 0x\w+>', 'at 0xABC>', string)
 
@@ -356,7 +354,7 @@ class TestBirdsEye(unittest.TestCase):
                 lineno=call.function.lineno,
                 data=byteify(json.loads(call.function.data)),
             ),
-        ) for call in calls]
+        ) for call in golden_calls]
         version = re.match(r'\d\.\d', sys.version).group()
         path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
 
@@ -371,7 +369,6 @@ class TestBirdsEye(unittest.TestCase):
 
         @eye
         class Testclass(object):
-
             call_meth = fooz
 
             def barz(self):
@@ -384,6 +381,30 @@ class TestBirdsEye(unittest.TestCase):
         x = Testclass()
         check(x.barz, "'class decorator test'")
         check(x.call_meth, "'method outside class'")
+
+    @skipUnless(PY2, 'Nested arguments are only possible in Python 2')
+    def test_nested_arguments(self):
+        # Python 3 sees nested arguments as a syntax error, so I can't
+        # define the function here normally
+        # birdseye requires a source file so I can't just use exec
+        # The file can't just live there because then the test runner imports it
+        path = os.path.join(os.path.dirname(__file__),
+                            'nested_arguments.py')
+        string_to_file(
+            """
+def f((x, y), z):
+    return x, y, z
+""",
+            path)
+
+        try:
+            from .nested_arguments import f
+            f = eye(f)
+            call = get_call_stuff(get_call_ids(lambda: f((1, 2), 3))[0]).call
+            self.assertEqual(call.arguments, '[["x", "1"], ["y", "2"], ["z", "3"]]')
+            self.assertEqual(call.result, "(1, 2, 3)")
+        finally:
+            os.remove(path)
 
 
 if __name__ == '__main__':

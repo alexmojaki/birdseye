@@ -1,5 +1,5 @@
 import unittest
-from birdseye.utils import iter_get, common_ancestor, short_path
+from birdseye.utils import iter_get, common_ancestor, short_path, flatten_list
 from random import shuffle
 
 
@@ -33,6 +33,17 @@ class TestUtils(unittest.TestCase):
         check(['\\123\\456'], ['456'])
         check(['\\123'], ['\\123'])
         check(['\\123\\456', '\\abc\\def'], ['\\123\\456', '\\abc\\def'])
+
+    def test_flatten_list(self):
+        def check(inp, out):
+            self.assertEqual(flatten_list(inp), out)
+
+        check([], [])
+        check(['abc'], ['abc'])
+        check(['ab', 'cd'], ['ab', 'cd'])
+        check(['ab', ['cd', 'ef']], ['ab', 'cd', 'ef'])
+        check([['x', 'y'], 'ab', [['0', '1'], [[], 'cd', 'ef', ['ghi', [[['jkl']]]]]]],
+              ['x', 'y', 'ab', '0', '1', 'cd', 'ef', 'ghi', 'jkl'])
 
 
 if __name__ == '__main__':

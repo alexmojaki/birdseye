@@ -29,7 +29,7 @@ from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue
 from birdseye import tracer
 from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2, one_or_none, \
-    of_type, Deque, Text
+    of_type, Deque, Text, flatten_list
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
                                    ('traced_file', TracedFile)])
@@ -142,11 +142,13 @@ class BirdsEye(TreeTracerBase):
         frame_info.start_time = datetime.now()
         frame_info.iteration = Iteration()
         arg_info = inspect.getargvalues(frame)
-        # TODO flatten nested arguments in arg_info[0]
         # TODO keep argument names in code info
-        arg_names = chain(arg_info[0], arg_info[1:3])  # type: Iterator[str]
+        arg_names = chain(flatten_list(arg_info[0]), arg_info[1:3])  # type: Iterator[str]
         f_locals = arg_info[3].copy()  # type: Dict[str, Any]
-        arguments = [(name, f_locals.pop(name)) for name in arg_names if name] + list(f_locals.items())
+        arguments = [(name, f_locals.pop(name)) for name in arg_names if name] + [
+            it for it in f_locals.items()
+            if it[0][0] != '.'  # Appears when using nested tuple arguments
+        ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         self.stack.get(frame.f_back, dummy_namespace).inner_call = frame_info.call_id = self._call_id()
 
