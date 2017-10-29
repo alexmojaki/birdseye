@@ -214,9 +214,6 @@ function render() {
                 });
                 $this.toggleClass('exception_node', value[1] === -1);
                 $this.toggleClass('value_none', value[1] === 0);
-                if (value[2] === undefined) {
-                    console.log(value);
-                }
                 var inner_call = value[2].inner_call;
                 if (inner_call) {
                     $this.append('<a class="inner-call" href="/call/' + inner_call + '">' +
