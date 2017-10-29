@@ -82,6 +82,10 @@ def get_call_ids(func):
     return ['test_id_%s' % i for i in range(start_id, end_id)]
 
 
+# Do this here to make call ids consistent
+golden_calls = [session.query(Call).filter_by(id=c_id).one()
+                for c_id in get_call_ids(golden_script.main)]
+
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
@@ -335,10 +339,6 @@ class TestBirdsEye(unittest.TestCase):
         def repr_weakref(*_):
             return '<weakref>'
 
-        ids = get_call_ids(golden_script.main)
-        calls = [session.query(Call).filter_by(id=c_id).one()
-                 for c_id in ids]
-
         def normalise_addresses(string):
             return re.sub(r'at 0x\w+>', 'at 0xABC>', string)
 
@@ -354,7 +354,7 @@ class TestBirdsEye(unittest.TestCase):
                 lineno=call.function.lineno,
                 data=byteify(json.loads(call.function.data)),
             ),
-        ) for call in calls]
+        ) for call in golden_calls]
         version = re.match(r'\d\.\d', sys.version).group()
         path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
 
