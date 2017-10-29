@@ -91,7 +91,7 @@ class BirdsEye(TreeTracerBase):
             frame_info = self.stack[frame]
             expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
             if frame_info.inner_call:
-                expanded_value.insert(2, {'inner_call': frame_info.inner_call})
+                expanded_value[2]['inner_call'] = frame_info.inner_call
                 frame_info.inner_call = None
             self._set_node_value(node, frame, expanded_value)
 
@@ -131,7 +131,7 @@ class BirdsEye(TreeTracerBase):
                 expression_stack = self.stack[inner_frame].expression_stack
             self._set_node_value(
                 expression_stack[-1], frame,
-                [exception_string(exc_value), -1])
+                [exception_string(exc_value), -1, {}])
 
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None
@@ -379,19 +379,20 @@ class IterationList(Iterable[Iteration]):
 
 
 class TypeRegistry(object):
+    basic_types = (type(None), bool, int, float, complex)
+    if PY2:
+        basic_types += (long,)
+    special_types = basic_types + (list, dict, tuple, set, frozenset, str)
+    if PY2:
+        special_types += (unicode if PY2 else bytes,)
+
+    num_special_types = len(special_types)
+
     def __init__(self):
         self.lock = Lock()
         self.data = defaultdict(lambda: len(self.data))  # type: Dict[type, int]
-        basic_types = [type(None), bool, int, float, complex]
-        if PY2:
-            basic_types += [long]
-        special_types = basic_types + [list, dict, tuple, set, frozenset, str]
-        if PY2:
-            special_types += [unicode if PY2 else bytes]
 
-        self.num_basic_types = len(basic_types)
-        self.num_special_types = len(special_types)
-        for t in special_types:
+        for t in self.special_types:
             _ = self.data[t]
 
     def __getitem__(self, item):
@@ -410,21 +411,22 @@ type_registry = TypeRegistry()
 
 def expand(val, level=3):
     type_index = type_registry[val]
-    result = [cheap_repr(val), type_index]
-    if type_index < type_registry.num_basic_types or level == 0:
+    result = [cheap_repr(val), type_index, {}]
+    # TODO level == 0 check should move down
+    if isinstance(val, TypeRegistry.basic_types) or level == 0:
         return result
-    exp = partial(expand, level=level - 1)
 
     # noinspection PyBroadException
     try:
-        length = len(val)
+        result[2]['len'] = len(val)
     except:
         pass
-    else:
-        result += ['len() = %s' % length]
 
     if isinstance(val, (str, bytes, range) if PY3 else (str, unicode, xrange)):
         return result
+
+    exp = partial(expand, level=level - 1)
+
     if isinstance(val, Sequence):
         if len(val) <= 8:
             indices = range(len(val))

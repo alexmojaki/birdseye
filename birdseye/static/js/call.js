@@ -50,7 +50,7 @@ function make_jstree_nodes(prefix, path, val, $node) {
     var text = _.escape(prefix) + ' = ';
     if (special('NoneType')) {
         text += '<i>None</i>';
-    } else if (type_index == -1) { // exception
+    } else if (type_index === -1) { // exception
         text += '<span style="color: red">' + val_repr + '</span>';
     } else {
         text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + val_repr;
@@ -59,7 +59,7 @@ function make_jstree_nodes(prefix, path, val, $node) {
     var icon;
     if (special('bool')) {
         icon = 'glyphicon glyphicon-' + (val_repr === 'True' ? 'ok' : 'remove');
-    } else if (type_index == -1) {
+    } else if (type_index === -1) {
         icon = 'glyphicon glyphicon-warning-sign';
     } else {
         icon = '/static/img/type_icons/';
@@ -90,18 +90,23 @@ function make_jstree_nodes(prefix, path, val, $node) {
         }
     };
 
-    var rest = val.slice(_.isObject(val[2]) && !_.isArray(val[2]) ? 3 : 2);
-    if (rest.length && !(_(rest).isEqual(['len() = 0']) && is_special)) {
-        result.children = rest.map(function(child) {
-            if (typeof child === "string") {
-                return {
-                    icon: false,
-                    text: child,
-                };
-            }
-            return make_jstree_nodes(child[0], path.concat([child[0]]), child[1]);
+    var children = [];
+    var len = val[2].len;
+    if (len !== undefined && !(len === 0 && is_special)) {
+        children.push({
+            icon: false,
+            text: 'len() = ' + len,
         });
     }
+
+    $.merge(children, val.slice(3).map(function(child) {
+        return make_jstree_nodes(child[0], path.concat([child[0]]), child[1]);
+    }));
+
+    if (children.length) {
+        result.children = children;
+    }
+
     return result;
 }
 
@@ -129,7 +134,7 @@ $('#inspector').jstree({
 }).on("close_node.jstree", function(e, data) {
     var path = data.node.original.path;
     while (_(open_paths).deepContains(path)) {
-        var index = _.findIndex(open_paths, _.partial(_.isEqual, path))
+        var index = _.findIndex(open_paths, _.partial(_.isEqual, path));
         open_paths.splice(index, 1);
     }
 });
@@ -140,7 +145,7 @@ $code.find('span[data-type="expr"]').each(function() {
     $this.toggleClass('expr', tree_index in node_values);
     $this.toggleClass(
         'has-inner',
-        (JSON.stringify(node_values[tree_index]) || '').indexOf(',{"inner_call":"') != -1);
+        (JSON.stringify(node_values[tree_index]) || '').indexOf('"inner_call":"') !== -1);
     $this.click(function() {
         if ($this.hasClass('hovering')) {
             $this.toggleClass('selected');
@@ -155,7 +160,7 @@ $('#bottom_panel').width($code.width());
 
 function render() {
 
-    $('#inspector, #resize-handle').css({display: selected_expressions.length ? 'block' : 'none'})
+    $('#inspector, #resize-handle').css({display: selected_expressions.length ? 'block' : 'none'});
 
     var loop_indices = {};
     function findRanges(iters) {
@@ -207,10 +212,14 @@ function render() {
                     }
                     e.stopPropagation();
                 });
-                $this.toggleClass('exception_node', value[1] == -1);
-                $this.toggleClass('value_none', value[1] == 0);
-                if (value[2] && value[2].inner_call) {
-                    $this.append('<a class="inner-call" href="/call/' + value[2].inner_call + '">' +
+                $this.toggleClass('exception_node', value[1] === -1);
+                $this.toggleClass('value_none', value[1] === 0);
+                if (value[2] === undefined) {
+                    console.log(value);
+                }
+                var inner_call = value[2].inner_call;
+                if (inner_call) {
+                    $this.append('<a class="inner-call" href="/call/' + inner_call + '">' +
                                     '<span class="glyphicon glyphicon-share-alt"></span>' +
                                  '</a>')
                 } else {
@@ -231,13 +240,14 @@ function render() {
         $this.toggleClass('stmt_uncovered', !value);
     });
 
-    $('#inspector').jstree(true).settings.core.data = selected_expressions.map(function(tree_index) {
+    var inspector = $('#inspector');
+    inspector.jstree(true).settings.core.data = selected_expressions.map(function(tree_index) {
         var node = index_to_node[tree_index];
         var $node = $(node);
         var value = get_value(tree_index);
         return make_jstree_nodes($node.text(), [tree_index], value, $node);
     });
-    $('#inspector').jstree(true).refresh();
+    inspector.jstree(true).refresh();
 
     $('.loop-navigator').remove();
 
@@ -259,7 +269,7 @@ function render() {
                 type: 'button',
                 class: 'btn btn-default btn-xs ' + cls,
                 html: html,
-            }
+            };
             if (disabled) {
                 attrs.disabled = 'disabled';
             }
@@ -299,7 +309,7 @@ function render() {
                     false,
                     loop_indices[loopIndex][current],
                     null
-                ))
+                ));
             var dropdownList = $('<ul class="dropdown-menu">');
             loop_indices[loopIndex].forEach(function(iterationIndex, rawIndex) {
                 dropdownList.append(
@@ -315,7 +325,7 @@ function render() {
                 disabled,
                 '&gt;',
                 changeNumber(current + 1)
-            ))
+            ));
 
             $code.append(buttonGroup);
         }
