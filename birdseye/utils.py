@@ -4,13 +4,10 @@ from future import standard_library
 
 standard_library.install_aliases()
 from future.utils import raise_from
-import atexit
 import ntpath
 import os
 import traceback
 import types
-from queue import Queue
-from threading import Thread
 from sys import version_info
 from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Dict
 from types import FunctionType
@@ -103,69 +100,10 @@ def correct_type(obj):
     return t
 
 
-def iter_get(it, n):
-    n_original = n
-    if n < 0:
-        n = -n - 1
-        it = reversed(it)
-    else:
-        it = iter(it)
-    try:
-        while n > 0:
-            next(it)
-            n -= 1
-        return next(it)
-    except StopIteration as e:
-        raise_from(IndexError(n_original), e)
-
-
 def exception_string(exc):
     # type: (BaseException) -> Text
     assert isinstance(exc, BaseException)
     return ''.join(traceback.format_exception_only(type(exc), exc))
-
-
-class Consumer(object):
-    def __init__(self):
-        self.queue = Queue()
-        self.error = ValueError('There should be an error raised by a consumed task here')
-        self.exiting = False
-        self._run_thread()
-        atexit.register(self._exit)
-
-    def _run_thread(self):
-        def run():
-            while True:
-                func = self.queue.get()
-                try:
-                    func()
-                except BaseException as e:
-                    self.queue = None
-                    self.error = e
-                    if not self.exiting:
-                        raise
-                finally:
-                    self.queue.task_done()
-
-        self.thread = Thread(target=run, name='Consumer thread')
-        self.thread.daemon = True
-        self.thread.start()
-
-    def _exit(self):
-        self.exiting = True
-        if self.queue:
-            self._run_thread()  # just for good measure
-            self.queue.join()
-
-    def __call__(self, func):
-        if self.queue:
-            self.queue.put(func)
-        else:
-            raise self.error  # error raised by task in consumer thread
-
-    def wait(self, func):
-        self(func)
-        self.queue.join()
 
 
 def of_type(type_or_tuple, iterable):

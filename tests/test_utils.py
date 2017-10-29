@@ -1,16 +1,8 @@
 import unittest
-from birdseye.utils import iter_get, common_ancestor, short_path, flatten_list
-from random import shuffle
+from birdseye.utils import common_ancestor, short_path, flatten_list
 
 
 class TestUtils(unittest.TestCase):
-    def test_iter_get(self):
-        lst = list(range(100))
-        shuffle(lst)
-        for i in range(-100, 100):
-            self.assertEqual(iter_get(lst, i),
-                             lst[i])
-
     def test_common_ancestor(self):
         self.assertEqual(
             common_ancestor(['/123/456', '/123/457', '/123/abc/def']),
