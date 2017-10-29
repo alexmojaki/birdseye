@@ -23,8 +23,6 @@ error: "stmt" has no attribute "parent"
 error: Argument 1 to "partial" has incompatible type "function"; expected "Callable[..., <nothing>]"
 error: Incompatible types in assignment (expression has type "Type[type]", variable has type "_SpecialForm")
 error: Item "For" of "Union[While, For, comprehension]" has no attribute "parent"
-error: Item "FrameInfo" of "Union[FrameInfo, SimpleNamespace]" has no attribute "inner_call"
-error: Item "SimpleNamespace" of "Union[FrameInfo, SimpleNamespace]" has no attribute "inner_call"
 error: Item "While" of "Union[While, For, comprehension]" has no attribute "parent"
 error: Item "comprehension" of "Union[While, For, comprehension]" has no attribute "parent"
 error: Module has no attribute "_depth"

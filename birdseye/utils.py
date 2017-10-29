@@ -168,13 +168,6 @@ class Consumer(object):
         self.queue.join()
 
 
-class SimpleNamespace(object):
-    pass
-
-
-dummy_namespace = SimpleNamespace()
-
-
 def of_type(type_or_tuple, iterable):
     # type: (Union[type, Tuple[Union[type, tuple], ...]], Iterable[Any]) -> Iterator[Any]
     return (x for x in iterable if isinstance(x, type_or_tuple))

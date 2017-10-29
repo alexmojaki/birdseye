@@ -28,7 +28,7 @@ from birdseye.cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue
 from birdseye import tracer
-from birdseye.utils import safe_qualname, correct_type, exception_string, dummy_namespace, PY3, PY2, one_or_none, \
+from birdseye.utils import safe_qualname, correct_type, exception_string, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
@@ -150,7 +150,10 @@ class BirdsEye(TreeTracerBase):
             if it[0][0] != '.'  # Appears when using nested tuple arguments
         ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
-        self.stack.get(frame.f_back, dummy_namespace).inner_call = frame_info.call_id = self._call_id()
+        frame_info.call_id = self._call_id()
+        prev = self.stack.get(frame.f_back)
+        if prev:
+            prev.inner_call = frame_info.call_id
 
     def _call_id(self):
         # type: () -> Text
