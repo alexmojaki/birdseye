@@ -42,3 +42,7 @@ error: Unexpected keyword argument "return_value" for "Call"
 error: Unexpected keyword argument "start_time" for "Call"
 error: Unexpected keyword argument "traceback" for "Call"
 note: "Call" defined here
+error: Incompatible types in assignment (expression has type "Iterator[Any]", variable has type "AbstractSet[Any]")
+error: Incompatible types in assignment (expression has type "chain[int]", variable has type "range")
+error: Name 'unicode' is not defined
+error: Name 'xrange' is not defined

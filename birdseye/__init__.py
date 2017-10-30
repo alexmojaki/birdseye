@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+from json import JSONEncoder
+
 from future import standard_library
 
 standard_library.install_aliases()
@@ -91,7 +93,7 @@ class BirdsEye(TreeTracerBase):
             frame_info = self.stack[frame]
             expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
             if frame_info.inner_call:
-                expanded_value[2]['inner_call'] = frame_info.inner_call
+                expanded_value.set_meta('inner_call', frame_info.inner_call)
                 frame_info.inner_call = None
             self._set_node_value(node, frame, expanded_value)
 
@@ -131,7 +133,7 @@ class BirdsEye(TreeTracerBase):
                 expression_stack = self.stack[inner_frame].expression_stack
             self._set_node_value(
                 expression_stack[-1], frame,
-                [exception_string(exc_value), -1, {}])
+                ExpandedValue(exception_string(exc_value), -1))
 
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None
@@ -207,6 +209,7 @@ class BirdsEye(TreeTracerBase):
                             type_names=type_registry.names(),
                             num_special_types=type_registry.num_special_types,
                         ),
+                        cls=ExpandedValueEncoder,
                         separators=(',', ':')
                     ),
                     start_time=frame_info.start_time)
@@ -409,23 +412,45 @@ class TypeRegistry(object):
 type_registry = TypeRegistry()
 
 
-def expand(val, level=3):
-    type_index = type_registry[val]
-    result = [cheap_repr(val), type_index, {}]
+class ExpandedValue(object):
+    __slots__ = ('val_repr', 'type_index', 'meta', 'children')
+
+    def __init__(self, val_repr, type_index):
+        self.val_repr = val_repr  # type: str
+        self.type_index = type_index  # type: int
+        self.meta = None  # type: Optional[Dict[str, Any]]
+        self.children = None  # type: Optional[List[Tuple[str, ExpandedValue]]]
+
+    def set_meta(self, key, value):
+        # type: (str, Any) -> None
+        self.meta = self.meta or {}
+        self.meta[key] = value
+
+    def add_child(self, level, key, value):
+        # type: (int, str, Any) -> None
+        self.children = self.children or []
+        self.children.append((key, expand(value, level)))
+
+
+def expand(val, level):
+    # type: (Any, int) -> ExpandedValue
+    result = ExpandedValue(cheap_repr(val), type_registry[val])
     # TODO level == 0 check should move down
     if isinstance(val, TypeRegistry.basic_types) or level == 0:
         return result
 
     # noinspection PyBroadException
     try:
-        result[2]['len'] = len(val)
+        length = len(val)
     except:
         pass
+    else:
+        result.set_meta('len', length)
 
     if isinstance(val, (str, bytes, range) if PY3 else (str, unicode, xrange)):
         return result
 
-    exp = partial(expand, level=level - 1)
+    add_child = partial(result.add_child, level - 1)
 
     if isinstance(val, Sequence):
         if len(val) <= 8:
@@ -433,35 +458,43 @@ def expand(val, level=3):
         else:
             indices = chain(range(3), range(len(val) - 3, len(val)))
         for i in indices:
-            result += [(str(i), exp(val[i]))]
+            add_child(str(i), val[i])
     elif isinstance(val, Mapping):
         for k, v in islice(iteritems(val), 10):
-            result += [(cheap_repr(k), exp(v))]
+            add_child(cheap_repr(k), v)
     elif isinstance(val, Set):
         if len(val) <= 8:
             vals = val
         else:
             vals = islice(val, 6)
         for i, v in enumerate(vals):
-            result += [('<%s>' % i, exp(v))]
+            add_child('<%s>' % i, v)
 
     d = getattr(val, '__dict__', None)
     if d:
         for k, v in islice(iteritems(d), 50):
             if isinstance(v, TracedFile):
                 continue
-            result += [(str(k), exp(v))]
+            add_child(str(k), v)
     else:
-        slots = getattr(val, '__slots__', None)
-        if slots:
-            for s in slots:
-                try:
-                    attr = getattr(val, s)
-                except AttributeError:
-                    pass
-                else:
-                    result += [(str(s), exp(attr))]
+        for s in getattr(val, '__slots__', ()):
+            try:
+                attr = getattr(val, s)
+            except AttributeError:
+                pass
+            else:
+                add_child(str(s), attr)
     return result
+
+
+class ExpandedValueEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ExpandedValue):
+            result = [o.val_repr, o.type_index, o.meta or {}]  # type: list
+            if o.children:
+                result.extend(o.children)
+            return result
+        return super(ExpandedValueEncoder, self).default(o)
 
 
 def is_interesting_expression(node):
