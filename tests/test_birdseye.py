@@ -325,7 +325,7 @@ class TestBirdsEye(unittest.TestCase):
                              'tuple', {'len': 3},
                              ['0', ['7', 'int', {}]],
                              ['1', ['8', 'int', {}]],
-                             ['2', ['[9, 10]', 'list', {}]]]],
+                             ['2', ['[9, 10]', 'list', {'len': 2}]]]],
                       ['1', ['<A>', 'NormalClass', {},
                              ['x', ['1', 'int', {}]]]],
                       ['2', ['<B>', 'SlotClass', {},
