@@ -435,8 +435,7 @@ class ExpandedValue(object):
 def expand(val, level):
     # type: (Any, int) -> ExpandedValue
     result = ExpandedValue(cheap_repr(val), type_registry[val])
-    # TODO level == 0 check should move down
-    if isinstance(val, TypeRegistry.basic_types) or level == 0:
+    if isinstance(val, TypeRegistry.basic_types):
         return result
 
     # noinspection PyBroadException
@@ -447,7 +446,11 @@ def expand(val, level):
     else:
         result.set_meta('len', length)
 
-    if isinstance(val, (str, bytes, range) if PY3 else (str, unicode, xrange)):
+    if (level == 0 or
+            isinstance(val,
+                       (str, bytes, range)
+                       if PY3 else
+                       (str, unicode, xrange))):
         return result
 
     add_child = partial(result.add_child, level - 1)
