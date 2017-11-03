@@ -13,13 +13,16 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-
 DB_URI = os.environ.get('BIRDSEYE_DB',
                         'sqlite:///' + os.path.join(os.path.expanduser('~'),
                                                     '.birdseye.db'))
 
+connect_args = {}
+if DB_URI.startswith('sqlite'):
+    connect_args['check_same_thread'] = False
+
 engine = create_engine(DB_URI,
-                       connect_args={'check_same_thread': False},
+                       connect_args=connect_args,
                        poolclass=StaticPool)
 
 Session = sessionmaker(bind=engine)
