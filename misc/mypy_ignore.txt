@@ -46,3 +46,10 @@ error: Incompatible types in assignment (expression has type "Iterator[Any]", va
 error: Incompatible types in assignment (expression has type "chain[int]", variable has type "range")
 error: Name 'unicode' is not defined
 error: Name 'xrange' is not defined
+error: Unexpected keyword argument "data" for "Function"
+error: Unexpected keyword argument "file" for "Function"
+error: Unexpected keyword argument "hash" for "Function"
+error: Unexpected keyword argument "html_body" for "Function"
+error: Unexpected keyword argument "lineno" for "Function"
+error: Unexpected keyword argument "name" for "Function"
+note: "Function" defined here

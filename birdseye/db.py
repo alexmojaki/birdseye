@@ -8,7 +8,7 @@ import os
 
 from humanize import naturaltime
 from markupsafe import Markup
-from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime
+from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -97,8 +97,9 @@ class Function(Base):
     html_body = Column(Text)
     lineno = Column(Integer)
     data = Column(Text)
+    hash = Column(String(length=64))
 
-    __table_args__ = (UniqueConstraint('file', 'name', 'html_body', 'lineno', 'data',
+    __table_args__ = (UniqueConstraint('hash',
                                        name='everything_unique'),)
 
 

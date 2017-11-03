@@ -4,10 +4,25 @@ set -eux
 
 pip install -e .
 
-rm ~/.birdseye_test.db || true
+export DB=${DB:-sqlite}
+
+if [ ${DB} = sqlite ]; then
+    rm ~/.birdseye_test.db || true
+    export BIRDSEYE_DB=sqlite:///$HOME/.birdseye_test.db
+elif [ ${DB} = postgres ]; then
+    psql -c 'DROP DATABASE IF EXISTS birdseye_test;' -U postgres
+    psql -c 'CREATE DATABASE birdseye_test;' -U postgres
+    export BIRDSEYE_DB="postgresql://postgres:@localhost/birdseye_test"
+elif [ ${DB} = mysql ]; then
+    mysql -e 'DROP DATABASE IF EXISTS birdseye_test;'
+    mysql -e 'CREATE DATABASE birdseye_test;'
+    export BIRDSEYE_DB="mysql://root:@localhost/birdseye_test"
+else
+    echo "Unknown database $DB"
+    exit 1
+fi
 
 export BIRDSEYE_SERVER_RUNNING=true
-export BIRDSEYE_DB=sqlite:///$HOME/.birdseye_test.db
 gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e

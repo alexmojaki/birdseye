@@ -7,3 +7,10 @@ python:
 install: pip install Flask gunicorn
 script:
   - ./misc/travis_test.sh
+env:
+  - DB=sqlite
+  - DB=mysql
+  - DB=postgres
+services:
+  - mysql
+  - postgresql
