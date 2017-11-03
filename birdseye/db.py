@@ -39,7 +39,7 @@ Base = declarative_base(cls=Base)  # type: ignore
 
 
 class Call(Base):
-    id = Column(Text(length=32), primary_key=True)
+    id = Column(String(length=32), primary_key=True)
     function_id = Column(Integer, ForeignKey('function.id'))
     function = relationship('Function', backref=backref('calls', lazy='dynamic'))
     arguments = Column(Text)
