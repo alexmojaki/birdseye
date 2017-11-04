@@ -22,6 +22,7 @@ from functools import partial
 from itertools import chain, islice
 from threading import Lock
 from uuid import uuid4
+import hashlib
 
 from asttokens import ASTTokens
 from littleutils import group_by_key_func
@@ -307,20 +308,19 @@ class BirdsEye(TreeTracerBase):
         html_body = ''.join(html_lines)
         html_body = '\n'.join(html_body.split('\n')[start_lineno - 1:end_lineno - 1])
 
-        db_args = dict(file=filename,
-                       name=name,
-                       html_body=html_body,
-                       lineno=start_lineno,
-                       data=json.dumps(
-                           dict(
-                               node_loops=node_loops,
-                           ),
-                           sort_keys=True,
-                       ))
+        data = json.dumps(dict(node_loops=node_loops),
+                          sort_keys=True)
+        function_hash = hashlib.sha256((filename + name + html_body + data + str(start_lineno)
+                                        ).encode('utf8')).hexdigest()
 
-        db_func = one_or_none(session.query(Function).filter_by(**db_args))  # type: Optional[Function]
+        db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
         if not db_func:
-            db_func = Function(**db_args)
+            db_func = Function(file=filename,
+                               name=name,
+                               html_body=html_body,
+                               lineno=start_lineno,
+                               data=data,
+                               hash=function_hash)
             session.add(db_func)
             session.commit()
         self._code_infos[new_func.__code__] = CodeInfo(db_func, traced_file)

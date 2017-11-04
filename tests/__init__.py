@@ -7,4 +7,4 @@ if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
     if os.path.exists(path):
         os.remove(path)
 
-os.environ['BIRDSEYE_DB'] = 'sqlite:///' + path
+os.environ.setdefault('BIRDSEYE_DB', 'sqlite:///' + path)

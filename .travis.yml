@@ -4,6 +4,13 @@ python:
   - 2.7
   - 3.5
   - 3.6
-install: pip install Flask gunicorn
+install: pip install Flask gunicorn psycopg2 mysql-connector==2.1.6
 script:
   - ./misc/travis_test.sh
+env:
+  - DB=sqlite
+  - DB=mysql
+  - DB=postgres
+services:
+  - mysql
+  - postgresql
