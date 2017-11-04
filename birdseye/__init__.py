@@ -115,7 +115,7 @@ class BirdsEye(TreeTracerBase):
         return ChangeValue(comprehension_iter_proxy())
 
     def _set_node_value(self, node, frame, value):
-        # type: (ast.AST, FrameType, Any) -> None
+        # type: (ast.AST, FrameType, Union[bool, ExpandedValue]) -> None
         iteration = self.stack[frame].iteration  # type: Iteration
         for i, loop_node in enumerate(node._loops):  # type: int, ast.AST
             loop = iteration.loops[loop_node._tree_index]
@@ -337,7 +337,7 @@ def _deep_dict():
 
 class Iteration(object):
     def __init__(self):
-        self.vals = {}  # type: Dict[int, Any]
+        self.vals = {}  # type: Dict[int, Union[bool, ExpandedValue]]
         self.loops = defaultdict(IterationList)  # type: Dict[int, IterationList]
         self.index = None  # type: int
 
