@@ -122,19 +122,13 @@ class BirdsEye(TreeTracerBase):
             iteration = loop.last()
         iteration.vals[node._tree_index] = value
 
-    def after_stmt(self, node, frame, exc_value, exc_traceback):
-        # type: (ast.stmt, FrameType, Exception, TracebackType) -> None
+    def on_exception(self, node, frame, exc_value, exc_traceback):
+        # type: (Union[ast.expr, ast.stmt], FrameType, Exception, TracebackType) -> None
         if frame.f_code not in self._code_infos:
             return
-        frame_info = self.stack[frame]
-        expression_stack = frame_info.expression_stack
-        if expression_stack:
-            while isinstance(expression_stack[-1], self.SPECIAL_COMPREHENSION_TYPES):
-                inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
-                expression_stack = self.stack[inner_frame].expression_stack
-            self._set_node_value(
-                expression_stack[-1], frame,
-                ExpandedValue(exception_string(exc_value), -1))
+        self._set_node_value(
+            node, frame,
+            ExpandedValue(exception_string(exc_value), -1))
 
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None

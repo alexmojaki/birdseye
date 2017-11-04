@@ -7,6 +7,9 @@ import weakref
 from collections import namedtuple
 from unittest import skipUnless
 
+import tests
+
+str(tests)
 from birdseye import eye
 from birdseye.cheap_repr import register_repr
 from birdseye.db import Call, Session

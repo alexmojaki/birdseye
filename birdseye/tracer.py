@@ -10,7 +10,7 @@ from collections import namedtuple
 from copy import deepcopy
 from functools import partial, update_wrapper
 from itertools import takewhile
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
 try:
@@ -63,6 +63,7 @@ class FrameInfo(object):
         self.expression_values = {}  # type: Dict[ast.expr, Any]
         self.return_node = None  # type: Optional[ast.Return]
         self.comprehension_frames = {}  # type: Dict[ast.expr, FrameType]
+        self.exc_value = None  # type: Optional[BaseException]
 
 
 EnterCallInfo = NamedTuple('EnterCallInfo', [('call_node', Optional[ast.expr]),
@@ -235,6 +236,10 @@ class TreeTracerBase(object):
         # type: (ast.Module, str, str) -> Optional[ast.Module]
         pass
 
+    def on_exception(self, node, frame, exc_value, exc_traceback):
+        # type: (Union[ast.expr, ast.stmt], FrameType, Exception, TracebackType) -> None
+        pass
+
 
 class _NodeVisitor(ast.NodeTransformer):
     def generic_visit(self, node):
@@ -322,8 +327,20 @@ class _StmtContext(object):
         node = self.node
         tracer = self.tracer
         frame = self.frame
-        result = tracer.after_stmt(node, frame, exc_val, exc_tb)
         frame_info = tracer.stack[frame]
+        if exc_val and exc_val is not frame_info.exc_value:
+            frame_info.exc_value = exc_val
+            expression_stack = frame_info.expression_stack
+            if expression_stack:
+                while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
+                    inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
+                    expression_stack = tracer.stack[inner_frame].expression_stack
+                exc_node = expression_stack[-1]
+            else:
+                exc_node = node  # type: ignore
+            tracer.on_exception(exc_node, frame, exc_val, exc_tb)
+
+        result = tracer.after_stmt(node, frame, exc_val, exc_tb)
         if isinstance(node, ast.Return):
             frame_info.return_node = node
         parent = node.parent  # type: ast.AST
