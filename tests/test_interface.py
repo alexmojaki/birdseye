@@ -22,7 +22,7 @@ def foo():
     for i in range(20):
         for j in range(3):
             int(i * 13 + j * 17)
-    bar()
+    str(bar())
 
     x = list(range(1, 20, 2))
     list(x)
@@ -64,7 +64,7 @@ class TestInterface(unittest.TestCase):
 
         vals = {'i': 0, 'j': 0}
         exprs = driver.find_elements_by_class_name('has_value')
-        expr_value = driver.find_element_by_id('expr_value')
+        expr_value = driver.find_element_by_id('box_value')
 
         expr_strings = [
             'i',

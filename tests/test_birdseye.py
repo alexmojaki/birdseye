@@ -138,8 +138,9 @@ def normalise_call_data(call_data):
         elif isinstance(x, list):
             result = [x[0]]
             type_index = x[1]
-            if type_index == -1:
-                result.append(-1)
+            if type_index < 0:
+                assert type_index in (-1, -2)
+                result.append(type_index)
             else:
                 result.append(types[type_index])
 
@@ -179,7 +180,14 @@ class TestBirdsEye(unittest.TestCase):
             index = span['data-index']
             if index not in node_values:
                 continue
-            data_type = span['data-type']
+
+            if 'loop' in span['class']:
+                data_type = 'loop'
+            elif 'stmt' in span['class']:
+                data_type = 'stmt'
+            else:
+                data_type = 'expr'
+
             text = span.text.strip()
             actual_values[data_type][text] = node_values[index]
             if data_type == 'loop':
@@ -188,9 +196,11 @@ class TestBirdsEye(unittest.TestCase):
             if this_node_loops:
                 actual_node_loops[text] = [str(x) for x in this_node_loops]
 
-        bar_value = [repr(bar), 'function', {}]
+        bar_value = [repr(bar), 'function', {}]  # type: list
         if PY3:
             bar_value.append(['__wrapped__', [repr(bar.__wrapped__), 'function', {}]])
+            
+        s = ['', -2, {}]
 
         expected_values = {
             'expr': {
@@ -234,28 +244,28 @@ class TestBirdsEye(unittest.TestCase):
                        ['1', ['2', 'int', {}]]]]],
             },
             'stmt': {
-                'x = 1': True,
-                'y = 2': True,
+                'x = 1': s,
+                'y = 2': s,
                 '''
     if x + y > 5:
         1 / 0
     else:
         x * y
-                '''.strip(): True,
-                'x * y': True,
+                '''.strip(): s,
+                'x * y': s,
                 '''
     try:
         bar(x + x, 2 / 0, y + y)
         foo
     except ZeroDivisionError:
         x - y
-                '''.strip(): True,
-                'bar(x + x, 2 / 0, y + y)': True,
-                'x - y': True,
-                'i + j': {'0': {'0': True, '1': True}, '1': {'0': True, '1': True}},
-                'k': {'0': {'0': True}, '1': {'0': True}},
-                'bar()': True,
-                "{'list': [n for n in [1, 2]]}": True,
+                '''.strip(): s,
+                'bar(x + x, 2 / 0, y + y)': s,
+                'x - y': s,
+                'i + j': {'0': {'0': s, '1': s}, '1': {'0': s, '1': s}},
+                'k': {'0': {'0': s}, '1': {'0': s}},
+                'bar()': s,
+                "{'list': [n for n in [1, 2]]}": s,
             },
             'loop': {
                 '''
@@ -264,16 +274,16 @@ class TestBirdsEye(unittest.TestCase):
             i + j
         for k in [5]:
             k            
-                '''.strip(): True,
+                '''.strip(): s,
                 '''
         for j in [3, 4]:
             i + j
-                '''.strip(): {'0': True, '1': True},
+                '''.strip(): {'0': s, '1': s},
                 '''
         for k in [5]:
             k            
-                '''.strip(): {'0': True, '1': True},
-                'for n in [1, 2]': True,
+                '''.strip(): {'0': s, '1': s},
+                'for n in [1, 2]': s,
             }
         }
         self.assertEqual(byteify(actual_values), expected_values)
