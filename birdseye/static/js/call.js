@@ -21,11 +21,12 @@ var node_values = call_data.node_values;
 var loop_iterations = call_data.loop_iterations;
 var node_loops = func_data.node_loops;
 var _current_iteration = {};
-$code.find('span[data-type="loop"]').each(function(_, loop_span) {
+$code.find('.loop').each(function (_, loop_span) {
     _current_iteration[loop_span.dataset.index] = 0;
 });
+var normal_stmt_value = 'fine (but raises an exception at some other point)';
 
-var selected_expressions = [];
+var selected_boxes = [];
 var index_to_node = {};
 
 function make_jstree_nodes(prefix, path, val, $node) {
@@ -47,13 +48,17 @@ function make_jstree_nodes(prefix, path, val, $node) {
         return is_special && type_name === name;
     }
 
-    var text = _.escape(prefix) + ' = ';
-    if (special('NoneType')) {
-        text += '<i>None</i>';
-    } else if (type_index === -1) { // exception
-        text += '<span style="color: red">' + val_repr + '</span>';
+    var text = _.escape(prefix) + (type_index < 0 ? ' : ' : ' = ');
+    if (type_index === -2) {
+        text += '<i>' + normal_stmt_value + '</i>';
     } else {
-        text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + val_repr;
+        if (special('NoneType')) {
+            text += '<i>None</i>';
+        } else if (type_index === -1) { // exception
+            text += '<span style="color: red">' + val_repr + '</span>';
+        } else {
+            text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + val_repr;
+        }
     }
 
     var icon;
@@ -61,6 +66,8 @@ function make_jstree_nodes(prefix, path, val, $node) {
         icon = 'glyphicon glyphicon-' + (val_repr === 'True' ? 'ok' : 'remove');
     } else if (type_index === -1) {
         icon = 'glyphicon glyphicon-warning-sign';
+    } else if (type_index === -2) {
+        icon = 'glyphicon glyphicon-ok';
     } else {
         icon = '/static/img/type_icons/';
         if (is_special) {
@@ -139,17 +146,21 @@ $('#inspector').jstree({
     }
 });
 
-$code.find('span[data-type="expr"]').each(function() {
+$code.find('span[data-index]').each(function () {
     var $this = $(this);
     var tree_index = this.dataset.index;
-    $this.toggleClass('expr', tree_index in node_values);
+    var json = JSON.stringify(node_values[tree_index]) || '';
+    $this.toggleClass('box', tree_index in node_values && !(
+        // This is a statement node that never encounters an exception, so it never has
+        // a 'value' worth checking.
+        $this.hasClass('stmt') && json.indexOf('-1') === -1));
     $this.toggleClass(
         'has-inner',
-        (JSON.stringify(node_values[tree_index]) || '').indexOf('"inner_call":"') !== -1);
+        json.indexOf('"inner_call":"') !== -1);
     $this.click(function() {
         if ($this.hasClass('hovering')) {
             $this.toggleClass('selected');
-            selected_expressions = _.toggle(selected_expressions, tree_index);
+            selected_boxes = _.toggle(selected_boxes, tree_index);
         }
         render();
     });
@@ -160,7 +171,7 @@ $('#bottom_panel').width($code.width());
 
 function render() {
 
-    $('#inspector, #resize-handle').css({display: selected_expressions.length ? 'block' : 'none'});
+    $('#inspector, #resize-handle').css({display: selected_boxes.length ? 'block' : 'none'});
 
     var loop_indices = {};
     function findRanges(iters) {
@@ -194,26 +205,31 @@ function render() {
         return value;
     }
 
-    $code.find('span[data-type="expr"]').each(
+    $code.find('span[data-index]').each(
         function () {
             var value;
             var $this = $(this);
-            if (this.dataset.index in node_values) {
-                $this.toggleClass('expr', true);
-                value = get_value(this.dataset.index);
+            var tree_index = this.dataset.index;
+            if (tree_index in node_values) {
+                value = get_value(tree_index);
             }
             $this.toggleClass('has_value', Boolean(value));
-            if (value) {
+            $this.toggleClass('stmt_uncovered', $this.hasClass('stmt') && !value);
+
+            if (value && $this.hasClass('box')) {
                 $this.on('mouseover mouseout', function (e) {
                     var hovering = e.type === 'mouseover';
                     $this.toggleClass('hovering', hovering);
                     if (hovering) {
-                        $('#expr_value').text(value[0]);
+                        if (value[1] === -2) {
+                            value[0] = normal_stmt_value;
+                        }
+                        $('#box_value').text(value[0]);
                     }
                     e.stopPropagation();
                 });
                 $this.toggleClass('exception_node', value[1] === -1);
-                $this.toggleClass('value_none', value[1] === 0);
+                $this.toggleClass('value_none', value[1] === 0 || value[1] === -2);
                 var inner_call = value[2].inner_call;
                 if (inner_call) {
                     $this.append('<a class="inner-call" href="/call/' + inner_call + '">' +
@@ -228,17 +244,8 @@ function render() {
         }
     );
 
-    $code.find('span[data-type="stmt"],span[data-type="loop"]').each(function () {
-        var value;
-        var $this = $(this);
-        if (this.dataset.index in node_values) {
-            value = get_value(this.dataset.index);
-        }
-        $this.toggleClass('stmt_uncovered', !value);
-    });
-
     var inspector = $('#inspector');
-    inspector.jstree(true).settings.core.data = selected_expressions.map(function(tree_index) {
+    inspector.jstree(true).settings.core.data = selected_boxes.map(function (tree_index) {
         var node = index_to_node[tree_index];
         var $node = $(node);
         var value = get_value(tree_index);
@@ -248,7 +255,7 @@ function render() {
 
     $('.loop-navigator').remove();
 
-    $code.find('span[data-type="loop"]').each(function(_, loop_span) {
+    $code.find('.loop').each(function (_, loop_span) {
 
         var loopIndex = loop_span.dataset.index;
 

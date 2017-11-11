@@ -1,17 +1,18 @@
-from time import sleep
-
-import requests
-from birdseye import eye
-from birdseye.utils import all_file_paths
 from future.standard_library import install_aliases
-from littleutils import only
-from selenium.webdriver import ActionChains
 
 install_aliases()
 
+import tests
+
+str(tests)
+
+from time import sleep
+import requests
+from littleutils import only
+from selenium.webdriver import ActionChains
+from birdseye import eye
 import unittest
 from threading import Thread
-
 from birdseye.server import app
 from selenium import webdriver
 import os
@@ -22,7 +23,12 @@ def foo():
     for i in range(20):
         for j in range(3):
             int(i * 13 + j * 17)
-    bar()
+            if i > 0:
+                try:
+                    assert j
+                except AssertionError:
+                    pass
+    str(bar())
 
     x = list(range(1, 20, 2))
     list(x)
@@ -64,11 +70,9 @@ class TestInterface(unittest.TestCase):
 
         vals = {'i': 0, 'j': 0}
         exprs = driver.find_elements_by_class_name('has_value')
-        expr_value = driver.find_element_by_id('expr_value')
+        expr_value = driver.find_element_by_id('box_value')
 
         expr_strings = [
-            'i',
-            'j',
             'i * 13 + j * 17',
             'j * 17',
             'i * 13',
@@ -82,6 +86,23 @@ class TestInterface(unittest.TestCase):
 
         def tree_nodes(root=driver):
             return root.find_elements_by_class_name('jstree-node')
+
+        def select(node, prefix, value_text):
+            self.assertIn('box', classes(node))
+            self.assertIn('has_value', classes(node))
+            self.assertNotIn('selected', classes(node))
+            node.click()
+            self.assertIn('selected', classes(node))
+            self.assertEqual(expr_value.text, value_text)
+            tree_node = tree_nodes()[-1]
+            self.assertEqual(tree_node.text, prefix + value_text)
+            return tree_node
+
+        def classes(node):
+            return set(node.get_attribute('class').split())
+
+        def assert_classes(node, *cls):
+            self.assertEqual(classes(node), set(cls))
 
         for i, expr in enumerate(expr_strings):
             find_expr(expr).click()
@@ -101,20 +122,26 @@ class TestInterface(unittest.TestCase):
                             if n.text.startswith(expr + ' ='))
                 self.assertEqual(node.text, '%s = int: %s' % (expr, value))
 
+        stmt = find_by_text('assert j', driver.find_elements_by_class_name('stmt'))
+        assert_classes(stmt, 'stmt', 'stmt_uncovered', 'box')
+
         step(0, 1)
+        select(stmt, 'assert j : ', 'AssertionError')
+        assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'exception_node')
         step(1, 1)
+        self.assertEqual(tree_nodes()[-1].text, 'assert j : fine (but raises an exception at some other point)')
+        assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'value_none')
         step(1, 1)
         step(0, -1)
+        self.assertTrue({'stmt', 'stmt_uncovered', 'selected', 'box', 'hovering'} <= classes(stmt))
         step(1, -1)
 
         # Expanding values
-        find_expr('x').click()
-        self.assertEqual(expr_value.text, '[1, 3, 5, 7, 9, 11, ...]')
-        node = tree_nodes()[-1]
-        self.assertEqual(node.text, 'x = list: [1, 3, 5, 7, 9, 11, ...]')
-        node.find_element_by_class_name('jstree-ocl').click()  # expand
+        x_node = find_expr('x')
+        tree_node = select(x_node, 'x = list: ', '[1, 3, 5, 7, 9, 11, ...]')
+        tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
         sleep(0.2)
-        self.assertEqual([n.text for n in tree_nodes(node)],
+        self.assertEqual([n.text for n in tree_nodes(tree_node)],
                          ['len() = 10',
                           '0 = int: 1',
                           '1 = int: 3',

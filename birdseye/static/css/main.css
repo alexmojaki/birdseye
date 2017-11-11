@@ -1,39 +1,38 @@
-.expr {
+.box {
     position: relative;
     display: inline-block;
     padding: 3px 8px;
-    border: 1px solid transparent;
+    border: 1px solid lightgrey;
     border-radius: 4px;
-    border-color: lightgrey;
 }
 
-.expr.has-inner {
+.box.has-inner {
     padding-right: 12px;
 }
 
-.expr.has_value {
+.box.has_value {
     border-color: grey;
 }
 
-.expr.selected {
+.box.selected {
     padding: 1px 6px;
     border: 3px solid #ccc;
 }
 
-.expr.selected.has_value {
+.box.selected.has_value {
     border-color: #2822ab;
 }
 
-.expr.has_value.value_none {
+.box.has_value.value_none {
     border-style: dashed;
 }
 
-.expr.has_value.exception_node, .expr.has_value.selected.exception_node {
+.box.has_value.exception_node, .box.has_value.selected.exception_node {
     padding: 1px 6px;
     border: 3px solid red;
 }
 
-.expr.hovering {
+.box.hovering {
     background-color: #c1fdff;
 }
 
@@ -44,7 +43,7 @@
     width: inherit;
 }
 
-#expr_value, #inspector {
+#box_value, #inspector {
     border: 1px solid lightgrey;
     margin: 0;
     padding: 10px;
@@ -67,7 +66,7 @@
     background-position: center;
 }
 
-#expr_value {
+#box_value {
     height: 3em;
     overflow: hidden;
 }

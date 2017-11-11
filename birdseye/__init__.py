@@ -60,7 +60,7 @@ class BirdsEye(TreeTracerBase):
             return
         if isinstance(node.parent, (ast.For, ast.While)) and node is node.parent.body[0]:
             self._add_iteration(node._loops, frame)
-        self._set_node_value(node, frame, True)
+        self._set_node_value(node, frame, ExpandedValue.covered())
 
     def _add_iteration(self, loops, frame):
         # type: (typing.Sequence[ast.AST], FrameType) -> None
@@ -104,7 +104,7 @@ class BirdsEye(TreeTracerBase):
         if not is_special_comprehension_iter:
             return None
 
-        self._set_node_value(node.parent, frame, True)
+        self._set_node_value(node.parent, frame, ExpandedValue.covered())
 
         def comprehension_iter_proxy():
             loops = node._loops + (node.parent,)  # type: Tuple[ast.AST, ...]
@@ -115,26 +115,20 @@ class BirdsEye(TreeTracerBase):
         return ChangeValue(comprehension_iter_proxy())
 
     def _set_node_value(self, node, frame, value):
-        # type: (ast.AST, FrameType, Any) -> None
+        # type: (ast.AST, FrameType, Union[bool, ExpandedValue]) -> None
         iteration = self.stack[frame].iteration  # type: Iteration
         for i, loop_node in enumerate(node._loops):  # type: int, ast.AST
             loop = iteration.loops[loop_node._tree_index]
             iteration = loop.last()
         iteration.vals[node._tree_index] = value
 
-    def after_stmt(self, node, frame, exc_value, exc_traceback):
-        # type: (ast.stmt, FrameType, Exception, TracebackType) -> None
+    def on_exception(self, node, frame, exc_value, exc_traceback):
+        # type: (Union[ast.expr, ast.stmt], FrameType, Exception, TracebackType) -> None
         if frame.f_code not in self._code_infos:
             return
-        frame_info = self.stack[frame]
-        expression_stack = frame_info.expression_stack
-        if expression_stack:
-            while isinstance(expression_stack[-1], self.SPECIAL_COMPREHENSION_TYPES):
-                inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
-                expression_stack = self.stack[inner_frame].expression_stack
-            self._set_node_value(
-                expression_stack[-1], frame,
-                ExpandedValue(exception_string(exc_value), -1))
+        self._set_node_value(
+            node, frame,
+            ExpandedValue(exception_string(exc_value), -1))
 
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None
@@ -245,17 +239,20 @@ class BirdsEye(TreeTracerBase):
         positions = []  # type: List[Tuple[int, int, int, str]]
         node_loops = {}  # type: Dict[int, List[int]]
         for node in traced_file.nodes:
+            classes = []
+
+            if (isinstance(node, (ast.While, ast.For, ast.comprehension)) and
+                    not isinstance(node.parent, ast.GeneratorExp)):
+                classes.append('loop')
+            if isinstance(node, ast.stmt):
+                classes.append('stmt')
+
             if isinstance(node, ast.expr):
-                node_type = 'expr'
                 if not node._is_interesting_expression:
                     continue
-            elif (isinstance(node, (ast.While, ast.For, ast.comprehension))
-                  and not isinstance(node.parent, ast.GeneratorExp)):
-                node_type = 'loop'
-            elif isinstance(node, ast.stmt):
-                node_type = 'stmt'
-            else:
+            elif not classes:
                 continue
+
             assert isinstance(node, ast.AST)
 
             # In particular FormattedValue is missing this
@@ -268,8 +265,10 @@ class BirdsEye(TreeTracerBase):
             start, end = traced_file.tokens.get_text_range(node)  # type: int, int
             if start == end == 0:
                 continue
+
             positions.append((start, 1, node._depth,
-                              '<span data-index="%s" data-type="%s">' % (node._tree_index, node_type)))
+                              '<span data-index="%s" class="%s">' %
+                              (node._tree_index, ' '.join(classes))))
             positions.append((end, 0, node._depth, '</span>'))
             if node._loops:
                 node_loops[node._tree_index] = [n._tree_index for n in node._loops]
@@ -337,7 +336,7 @@ def _deep_dict():
 
 class Iteration(object):
     def __init__(self):
-        self.vals = {}  # type: Dict[int, Any]
+        self.vals = {}  # type: Dict[int, Union[bool, ExpandedValue]]
         self.loops = defaultdict(IterationList)  # type: Dict[int, IterationList]
         self.index = None  # type: int
 
@@ -430,6 +429,10 @@ class ExpandedValue(object):
         # type: (int, str, Any) -> None
         self.children = self.children or []
         self.children.append((key, expand(value, level)))
+
+    @classmethod
+    def covered(cls):
+        return ExpandedValue('', -2)
 
 
 def expand(val, level):
