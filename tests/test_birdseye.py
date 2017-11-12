@@ -1,3 +1,5 @@
+from __future__ import division
+
 import json
 import os
 import re
@@ -411,13 +413,19 @@ def f((x, y), z):
             path)
 
         try:
-            from .nested_arguments import f
+            from tests.nested_arguments import f
             f = eye(f)
             call = get_call_stuff(get_call_ids(lambda: f((1, 2), 3))[0]).call
             self.assertEqual(call.arguments, '[["x", "1"], ["y", "2"], ["z", "3"]]')
             self.assertEqual(call.result, "(1, 2, 3)")
         finally:
             os.remove(path)
+
+    @skipUnless(PY2, 'Division future import only changes things in Python 2')
+    def test_future_imports(self):
+        from tests.future_tests import with_future, without_future
+        self.assertEqual(with_future.foo(), eye(with_future.foo)())
+        self.assertEqual(without_future.foo(), eye(without_future.foo)())
 
 
 if __name__ == '__main__':
