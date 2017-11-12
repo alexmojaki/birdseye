@@ -19,7 +19,7 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3, T, Type
+from birdseye.utils import of_type, safe_next, PY3, Type
 
 
 class TracedFile(object):
@@ -49,7 +49,7 @@ class TracedFile(object):
         new_root = deepcopy(root)
         new_root = _NodeVisitor().visit(new_root)
 
-        self.code = compile(new_root, filename, "exec")  # type: CodeType
+        self.code = compile(new_root, filename, "exec", dont_inherit=True)  # type: CodeType
         self.root = root
         self.tracer = tracer
         self.source = source
