@@ -6,13 +6,13 @@ import re
 import sys
 import unittest
 import weakref
-from collections import namedtuple
+from collections import namedtuple, Set, Mapping
 from unittest import skipUnless
 
 import tests
 
 str(tests)
-from birdseye import eye
+from birdseye import eye, expand
 from birdseye.cheap_repr import register_repr
 from birdseye.db import Call, Session
 from birdseye.utils import PY2, PY3
@@ -426,6 +426,81 @@ def f((x, y), z):
         from tests.future_tests import with_future, without_future
         self.assertEqual(with_future.foo(), eye(with_future.foo)())
         self.assertEqual(without_future.foo(), eye(without_future.foo)())
+
+    def test_expand_exceptions(self):
+
+        class A(object):
+            def __len__(self):
+                assert 0
+
+        with self.assertRaises(AssertionError):
+            len(A())
+
+        self.assertIsNone(expand(A(), 1).meta)
+        self.assertEqual(expand([4, 4, 4], 1).meta['len'], 3)
+
+        class FakeSet(Set):
+            def __len__(self):
+                pass
+
+            def __iter__(self):
+                pass
+
+            def __contains__(self, x):
+                pass
+
+        class B(FakeSet):
+            def __iter__(self):
+                assert 0
+
+        with self.assertRaises(AssertionError):
+            list(B())
+
+        self.assertIsNone(expand(B(), 1).children)
+
+        class C(FakeSet):
+            def __iter__(self):
+                yield 1
+                yield 2
+                assert 0
+
+        def children_keys(cls):
+            return [k for k, _ in expand(cls(), 1).children]
+
+        with self.assertRaises(AssertionError):
+            list(C())
+
+        self.assertEqual(children_keys(C), ['<0>', '<1>'])
+
+        class D(object):
+            def __init__(self):
+                self.x = 3
+                self.y = 4
+
+            def __getattribute__(self, item):
+                assert item not in ['x', 'y']
+                return object.__getattribute__(self, item)
+
+        with self.assertRaises(AssertionError):
+            str(D().x)
+
+        # expand goes through __dict__ so x and y are reachable
+        self.assertEqual(sorted(children_keys(D)), ['x', 'y'])
+
+        class E(Mapping):
+            def __len__(self):
+                pass
+
+            def __getitem__(self, key):
+                assert 0
+
+            def __iter__(self):
+                yield 4
+
+        with self.assertRaises(AssertionError):
+            list(E().items())
+
+        self.assertIsNone(expand(E(), 1).children)
 
 
 if __name__ == '__main__':

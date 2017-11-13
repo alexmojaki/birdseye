@@ -435,17 +435,32 @@ class ExpandedValue(object):
         return ExpandedValue('', -2)
 
 
+def _safe_iteritems(val):
+    try:
+        for it in iteritems(val):
+            yield it
+    except:
+        pass
+
+
+def _safe_iter(val):
+    try:
+        for x in val:
+            yield x
+    except:
+        pass
+
+
 def expand(val, level):
     # type: (Any, int) -> ExpandedValue
     result = ExpandedValue(cheap_repr(val), type_registry[val])
     if isinstance(val, TypeRegistry.basic_types):
         return result
 
-    # noinspection PyBroadException
     try:
         length = len(val)
     except:
-        pass
+        length = None
     else:
         result.set_meta('len', length)
 
@@ -458,21 +473,25 @@ def expand(val, level):
 
     add_child = partial(result.add_child, level - 1)
 
-    if isinstance(val, Sequence):
-        if len(val) <= 8:
-            indices = range(len(val))
+    if isinstance(val, Sequence) and length is not None:
+        if length <= 8:
+            indices = range(length)
         else:
-            indices = chain(range(3), range(len(val) - 3, len(val)))
+            indices = chain(range(3), range(length - 3, length))
         for i in indices:
-            add_child(str(i), val[i])
-    elif isinstance(val, Mapping):
-        for k, v in islice(iteritems(val), 10):
+            try:
+                v = val[i]
+            except:
+                pass
+            else:
+                add_child(str(i), v)
+    if isinstance(val, Mapping):
+        for k, v in islice(_safe_iteritems(val), 10):
             add_child(cheap_repr(k), v)
-    elif isinstance(val, Set):
-        if len(val) <= 8:
-            vals = val
-        else:
-            vals = islice(val, 6)
+    if isinstance(val, Set):
+        vals = _safe_iter(val)
+        if length is None or length > 8:
+            vals = islice(vals, 6)
         for i, v in enumerate(vals):
             add_child('<%s>' % i, v)
 
@@ -483,7 +502,7 @@ def expand(val, level):
                 continue
             add_child(str(k), v)
     else:
-        for s in getattr(val, '__slots__', ()):
+        for s in (getattr(val, '__slots__', None) or ()):
             try:
                 attr = getattr(val, s)
             except AttributeError:
