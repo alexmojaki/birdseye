@@ -19,7 +19,7 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3, Type
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda
 
 
 class TracedFile(object):
@@ -118,6 +118,10 @@ class TreeTracerBase(object):
                 raise ValueError('You cannot trace async functions')
         except AttributeError:
             pass
+
+        if is_lambda(func):
+            raise ValueError('You cannot trace lambdas')
+
         filename = inspect.getsourcefile(func)  # type: str
         source = file_to_string(filename)
         traced_file = self.compile(source, filename)
@@ -137,8 +141,10 @@ class TreeTracerBase(object):
                 find_code(const)
 
         find_code(traced_file.code)
+
         if len(code_options) > 1:
-            assert func.__code__.co_name == (lambda: 0).__code__.co_name
+            # Currently lambdas aren't allowed anyway, but should be in the future
+            assert is_lambda(func)
             raise ValueError("Failed to trace lambda. Convert the function to a def.")
         new_func_code = code_options[0]  # type: CodeType
 

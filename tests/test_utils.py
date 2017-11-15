@@ -1,5 +1,5 @@
 import unittest
-from birdseye.utils import common_ancestor, short_path, flatten_list
+from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda
 
 
 class TestUtils(unittest.TestCase):
@@ -36,6 +36,13 @@ class TestUtils(unittest.TestCase):
         check(['ab', ['cd', 'ef']], ['ab', 'cd', 'ef'])
         check([['x', 'y'], 'ab', [['0', '1'], [[], 'cd', 'ef', ['ghi', [[['jkl']]]]]]],
               ['x', 'y', 'ab', '0', '1', 'cd', 'ef', 'ghi', 'jkl'])
+
+    def test_is_lambda(self):
+        self.assertTrue(is_lambda(lambda: 0))
+        self.assertTrue(is_lambda(lambda x, y: x + y))
+        self.assertFalse(is_lambda(min))
+        self.assertFalse(is_lambda(flatten_list))
+        self.assertFalse(is_lambda(self.test_is_lambda))
 
 
 if __name__ == '__main__':

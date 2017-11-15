@@ -144,3 +144,11 @@ def flatten_list(lst):
         else:
             result.append(x)
     return result
+
+
+def is_lambda(f):
+    try:
+        code = f.__code__
+    except AttributeError:
+        return False
+    return code.co_name == (lambda: 0).__code__.co_name
