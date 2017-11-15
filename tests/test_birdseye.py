@@ -49,6 +49,16 @@ def foo():
     bar()
     {'list': [n for n in [1, 2]]}
 
+    try:
+        error()
+    except ValueError:
+        pass
+
+
+@eye
+def error():
+    raise ValueError()
+
 
 class NormalClass(object):
     def __init__(self):
@@ -198,9 +208,11 @@ class TestBirdsEye(unittest.TestCase):
             if this_node_loops:
                 actual_node_loops[text] = [str(x) for x in this_node_loops]
 
-        bar_value = [repr(bar), 'function', {}]  # type: list
-        if PY3:
-            bar_value.append(['__wrapped__', [repr(bar.__wrapped__), 'function', {}]])
+        def func_value(f):
+            result = [repr(f), 'function', {}]  # type: list
+            if PY3:
+                result.append(['__wrapped__', [repr(f.__wrapped__), 'function', {}]])
+            return result
             
         s = ['', -2, {}]
 
@@ -212,7 +224,8 @@ class TestBirdsEye(unittest.TestCase):
                 'x + y > 5': ['False', 'bool', {}],
                 'x * y': ['2', 'int', {}],
                 '2 / 0': ['ZeroDivisionError: division by zero\n', -1, {}],
-                'bar': bar_value,
+                'bar': func_value(bar),
+                'error': func_value(error),
                 'bar()': ['None', 'NoneType', {'inner_call': call_ids[1]}],
                 'x + x': ['2', 'int', {}],
                 'x - y': ['-1', 'int', {}],
@@ -244,6 +257,7 @@ class TestBirdsEye(unittest.TestCase):
                        {'len': 2},
                        ['0', ['1', 'int', {}]],
                        ['1', ['2', 'int', {}]]]]],
+                'error()': ['ValueError\n', -1, {'inner_call': call_ids[2]}],
             },
             'stmt': {
                 'x = 1': s,
@@ -268,6 +282,14 @@ class TestBirdsEye(unittest.TestCase):
                 'k': {'0': {'0': s}, '1': {'0': s}},
                 'bar()': s,
                 "{'list': [n for n in [1, 2]]}": s,
+                'error()': s,
+                '''
+    try:
+        error()
+    except ValueError:
+        pass
+                '''.strip(): s,
+                'pass': s,
             },
             'loop': {
                 '''
