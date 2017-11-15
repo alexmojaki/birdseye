@@ -190,13 +190,17 @@ class TreeTracerBase(object):
     def _treetrace_hidden_after_expr(self, _, node, value):
         # type: (TracedFile, ast.expr, Any) -> Any
         frame = inspect.currentframe().f_back  # type: FrameType
-        self.stack[frame].expression_stack.pop()
-        self.stack[frame].expression_values[node] = value
-        result = self.after_expr(node, frame, value)
+        result = self._after_expr(node, frame, value, None, None)
         if result is not None:
             assert isinstance(result, ChangeValue), "after_expr must return None or an instance of ChangeValue"
             value = result.value
         return value
+
+    def _after_expr(self, node, frame, value, exc_value, exc_tb):
+        frame_info = self.stack[frame]
+        frame_info.expression_stack.pop()
+        frame_info.expression_values[node] = value
+        return self.after_expr(node, frame, value, exc_value, exc_tb)
 
     def _enter_call(self, enter_node, current_frame):
         # type: (ast.AST, FrameType) -> None
@@ -218,16 +222,16 @@ class TreeTracerBase(object):
         # type: (ast.expr, FrameType) -> None
         pass
 
-    def after_expr(self, node, frame, value):
-        # type: (ast.expr, FrameType, Any) -> Optional[ChangeValue]
+    def after_expr(self, node, frame, value, exc_value, exc_tb):
+        # type: (ast.expr, FrameType, Any, Optional[BaseException], Optional[TracebackType]) -> Optional[ChangeValue]
         pass
 
     def before_stmt(self, node, frame):
         # type: (ast.stmt, FrameType) -> None
         pass
 
-    def after_stmt(self, node, frame, exc_value, exc_traceback):
-        # type: (ast.stmt, FrameType, Exception, TracebackType) -> Optional[bool]
+    def after_stmt(self, node, frame, exc_value, exc_traceback, exc_node):
+        # type: (ast.stmt, FrameType, Optional[BaseException], Optional[TracebackType], Optional[ast.AST]) -> Optional[bool]
         pass
 
     def enter_call(self, enter_info):
@@ -240,10 +244,6 @@ class TreeTracerBase(object):
 
     def parse_extra(self, root, source, filename):
         # type: (ast.Module, str, str) -> Optional[ast.Module]
-        pass
-
-    def on_exception(self, node, frame, exc_value, exc_traceback):
-        # type: (Union[ast.expr, ast.stmt], FrameType, Exception, TracebackType) -> None
         pass
 
 
@@ -334,19 +334,20 @@ class _StmtContext(object):
         tracer = self.tracer
         frame = self.frame
         frame_info = tracer.stack[frame]
+        exc_node = None  # type: Optional[Union[ast.expr, ast.stmt]]
         if exc_val and exc_val is not frame_info.exc_value:
+            exc_node = node
             frame_info.exc_value = exc_val
             expression_stack = frame_info.expression_stack
             if expression_stack:
+                inner_frame = frame
                 while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
                     inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
                     expression_stack = tracer.stack[inner_frame].expression_stack
                 exc_node = expression_stack[-1]
-            else:
-                exc_node = node  # type: ignore
-            tracer.on_exception(exc_node, frame, exc_val, exc_tb)
+                tracer._after_expr(exc_node, inner_frame, None, exc_val, exc_tb)
 
-        result = tracer.after_stmt(node, frame, exc_val, exc_tb)
+        result = tracer.after_stmt(node, frame, exc_val, exc_tb, exc_node)
         if isinstance(node, ast.Return):
             frame_info.return_node = node
         parent = node.parent  # type: ast.AST

@@ -76,8 +76,8 @@ class BirdsEye(TreeTracerBase):
         # type: (ast.expr, FrameType) -> None
         self.stack[frame].inner_call = None
 
-    def after_expr(self, node, frame, value):
-        # type: (ast.expr, FrameType, Any) -> Optional[ChangeValue]
+    def after_expr(self, node, frame, value, exc_value, exc_tb):
+        # type: (ast.expr, FrameType, Any, Optional[BaseException], Optional[TracebackType]) -> Optional[ChangeValue]
         if node._is_interesting_expression:
             original_frame = frame
             while frame.f_code.co_name in ('<listcomp>',
@@ -92,11 +92,14 @@ class BirdsEye(TreeTracerBase):
                 return None
 
             frame_info = self.stack[frame]
-            expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
+            if exc_value:
+                expanded_value = self._exception_value(node, frame, exc_value)
+            else:
+                expanded_value = expand(value, level=max(1, 3 - len(node._loops)))
+                self._set_node_value(node, frame, expanded_value)
             if frame_info.inner_call:
                 expanded_value.set_meta('inner_call', frame_info.inner_call)
                 frame_info.inner_call = None
-            self._set_node_value(node, frame, expanded_value)
 
         is_special_comprehension_iter = (isinstance(node.parent, ast.comprehension) and
                                          node is node.parent.iter and
@@ -105,6 +108,9 @@ class BirdsEye(TreeTracerBase):
             return None
 
         self._set_node_value(node.parent, frame, ExpandedValue.covered())
+
+        if exc_value:
+            return None
 
         def comprehension_iter_proxy():
             loops = node._loops + (node.parent,)  # type: Tuple[ast.AST, ...]
@@ -122,13 +128,19 @@ class BirdsEye(TreeTracerBase):
             iteration = loop.last()
         iteration.vals[node._tree_index] = value
 
-    def on_exception(self, node, frame, exc_value, exc_traceback):
-        # type: (Union[ast.expr, ast.stmt], FrameType, Exception, TracebackType) -> None
+    def _exception_value(self, node, frame, exc_value):
+        # type: (Union[ast.expr, ast.stmt], FrameType, BaseException) -> ExpandedValue
+        value = ExpandedValue(exception_string(exc_value), -1)
+        self._set_node_value(node, frame, value)
+        return value
+
+    def after_stmt(self, node, frame, exc_value, exc_traceback, exc_node):
+        # type: (ast.stmt, FrameType, Optional[BaseException], Optional[TracebackType], Optional[ast.AST]) -> Optional[bool]
         if frame.f_code not in self._code_infos:
-            return
-        self._set_node_value(
-            node, frame,
-            ExpandedValue(exception_string(exc_value), -1))
+            return None
+        if exc_value and node is exc_node:
+            self._exception_value(node, frame, exc_value)
+        return None
 
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None
