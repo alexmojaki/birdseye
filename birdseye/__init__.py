@@ -27,7 +27,7 @@ import hashlib
 from asttokens import ASTTokens
 from littleutils import group_by_key_func
 
-from birdseye.cheap_repr import cheap_repr
+from cheap_repr import cheap_repr
 from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue
 from birdseye import tracer
