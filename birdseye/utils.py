@@ -90,14 +90,37 @@ def safe_qualname(obj):
 
 _safe_qualname_cache = {}  # type: Dict[Union[Type, FunctionType], str]
 
+if PY2:
+    def correct_type(obj):
+        """
+        Returns the correct type of obj, regardless of __class__ assignment
+        or old-style classes:
 
-def correct_type(obj):
-    # type: (Any) -> type
-    # TODO handle case where __class__ has been assigned
-    t = type(obj)
-    if t is getattr(types, 'InstanceType', None):
-        t = obj.__class__
-    return t
+        >>> class A:
+        ...     pass
+        ...
+        ...
+        ... class B(object):
+        ...     pass
+        ...
+        ...
+        ... class C(object):
+        ...     __class__ = A
+        ...
+        >>> correct_type(A()) is A
+        True
+        >>> correct_type(B()) is B
+        True
+        >>> correct_type(C()) is C
+        True
+        """
+        t = type(obj)
+        # noinspection PyUnresolvedReferences
+        if t is types.InstanceType:
+            return obj.__class__
+        return t
+else:
+    correct_type = type
 
 
 def exception_string(exc):
