@@ -17,7 +17,7 @@ if version_info[0] == 2:
                          'typing']
 
 setup(name='birdseye',
-      version='0.1.13',
+      version='0.1.14',
       description='Quick, convenient, expression-centric, graphical Python debugger using the AST',
       classifiers=[
           'License :: OSI Approved :: MIT License',
