@@ -13,7 +13,7 @@ import tests
 
 str(tests)
 from birdseye import eye, expand
-from birdseye.cheap_repr import register_repr
+from cheap_repr import register_repr
 from birdseye.db import Call, Session
 from birdseye.utils import PY2, PY3
 from bs4 import BeautifulSoup
@@ -463,7 +463,7 @@ def f((x, y), z):
 
         class FakeSet(Set):
             def __len__(self):
-                pass
+                return 0
 
             def __iter__(self):
                 pass
@@ -511,7 +511,7 @@ def f((x, y), z):
 
         class E(Mapping):
             def __len__(self):
-                pass
+                return 0
 
             def __getitem__(self, key):
                 assert 0

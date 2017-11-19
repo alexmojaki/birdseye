@@ -9,6 +9,7 @@ install_requires = ['Flask',
                     'asttokens',
                     'littleutils',
                     'qualname',
+                    'cheap_repr',
                     'future']
 
 if version_info[0] == 2:
