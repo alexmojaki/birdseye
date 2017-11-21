@@ -6,11 +6,9 @@ standard_library.install_aliases()
 from future.utils import raise_from
 import ntpath
 import os
-import traceback
 import types
 from sys import version_info
-from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Dict
-from types import FunctionType
+from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable
 
 try:
     from typing import Type
@@ -23,7 +21,6 @@ except ImportError:
     from collections import deque as Deque
 
 from littleutils import strip_required_prefix
-from qualname import qualname
 
 PY2 = version_info.major == 2
 PY3 = not PY2
@@ -75,21 +72,6 @@ def short_path(path, all_paths=None):
     return strip_required_prefix(path, prefix) or path_leaf(path)
 
 
-def safe_qualname(obj):
-    # type: (Union[Type, FunctionType]) -> str
-    result = _safe_qualname_cache.get(obj)
-    if not result:
-        try:
-            result = qualname(obj)
-        except AttributeError:
-            result = obj.__name__
-        if '<locals>' not in result:
-            _safe_qualname_cache[obj] = result
-    return result
-
-
-_safe_qualname_cache = {}  # type: Dict[Union[Type, FunctionType], str]
-
 if PY2:
     def correct_type(obj):
         """
@@ -121,12 +103,6 @@ if PY2:
         return t
 else:
     correct_type = type
-
-
-def exception_string(exc):
-    # type: (BaseException) -> Text
-    assert isinstance(exc, BaseException)
-    return ''.join(traceback.format_exception_only(type(exc), exc))
 
 
 def of_type(type_or_tuple, iterable):

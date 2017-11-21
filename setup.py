@@ -8,7 +8,6 @@ install_requires = ['Flask',
                     'sqlalchemy',
                     'asttokens',
                     'littleutils',
-                    'qualname',
                     'cheap_repr',
                     'future']
 
