@@ -218,6 +218,19 @@ class TreeTracerBase(object):
                 call_node = expression_stack[-1]
         return caller_frame, call_node
 
+    def _inner_node_and_frame(self, frame):
+        """
+        Given a normal frame with a nonempty expression stack, returns the actual
+        frame and top of the expression stack after accounting for comprehensions
+        that have their own frames.
+        """
+        frame_info = self.stack[frame]
+        expression_stack = frame_info.expression_stack
+        while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
+            frame = frame_info.comprehension_frames[expression_stack[-1]]
+            expression_stack = self.stack[frame].expression_stack
+        return expression_stack[-1], frame
+
     def before_expr(self, node, frame):
         # type: (ast.expr, FrameType) -> None
         pass
@@ -340,11 +353,7 @@ class _StmtContext(object):
             frame_info.exc_value = exc_val
             expression_stack = frame_info.expression_stack
             if expression_stack:
-                inner_frame = frame
-                while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
-                    inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
-                    expression_stack = tracer.stack[inner_frame].expression_stack
-                exc_node = expression_stack[-1]
+                exc_node, inner_frame = tracer._inner_node_and_frame(frame)
                 tracer._after_expr(exc_node, inner_frame, None, exc_val, exc_tb)
 
         result = tracer.after_stmt(node, frame, exc_val, exc_tb, exc_node)
