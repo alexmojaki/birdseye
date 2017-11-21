@@ -28,10 +28,11 @@ from asttokens import ASTTokens
 from littleutils import group_by_key_func
 
 from cheap_repr import cheap_repr
+from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue
 from birdseye import tracer
-from birdseye.utils import safe_qualname, correct_type, exception_string, PY3, PY2, one_or_none, \
+from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
