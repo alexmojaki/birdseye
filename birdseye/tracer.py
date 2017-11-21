@@ -416,9 +416,10 @@ def loops(node):
         if isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
             break
 
-        is_containing_loop = ((isinstance(parent, ast.For) and parent.iter is not node or
-                               isinstance(parent, ast.While) and parent.test is not node)
-                              and node not in parent.orelse)
+        is_containing_loop = (((isinstance(parent, ast.For) and parent.iter is not node or
+                                isinstance(parent, ast.While) and parent.test is not node)
+                               and node not in parent.orelse) or
+                              (isinstance(parent, ast.comprehension) and node in parent.ifs))
         if is_containing_loop:
             result.append(parent)
 
@@ -426,18 +427,10 @@ def loops(node):
                                  ast.GeneratorExp,
                                  ast.DictComp,
                                  ast.SetComp)):
-            if isinstance(parent, ast.DictComp):
-                is_comprehension_element = node in (parent.key, parent.value)
-            else:
-                is_comprehension_element = node is parent.elt
-            if is_comprehension_element:
-                result.extend(reversed(parent.generators))
-
-            if node in parent.generators:
-                result.extend(reversed(list(takewhile(lambda n: n != node, parent.generators))))
-
-        elif isinstance(parent, ast.comprehension) and node in parent.ifs:
-            result.append(parent)
+            generators = parent.generators
+            if node in generators:
+                generators = list(takewhile(lambda n: n != node, generators))
+            result.extend(reversed(generators))
 
         node = parent
 
