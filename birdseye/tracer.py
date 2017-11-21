@@ -416,8 +416,9 @@ def loops(node):
         if isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
             break
 
-        is_containing_loop = (isinstance(parent, ast.For) and parent.iter is not node or
-                              isinstance(parent, ast.While) and parent.test is not node)
+        is_containing_loop = ((isinstance(parent, ast.For) and parent.iter is not node or
+                               isinstance(parent, ast.While) and parent.test is not node)
+                              and node not in parent.orelse)
         if is_containing_loop:
             result.append(parent)
 
