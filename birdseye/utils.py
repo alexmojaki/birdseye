@@ -3,12 +3,13 @@ from __future__ import print_function, division, absolute_import
 from future import standard_library
 
 standard_library.install_aliases()
-from future.utils import raise_from
+import inspect
+from future.utils import raise_from, iteritems
 import ntpath
 import os
 import types
 from sys import version_info
-from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable
+from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Callable
 
 try:
     from typing import Type
@@ -151,3 +152,11 @@ def is_lambda(f):
     except AttributeError:
         return False
     return code.co_name == (lambda: 0).__code__.co_name
+
+
+def decorate_methods(cls, decorator):
+    # type: (type, Callable[[Callable], Callable]) -> type
+    for name, meth in iteritems(cls.__dict__):  # type: str, Callable
+        if inspect.ismethod(meth) or inspect.isfunction(meth):
+            setattr(cls, name, decorator(meth))
+    return cls

@@ -33,7 +33,7 @@ from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list
+    of_type, Deque, Text, flatten_list, decorate_methods
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
                                    ('traced_file', TracedFile)])
@@ -224,17 +224,9 @@ class BirdsEye(TreeTracerBase):
         session.add(call)
         session.commit()
 
-    def __call__(self, func_or_class):
-        # type: (Union[FunctionType, type]) -> (Union[FunctionType, type])
-        if inspect.isclass(func_or_class):
-            cls = cast(type, func_or_class)
-            for name, meth in iteritems(cls.__dict__):  # type: str, FunctionType
-                if inspect.ismethod(meth) or inspect.isfunction(meth):
-                    setattr(cls, name, self.__call__(meth))
-            return cls
-
-        func = cast(FunctionType, func_or_class)
-        new_func = super(BirdsEye, self).__call__(func)
+    def trace_function(self, func):
+        # type: (FunctionType) -> FunctionType
+        new_func = super(BirdsEye, self).trace_function(func)
         code_info = self._code_infos.get(new_func.__code__)
         if code_info:
             return new_func

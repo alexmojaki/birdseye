@@ -19,7 +19,7 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, decorate_methods
 
 
 class TracedFile(object):
@@ -111,7 +111,7 @@ class TreeTracerBase(object):
                     self._treetrace_hidden_after_expr,
                 ]}
 
-    def __call__(self, func):
+    def trace_function(self, func):
         # type: (FunctionType) -> FunctionType
         try:
             if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
@@ -156,6 +156,13 @@ class TreeTracerBase(object):
             new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
         new_func.traced_file = traced_file
         return new_func
+
+    def __call__(self, func_or_class):
+        # type: (Union[FunctionType, type]) -> (Union[FunctionType, type])
+        if inspect.isclass(func_or_class):
+            return decorate_methods(cast(type, func_or_class), self.trace_function)
+        else:
+            return self.trace_function(cast(FunctionType, func_or_class))
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
