@@ -53,3 +53,4 @@ error: Unexpected keyword argument "html_body" for "Function"
 error: Unexpected keyword argument "lineno" for "Function"
 error: Unexpected keyword argument "name" for "Function"
 note: "Function" defined here
+error: Argument 2 to "decorate_methods" has incompatible type "Callable[[FunctionType], FunctionType]"; expected "Callable[[Callable[..., Any]], Callable[..., Any]]"

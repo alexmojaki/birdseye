@@ -19,7 +19,7 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, decorate_methods
 
 
 class TracedFile(object):
@@ -111,7 +111,7 @@ class TreeTracerBase(object):
                     self._treetrace_hidden_after_expr,
                 ]}
 
-    def __call__(self, func):
+    def trace_function(self, func):
         # type: (FunctionType) -> FunctionType
         try:
             if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
@@ -156,6 +156,13 @@ class TreeTracerBase(object):
             new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
         new_func.traced_file = traced_file
         return new_func
+
+    def __call__(self, func_or_class):
+        # type: (Union[FunctionType, type]) -> (Union[FunctionType, type])
+        if inspect.isclass(func_or_class):
+            return decorate_methods(cast(type, func_or_class), self.trace_function)
+        else:
+            return self.trace_function(cast(FunctionType, func_or_class))
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
@@ -217,6 +224,19 @@ class TreeTracerBase(object):
             if expression_stack:
                 call_node = expression_stack[-1]
         return caller_frame, call_node
+
+    def _inner_node_and_frame(self, frame):
+        """
+        Given a normal frame with a nonempty expression stack, returns the actual
+        frame and top of the expression stack after accounting for comprehensions
+        that have their own frames.
+        """
+        frame_info = self.stack[frame]
+        expression_stack = frame_info.expression_stack
+        while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
+            frame = frame_info.comprehension_frames[expression_stack[-1]]
+            expression_stack = self.stack[frame].expression_stack
+        return expression_stack[-1], frame
 
     def before_expr(self, node, frame):
         # type: (ast.expr, FrameType) -> None
@@ -340,11 +360,7 @@ class _StmtContext(object):
             frame_info.exc_value = exc_val
             expression_stack = frame_info.expression_stack
             if expression_stack:
-                inner_frame = frame
-                while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
-                    inner_frame = frame_info.comprehension_frames[expression_stack[-1]]
-                    expression_stack = tracer.stack[inner_frame].expression_stack
-                exc_node = expression_stack[-1]
+                exc_node, inner_frame = tracer._inner_node_and_frame(frame)
                 tracer._after_expr(exc_node, inner_frame, None, exc_val, exc_tb)
 
         result = tracer.after_stmt(node, frame, exc_val, exc_tb, exc_node)
@@ -407,8 +423,10 @@ def loops(node):
         if isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
             break
 
-        is_containing_loop = (isinstance(parent, ast.For) and parent.iter is not node or
-                              isinstance(parent, ast.While) and parent.test is not node)
+        is_containing_loop = (((isinstance(parent, ast.For) and parent.iter is not node or
+                                isinstance(parent, ast.While) and parent.test is not node)
+                               and node not in parent.orelse) or
+                              (isinstance(parent, ast.comprehension) and node in parent.ifs))
         if is_containing_loop:
             result.append(parent)
 
@@ -416,18 +434,10 @@ def loops(node):
                                  ast.GeneratorExp,
                                  ast.DictComp,
                                  ast.SetComp)):
-            if isinstance(parent, ast.DictComp):
-                is_comprehension_element = node in (parent.key, parent.value)
-            else:
-                is_comprehension_element = node is parent.elt
-            if is_comprehension_element:
-                result.extend(reversed(parent.generators))
-
-            if node in parent.generators:
-                result.extend(reversed(list(takewhile(lambda n: n != node, parent.generators))))
-
-        elif isinstance(parent, ast.comprehension) and node in parent.ifs:
-            result.append(parent)
+            generators = parent.generators
+            if node in generators:
+                generators = list(takewhile(lambda n: n != node, generators))
+            result.extend(reversed(generators))
 
         node = parent
 
