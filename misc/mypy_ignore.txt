@@ -54,3 +54,10 @@ error: Unexpected keyword argument "lineno" for "Function"
 error: Unexpected keyword argument "name" for "Function"
 note: "Function" defined here
 error: Argument 2 to "decorate_methods" has incompatible type "Callable[[FunctionType], FunctionType]"; expected "Callable[[Callable[..., Any]], Callable[..., Any]]"
+error: Item "For" of "Union[For, While, comprehension]" has no attribute "_tree_index"
+error: Item "While" of "Union[For, While, comprehension]" has no attribute "_tree_index"
+error: Item "comprehension" of "Union[For, While, comprehension]" has no attribute "_tree_index"
+error: No overload variant of "map" matches argument types [Any, builtins.list[builtins.int*], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]
+error: "FrameInfo" has no attribute "inner_calls"
+error: Module has no attribute "getargs"
+error: No overload variant of "map" matches argument types [Any, builtins.list[Any], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]

@@ -1,5 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
+import json
+
 from future import standard_library
 
 standard_library.install_aliases()
@@ -20,6 +22,11 @@ try:
     from typing import Deque
 except ImportError:
     from collections import deque as Deque
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
 
 from littleutils import strip_required_prefix
 
@@ -156,7 +163,20 @@ def is_lambda(f):
 
 def decorate_methods(cls, decorator):
     # type: (type, Callable[[Callable], Callable]) -> type
+    """
+    Apply `decorator` to every method of `cls`.
+    """
     for name, meth in iteritems(cls.__dict__):  # type: str, Callable
         if inspect.ismethod(meth) or inspect.isfunction(meth):
             setattr(cls, name, decorator(meth))
     return cls
+
+
+class ProtocolEncoder(json.JSONEncoder):
+    def default(self, o):
+        try:
+            method = o.as_json
+        except AttributeError:
+            return super(ProtocolEncoder, self).default(o)
+        else:
+            return method()

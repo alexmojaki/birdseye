@@ -1,5 +1,6 @@
 from __future__ import division
 
+import ast
 import json
 import os
 import re
@@ -9,16 +10,18 @@ import weakref
 from collections import namedtuple, Set, Mapping
 from unittest import skipUnless
 
+from bs4 import BeautifulSoup
+from cheap_repr import register_repr
+from littleutils import json_to_file, file_to_json, string_to_file
+
 import tests
 
 str(tests)
-from birdseye import eye, expand
-from cheap_repr import register_repr
+from birdseye import eye, NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.db import Call, Session
 from birdseye.utils import PY2, PY3
-from bs4 import BeautifulSoup
-from littleutils import json_to_file, file_to_json, string_to_file
 from tests import golden_script
+
 
 session = Session()
 
@@ -226,7 +229,7 @@ class TestBirdsEye(unittest.TestCase):
                 '2 / 0': ['ZeroDivisionError: division by zero', -1, {}],
                 'bar': func_value(bar),
                 'error': func_value(error),
-                'bar()': ['None', 'NoneType', {'inner_call': call_ids[1]}],
+                'bar()': ['None', 'NoneType', {'inner_calls': [call_ids[1]]}],
                 'x + x': ['2', 'int', {}],
                 'x - y': ['-1', 'int', {}],
                 'i': {'0': {'0': ['1', 'int', {}],
@@ -257,7 +260,7 @@ class TestBirdsEye(unittest.TestCase):
                        {'len': 2},
                        ['0', ['1', 'int', {}]],
                        ['1', ['2', 'int', {}]]]]],
-                'error()': ['ValueError', -1, {'inner_call': call_ids[2]}],
+                'error()': ['ValueError', -1, {'inner_calls': [call_ids[2]]}],
             },
             'stmt': {
                 'x = 1': s,
@@ -450,6 +453,7 @@ def f((x, y), z):
         self.assertEqual(without_future.foo(), eye(without_future.foo)())
 
     def test_expand_exceptions(self):
+        expand = NodeValue.expression
 
         class A(object):
             def __len__(self):
@@ -523,6 +527,40 @@ def f((x, y), z):
             list(E().items())
 
         self.assertIsNone(expand(E(), 1).children)
+
+    def test_is_interesting_expression(self):
+        def check(s):
+            return is_interesting_expression(ast.parse(s, mode='eval').body)
+
+        self.assertFalse(check('1'))
+        self.assertFalse(check('-1'))
+        self.assertTrue(check('-1-3'))
+        self.assertFalse(check('"abc"'))
+        self.assertTrue(check('abc'))
+        self.assertFalse(check('[]'))
+        self.assertFalse(check('[1, 2]'))
+        self.assertFalse(check('[1, 2, "abc"]'))
+        self.assertFalse(check('[[[]]]'))
+        self.assertFalse(check('{}'))
+        self.assertFalse(check('{1:2}'))
+        self.assertFalse(check('["abc", 1, [2, {7:3}, {}, {3:[5, ["lkj"]]}]]'))
+        self.assertTrue(check('["abc", 1+3, [2, {7:3}, {}, {3:[5, ["lkj"]]}]]'))
+
+    def test_is_obvious_builtin(self):
+        def check(s, value):
+            return is_obvious_builtin(ast.parse(s, mode='eval').body, value)
+
+        self.assertTrue(check('len', len))
+        self.assertTrue(check('max', max))
+        self.assertTrue(check('True', True))
+        self.assertTrue(check('False', False))
+        self.assertTrue(check('None', None))
+        self.assertFalse(check('len', max))
+        self.assertFalse(check('max', len))
+        self.assertFalse(check('0', False))
+        self.assertFalse(check('not True', False))
+        if PY2:
+            self.assertFalse(check('None', False))
 
 
 if __name__ == '__main__':
