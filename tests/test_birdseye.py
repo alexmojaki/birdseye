@@ -229,7 +229,7 @@ class TestBirdsEye(unittest.TestCase):
                 '2 / 0': ['ZeroDivisionError: division by zero', -1, {}],
                 'bar': func_value(bar),
                 'error': func_value(error),
-                'bar()': ['None', 'NoneType', {'inner_call': call_ids[1]}],
+                'bar()': ['None', 'NoneType', {'inner_calls': [call_ids[1]]}],
                 'x + x': ['2', 'int', {}],
                 'x - y': ['-1', 'int', {}],
                 'i': {'0': {'0': ['1', 'int', {}],
@@ -260,7 +260,7 @@ class TestBirdsEye(unittest.TestCase):
                        {'len': 2},
                        ['0', ['1', 'int', {}]],
                        ['1', ['2', 'int', {}]]]]],
-                'error()': ['ValueError', -1, {'inner_call': call_ids[2]}],
+                'error()': ['ValueError', -1, {'inner_calls': [call_ids[2]]}],
             },
             'stmt': {
                 'x = 1': s,

@@ -129,7 +129,7 @@ class TestInterface(unittest.TestCase):
         select(stmt, 'assert j : ', 'AssertionError')
         assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'exception_node')
         step(1, 1)
-        self.assertEqual(tree_nodes()[-1].text, 'assert j : fine (but raises an exception at some other point)')
+        self.assertEqual(tree_nodes()[-1].text, 'assert j : fine')
         assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'value_none')
         step(1, 1)
         step(0, -1)

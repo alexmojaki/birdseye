@@ -62,7 +62,6 @@ class BirdsEye(TreeTracerBase):
             return
         if isinstance(node.parent, (ast.For, ast.While)) and node is node.parent.body[0]:
             self._add_iteration(node._loops, frame)
-        self._set_node_value(node, frame, NodeValue.covered())
 
     def _add_iteration(self, loops, frame):
         # type: (typing.Sequence[Loop], FrameType) -> None
@@ -77,10 +76,6 @@ class BirdsEye(TreeTracerBase):
                 loop.append(Iteration())
             else:
                 iteration = loop.last()
-
-    def before_expr(self, node, frame):
-        # type: (ast.expr, FrameType) -> None
-        self.stack[frame].inner_call = None
 
     def after_expr(self, node, frame, value, exc_value, exc_tb):
         # type: (ast.expr, FrameType, Any, Optional[BaseException], Optional[TracebackType]) -> Optional[ChangeValue]
@@ -105,9 +100,7 @@ class BirdsEye(TreeTracerBase):
             else:
                 node_value = NodeValue.expression(value, level=max(1, 3 - len(node._loops)))
                 self._set_node_value(node, frame, node_value)
-            if frame_info.inner_call:
-                node_value.set_meta('inner_call', frame_info.inner_call)
-                frame_info.inner_call = None
+            self._check_inner_call(frame_info, node, node_value)
 
         # i.e. is `node` the `y` in `[f(x) for x in y]`, making `node.parent` the `for x in y`
         is_special_comprehension_iter = (
@@ -137,6 +130,12 @@ class BirdsEye(TreeTracerBase):
         # This effectively changes to code to `for x in comprehension_iter_proxy()`
         return ChangeValue(comprehension_iter_proxy())
 
+    def _check_inner_call(self, frame_info, node, node_value):
+        # type: (FrameInfo, Union[ast.stmt, ast.expr], NodeValue) -> None
+        inner_calls = frame_info.inner_calls.pop(node, None)
+        if inner_calls:
+            node_value.set_meta('inner_calls', inner_calls)
+
     def _set_node_value(self, node, frame, value):
         # type: (ast.AST, FrameType, NodeValue) -> None
         iteration = self.stack[frame].iteration  # type: Iteration
@@ -156,7 +155,11 @@ class BirdsEye(TreeTracerBase):
         if frame.f_code not in self._code_infos:
             return None
         if exc_value and node is exc_node:
-            self._exception_value(node, frame, exc_value)
+            value = self._exception_value(node, frame, exc_value)
+        else:
+            value = NodeValue.covered()
+            self._set_node_value(node, frame, value)
+        self._check_inner_call(self.stack[frame], node, value)
         return None
 
     def enter_call(self, enter_info):
@@ -179,9 +182,10 @@ class BirdsEye(TreeTracerBase):
         ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
-        prev = self.stack.get(frame.f_back)
+        frame_info.inner_calls = defaultdict(list)
+        prev = self.stack.get(enter_info.caller_frame)
         if prev:
-            prev.inner_call = frame_info.call_id
+            prev.inner_calls[enter_info.call_node].append(frame_info.call_id)
 
     def _call_id(self):
         # type: () -> Text

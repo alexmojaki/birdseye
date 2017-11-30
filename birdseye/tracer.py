@@ -79,8 +79,8 @@ class FrameInfo(object):
     Can be obtained from the stack attribute of a TreeTracerBase instance
     """
     def __init__(self):
-        # Statement currently being executed
-        self.statement = None  # type: Optional[ast.stmt]
+        # Stack of statements currently being executed
+        self.statement_stack = []  # type: List[ast.stmt]
 
         # Stack of expression nodes within the above statement that
         # the interpreter is planning on evaluating, or has just evaluated
@@ -115,7 +115,7 @@ class FrameInfo(object):
 EnterCallInfo = NamedTuple('EnterCallInfo', [
 
     # Node  from where the call was made
-    ('call_node', Optional[ast.expr]),
+    ('call_node', Optional[Union[ast.expr, ast.stmt]]),
 
     # Node where the call begins
     ('enter_node', ast.AST),
@@ -130,7 +130,7 @@ EnterCallInfo = NamedTuple('EnterCallInfo', [
 ExitCallInfo = NamedTuple('ExitCallInfo', [
 
     # Node  from where the call was made
-    ('call_node', Optional[ast.expr]),
+    ('call_node', Optional[Union[ast.expr, ast.stmt]]),
 
     # Node where the call explicitly returned
     ('return_node', Optional[ast.Return]),
@@ -334,13 +334,16 @@ class TreeTracerBase(object):
         self.enter_call(EnterCallInfo(call_node, enter_node, caller_frame, current_frame))
 
     def _get_caller_stuff(self, frame):
-        # type: (FrameType) -> Tuple[FrameType, Optional[ast.expr]]
+        # type: (FrameType) -> Tuple[FrameType, Optional[Union[ast.expr, ast.stmt]]]
         caller_frame = frame.f_back
         call_node = None
         if caller_frame in self.stack:
-            expression_stack = self.stack[caller_frame].expression_stack
+            frame_info = self.stack[caller_frame]
+            expression_stack = frame_info.expression_stack
             if expression_stack:
                 call_node = expression_stack[-1]
+            else:
+                call_node = frame_info.statement_stack[-1]  # type: ignore
         return caller_frame, call_node
 
     def _inner_node_and_frame(self, frame):
@@ -522,7 +525,7 @@ class _StmtContext(object):
             tracer._enter_call(node, frame)
         frame_info = tracer.stack[frame]
         frame_info.expression_stack = []
-        frame_info.statement = node
+        frame_info.statement_stack.append(node)
         tracer.before_stmt(node, frame)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -531,6 +534,8 @@ class _StmtContext(object):
         tracer = self.tracer
         frame = self.frame
         frame_info = tracer.stack[frame]
+
+        frame_info.statement_stack.pop()
 
         exc_node = None  # type: Optional[Union[ast.expr, ast.stmt]]
         if exc_val and exc_val is not frame_info.exc_value:

@@ -58,3 +58,6 @@ error: Item "For" of "Union[For, While, comprehension]" has no attribute "_tree_
 error: Item "While" of "Union[For, While, comprehension]" has no attribute "_tree_index"
 error: Item "comprehension" of "Union[For, While, comprehension]" has no attribute "_tree_index"
 error: No overload variant of "map" matches argument types [Any, builtins.list[builtins.int*], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]
+error: "FrameInfo" has no attribute "inner_calls"
+error: Module has no attribute "getargs"
+error: No overload variant of "map" matches argument types [Any, builtins.list[Any], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]

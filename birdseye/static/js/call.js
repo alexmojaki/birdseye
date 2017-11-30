@@ -24,7 +24,7 @@ $(function () {
     $code.find('.loop').each(function (_, loop_span) {
         _current_iteration[loop_span.dataset.index] = 0;
     });
-    var normal_stmt_value = 'fine (but raises an exception at some other point)';
+    var normal_stmt_value = 'fine';
 
     var selected_boxes = [];
     var index_to_node = {};
@@ -152,12 +152,14 @@ $(function () {
         var tree_index = this.dataset.index;
         var json = JSON.stringify(node_values[tree_index]) || '';
         $this.toggleClass('box', tree_index in node_values && !(
-            // This is a statement node that never encounters an exception, so it never has
-            // a 'value' worth checking.
-            $this.hasClass('stmt') && json.indexOf('-1') === -1));
+            // This is a statement node that never encounters an exception,
+            // or has any metadata, so it never has a 'value' worth checking.
+            $this.hasClass('stmt') &&
+            -1 === json.indexOf('-1') &&
+            -1 === json.indexOf('inner_call')));
         $this.toggleClass(
             'has-inner',
-            json.indexOf('"inner_call":"') !== -1);
+            json.indexOf('"inner_calls":["') !== -1);
         $this.click(function () {
             if ($this.hasClass('hovering')) {
                 $this.toggleClass('selected');
@@ -232,13 +234,21 @@ $(function () {
                     });
                     $this.toggleClass('exception_node', value[1] === -1);
                     $this.toggleClass('value_none', value[1] === 0 || value[1] === -2);
-                    var inner_call = value[2].inner_call;
-                    if (inner_call) {
-                        $this.append('<a class="inner-call" href="/call/' + inner_call + '">' +
+                    $this.children('a.inner-call').remove();
+
+                    var inner_calls = value[2].inner_calls || [];
+                    var place_link = function (inner_call, css) {
+                        var link = $('<a class="inner-call" href="/call/' + inner_call + '">' +
                             '<span class="glyphicon glyphicon-share-alt"></span>' +
                             '</a>')
-                    } else {
-                        $this.children('a.inner-call').remove()
+                            .css(css);
+                        $this.append(link);
+                    };
+                    if (inner_calls.length === 1) {
+                        place_link(inner_calls[0], {bottom: '-4px'});
+                    } else if (inner_calls.length >= 2) {
+                        place_link(inner_calls[0], {top: 0});
+                        place_link(inner_calls[inner_calls.length - 1], {bottom: '-4px'});
                     }
                 } else {
                     $this.off('mouseover mouseout');
