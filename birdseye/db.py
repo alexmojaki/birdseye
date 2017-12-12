@@ -12,6 +12,7 @@ from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Intege
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 DB_URI = os.environ.get('BIRDSEYE_DB',
                         'sqlite:///' + os.path.join(os.path.expanduser('~'),
@@ -37,6 +38,8 @@ class Base(object):
 
 Base = declarative_base(cls=Base)  # type: ignore
 
+LongText = LONGTEXT if engine.name == 'mysql' else Text
+
 
 class Call(Base):
     id = Column(String(length=32), primary_key=True)
@@ -46,7 +49,7 @@ class Call(Base):
     return_value = Column(Text)
     exception = Column(Text)
     traceback = Column(Text)
-    data = Column(Text)
+    data = Column(LongText)
     start_time = Column(DateTime)
 
     @property
@@ -94,9 +97,9 @@ class Function(Base):
     id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
     file = Column(Text)
     name = Column(Text)
-    html_body = Column(Text)
+    html_body = Column(LongText)
     lineno = Column(Integer)
-    data = Column(Text)
+    data = Column(LongText)
     hash = Column(String(length=64))
 
     __table_args__ = (UniqueConstraint('hash',
