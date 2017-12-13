@@ -73,7 +73,7 @@ Every function call is recorded, and every nontrivial expression is traced. This
   - The first and last 3 values of sequences such as lists.
   - 10 items of mappings such as dictionaries.
   - 6 values of sets.
-  - A limited version of the `repr()` of values is used. This works in a similar way to the `repr/reprlib` modules. Use the `cheap_repr.register_repr` decorator for your own types that have a `__repr__` which may be slow to compute or have large return values. See the [`cheap_repr`](https://github.com/alexmojaki/birdseye/blob/master/birdseye/cheap_repr.py) module for details and examples. The plan is to separate this into a new package in the future.
+  - A limited version of the `repr()` of values is used, provided by the [cheap_repr](https://github.com/alexmojaki/cheap_repr) package.
   - Nested data structures and objects can only be expanded by up to 3 levels. Inside loops, this is decreased.
 
 There is no API at the moment to collect more or less data. Suggestions are welcome as it's not obvious how to deal with the problem. But the idea of this tool is to be as quick and convenient as possible and to work for most cases. If in a particular situation you have to think carefully about how to use it, it may be better to use more conventional debugging methods.

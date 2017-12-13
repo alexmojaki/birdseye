@@ -1,16 +1,17 @@
 from __future__ import print_function, division, absolute_import
 
+import json
+
 from future import standard_library
 
 standard_library.install_aliases()
-from future.utils import raise_from
+import inspect
+from future.utils import raise_from, iteritems
 import ntpath
 import os
-import traceback
 import types
 from sys import version_info
-from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Dict
-from types import FunctionType
+from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Callable
 
 try:
     from typing import Type
@@ -22,8 +23,12 @@ try:
 except ImportError:
     from collections import deque as Deque
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 from littleutils import strip_required_prefix
-from qualname import qualname
 
 PY2 = version_info.major == 2
 PY3 = not PY2
@@ -75,35 +80,37 @@ def short_path(path, all_paths=None):
     return strip_required_prefix(path, prefix) or path_leaf(path)
 
 
-def safe_qualname(obj):
-    # type: (Union[Type, FunctionType]) -> str
-    result = _safe_qualname_cache.get(obj)
-    if not result:
-        try:
-            result = qualname(obj)
-        except AttributeError:
-            result = obj.__name__
-        if '<locals>' not in result:
-            _safe_qualname_cache[obj] = result
-    return result
+if PY2:
+    def correct_type(obj):
+        """
+        Returns the correct type of obj, regardless of __class__ assignment
+        or old-style classes:
 
-
-_safe_qualname_cache = {}  # type: Dict[Union[Type, FunctionType], str]
-
-
-def correct_type(obj):
-    # type: (Any) -> type
-    # TODO handle case where __class__ has been assigned
-    t = type(obj)
-    if t is getattr(types, 'InstanceType', None):
-        t = obj.__class__
-    return t
-
-
-def exception_string(exc):
-    # type: (BaseException) -> Text
-    assert isinstance(exc, BaseException)
-    return ''.join(traceback.format_exception_only(type(exc), exc))
+        >>> class A:
+        ...     pass
+        ...
+        ...
+        ... class B(object):
+        ...     pass
+        ...
+        ...
+        ... class C(object):
+        ...     __class__ = A
+        ...
+        >>> correct_type(A()) is A
+        True
+        >>> correct_type(B()) is B
+        True
+        >>> correct_type(C()) is C
+        True
+        """
+        t = type(obj)
+        # noinspection PyUnresolvedReferences
+        if t is types.InstanceType:
+            return obj.__class__
+        return t
+else:
+    correct_type = type
 
 
 def of_type(type_or_tuple, iterable):
@@ -152,3 +159,24 @@ def is_lambda(f):
     except AttributeError:
         return False
     return code.co_name == (lambda: 0).__code__.co_name
+
+
+def decorate_methods(cls, decorator):
+    # type: (type, Callable[[Callable], Callable]) -> type
+    """
+    Apply `decorator` to every method of `cls`.
+    """
+    for name, meth in iteritems(cls.__dict__):  # type: str, Callable
+        if inspect.ismethod(meth) or inspect.isfunction(meth):
+            setattr(cls, name, decorator(meth))
+    return cls
+
+
+class ProtocolEncoder(json.JSONEncoder):
+    def default(self, o):
+        try:
+            method = o.as_json
+        except AttributeError:
+            return super(ProtocolEncoder, self).default(o)
+        else:
+            return method()

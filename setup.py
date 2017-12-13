@@ -8,7 +8,7 @@ install_requires = ['Flask',
                     'sqlalchemy',
                     'asttokens',
                     'littleutils',
-                    'qualname',
+                    'cheap_repr',
                     'future']
 
 if version_info[0] == 2:
@@ -16,7 +16,7 @@ if version_info[0] == 2:
                          'typing']
 
 setup(name='birdseye',
-      version='0.1.12',
+      version='0.2.0',
       description='Quick, convenient, expression-centric, graphical Python debugger using the AST',
       classifiers=[
           'License :: OSI Approved :: MIT License',
