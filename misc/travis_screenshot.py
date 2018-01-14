@@ -1,3 +1,27 @@
+"""
+This script lets you view a screenshot of the browser produced by selenium
+when a test fails on travis.
+
+To run this script you will first need to:
+
+    pip install pyperclip jsonfinder requests
+
+Open a travis build job with a failed interface test. There should be logs with a big JSON
+blob produced by selenium, including an encoding of a screenshot of the browswer when the
+error occurred. Copy the URL of the job to your clipboard. Here is an example:
+
+    https://travis-ci.org/alexmojaki/birdseye/jobs/290114752
+
+Then run the script as simply follows:
+
+    python travis_screenshot.py
+
+The script doesn't take arguments, it reads the URL from the clipboard.
+
+The result will be a file such as screen_0.png.
+
+"""
+
 import json
 import re
 from base64 import b64decode
