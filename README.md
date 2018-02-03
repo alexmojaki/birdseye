@@ -80,6 +80,10 @@ There is no API at the moment to collect more or less data. Suggestions are welc
 
 Asynchronous code is not supported.
 
+## Contributing
+
+I'd love your help! Check out [the wiki](https://github.com/alexmojaki/birdseye/wiki) to get started.
+
 ## How it works
 
 The source file of a decorated function is parsed into the standard Python Abstract Syntax Tree. The tree is then modified so that every statement is wrapped in its own `with` statement and every expression is wrapped in a function call. The modified tree is compiled and the resulting code object is used to directly construct a brand new function. This is why the `eye` decorator must be applied first: it's not a wrapper like most decorators, so other decorators applied first would almost certainly either have no effect or bypass the tracing. The AST modifications notify the tracer both before and after every expression and statement. This functionality is generic, and in the future it will be extracted into its own package.
