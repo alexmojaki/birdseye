@@ -371,7 +371,7 @@ class BirdsEye(TreeTracerBase):
         
         After the list is sorted, the HTML generated is essentially:
         
-        source[0:positions[0].index] + positions[0].html + source[positions[0]:positions[1].index] + positions[1].html + ...
+        source[0:positions[0].index] + positions[0].html + source[positions[0].index:positions[1].index] + positions[1].html + ...
         """
 
         traced_file.root._depth = 0
