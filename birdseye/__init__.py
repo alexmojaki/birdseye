@@ -31,7 +31,7 @@ from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, decorate_methods, lru_cache, ProtocolEncoder
+    of_type, Deque, Text, flatten_list, decorate_methods, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
                                    ('traced_file', TracedFile),
@@ -51,8 +51,8 @@ class BirdsEye(TreeTracerBase):
                 node._is_interesting_expression = is_interesting_expression(node)
 
     @lru_cache()
-    def compile(self, source, filename):
-        traced_file = super(BirdsEye, self).compile(source, filename)
+    def compile(self, source, filename, flags=0):
+        traced_file = super(BirdsEye, self).compile(source, filename, flags)
         traced_file.tokens = ASTTokens(source, tree=traced_file.root)
         return traced_file
 
@@ -274,7 +274,11 @@ class BirdsEye(TreeTracerBase):
         lines, start_lineno = inspect.getsourcelines(func)  # type: List[Text], int
         end_lineno = start_lineno + len(lines)
         name = safe_qualname(func)
-        filename = os.path.abspath(inspect.getsourcefile(func))
+        source_file = inspect.getsourcefile(func)
+        if source_file.startswith('<ipython-input'):
+            filename = IPYTHON_FILE_PATH
+        else:
+            filename = os.path.abspath(source_file)
         nodes = list(self._nodes_of_interest(new_func.traced_file, start_lineno, end_lineno))
         html_body = self._nodes_html(nodes, start_lineno, end_lineno, new_func.traced_file)
         data = json.dumps(dict(

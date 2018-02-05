@@ -40,8 +40,8 @@ class TracedFile(object):
     - code: executable code object compiled from the modified AST
     """
 
-    def __init__(self, tracer, source, filename):
-        # type: (TreeTracerBase, str, str) -> None
+    def __init__(self, tracer, source, filename, flags):
+        # type: (TreeTracerBase, str, str, int) -> None
         # Here the source code is parsed, modified, and compiled
         root = ast.parse(source, filename)  # type: ast.Module
 
@@ -66,7 +66,7 @@ class TracedFile(object):
         new_root = deepcopy(root)
         new_root = _NodeVisitor().visit(new_root)
 
-        self.code = compile(new_root, filename, "exec", dont_inherit=True)  # type: CodeType
+        self.code = compile(new_root, filename, "exec", dont_inherit=True, flags=flags)  # type: CodeType
         self.root = root
         self.tracer = tracer
         self.source = source
@@ -175,9 +175,9 @@ class TreeTracerBase(object):
         self.stack = {}  # type: Dict[FrameType, FrameInfo]
 
     @lru_cache()
-    def compile(self, source, filename):
-        # type: (str, str) -> TracedFile
-        return TracedFile(self, source, filename)
+    def compile(self, source, filename, flags=0):
+        # type: (str, str, int) -> TracedFile
+        return TracedFile(self, source, filename, flags)
 
     def exec_string(self, source, filename, globs=None, locs=None):
         # type: (str, str, dict, dict) -> None
@@ -212,12 +212,22 @@ class TreeTracerBase(object):
             raise ValueError('You cannot trace lambdas')
 
         filename = inspect.getsourcefile(func)  # type: str
-        source = file_to_string(filename)
+
+        if '<ipython-input' in filename:
+            # noinspection PyPackageRequirements
+            from IPython import get_ipython
+            import linecache
+
+            flags = get_ipython().compile.flags
+            source = ''.join(linecache.cache[filename][2])
+        else:
+            source = file_to_string(filename)
+            flags = 0
 
         # We compile the entire file instead of just the function source
         # because it can contain context which affects the function code,
         # e.g. enclosing functions and classes or __future__ imports
-        traced_file = self.compile(source, filename)
+        traced_file = self.compile(source, filename, flags)
 
         # Then we have to recursively search through the newly compiled
         # code to find the code we actually want corresponding to this function
