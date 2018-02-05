@@ -80,6 +80,8 @@ There is no API at the moment to collect more or less data. Suggestions are welc
 
 Asynchronous code is not supported.
 
+In IPython shells and notebooks, `shell.ast_transformers` is ignored in decorated functions.
+
 ## Contributing
 
 I'd love your help! Check out [the wiki](https://github.com/alexmojaki/birdseye/wiki) to get started.
