@@ -34,6 +34,7 @@ PY2 = version_info.major == 2
 PY3 = not PY2
 T = TypeVar('T')
 RT = TypeVar('RT')
+IPYTHON_FILE_PATH = 'IPython notebook or shell'
 
 if PY2:
     Text = unicode
@@ -51,7 +52,12 @@ def path_leaf(path):
 def all_file_paths():
     # type: () -> List[str]
     from birdseye.db import Function, Session
-    return [f[0] for f in Session().query(Function.file).distinct()]
+    paths = [f[0] for f in Session().query(Function.file).distinct()]
+    paths.sort()
+    if IPYTHON_FILE_PATH in paths:
+        paths.remove(IPYTHON_FILE_PATH)
+        paths.insert(0, IPYTHON_FILE_PATH)
+    return paths
 
 
 def common_ancestor(paths):
@@ -74,7 +80,12 @@ def common_ancestor(paths):
 
 def short_path(path, all_paths=None):
     # type: (str, List[str]) -> str
-    prefix = common_ancestor(all_paths or all_file_paths())
+    if path == IPYTHON_FILE_PATH:
+        return path
+
+    all_paths = [f for f in all_paths or all_file_paths()
+                 if f != IPYTHON_FILE_PATH]
+    prefix = common_ancestor(all_paths)
     if prefix in r'\/':
         prefix = ''
     return strip_required_prefix(path, prefix) or path_leaf(path)

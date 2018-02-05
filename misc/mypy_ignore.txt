@@ -61,3 +61,4 @@ error: No overload variant of "map" matches argument types [Any, builtins.list[b
 error: "FrameInfo" has no attribute "inner_calls"
 error: Module has no attribute "getargs"
 error: No overload variant of "map" matches argument types [Any, builtins.list[Any], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]
+error: Module has no attribute "cache"

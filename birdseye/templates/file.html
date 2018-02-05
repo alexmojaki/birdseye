@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block body %}
+    {% if is_ipython %}
+        <h2>{{ short_path }}</h2>
+    {% else %}
     <h2>File: <span class="code-font">{{ short_path }}</span></h2>
     <p><strong>Full path: </strong>{{ full_path }}</p>
+    {% endif %}
     <h3>Functions:</h3>
     {% for func in funcs %}
         <li>
