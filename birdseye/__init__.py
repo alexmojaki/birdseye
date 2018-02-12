@@ -23,7 +23,7 @@ from uuid import uuid4
 import hashlib
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func, only
+from littleutils import group_by_key_func
 
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
@@ -282,7 +282,6 @@ class BirdsEye(TreeTracerBase):
         nodes = list(self._nodes_of_interest(new_func.traced_file, start_lineno, end_lineno))
         html_body = self._nodes_html(nodes, start_lineno, end_lineno, new_func.traced_file)
         data = json.dumps(dict(
-            node_ranges=self._node_ranges(nodes, new_func.traced_file.tokens, start_lineno),
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
@@ -312,28 +311,6 @@ class BirdsEye(TreeTracerBase):
             session.add(db_func)
             session.commit()
         return db_func
-
-    def _node_ranges(self, nodes, tokens, start_lineno):
-        func_node = only(node
-                         for node, _ in nodes
-                         if isinstance(node, ast.FunctionDef)
-                         and node.first_token.start[0] == start_lineno)
-
-        text = tokens.get_text(func_node)
-        func_start = tokens.get_text_range(func_node)[0]
-        func_start += len(text) - len(text.lstrip())
-
-        result = defaultdict(list)
-        for node, _ in nodes:
-            if node == func_node:
-                continue
-            start, end = tokens.get_text_range(node)
-            start -= func_start
-            end -= func_start
-            result[node._depth].append(dict(
-                node=node._tree_index, start=start, end=end))
-
-        return [dict(depth=k, nodes=v) for k, v in sorted(result.items())]
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
         """
