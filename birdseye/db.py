@@ -92,6 +92,10 @@ class Call(Base):
     def arguments_list(self):
         return json.loads(self.arguments)
 
+    @property
+    def parsed_data(self):
+        return json.loads(self.data)
+
 
 class Function(Base):
     id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
@@ -104,6 +108,10 @@ class Function(Base):
 
     __table_args__ = (UniqueConstraint('hash',
                                        name='everything_unique'),)
+
+    @property
+    def parsed_data(self):
+        return json.loads(self.data)
 
 
 Base.metadata.create_all(engine)
