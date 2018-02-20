@@ -431,8 +431,8 @@ class BirdsEye(TreeTracerBase):
          for y in range(5)]
         """
 
-        comprehensions = group_by_key_func(of_type(ast.comprehension, traced_file.nodes),
-                                           lambda c: c.first_token.line
+        comprehensions = group_by_key_func(of_type((ast.comprehension, ast.While, ast.For), traced_file.nodes),
+                                           lambda c: c.first_token.start[0]
                                            )  # type: Dict[Any, Iterable[ast.comprehension]]
 
         def get_start(n):
@@ -442,7 +442,7 @@ class BirdsEye(TreeTracerBase):
         for comp_list in comprehensions.values():
             prev_start = None  # type: Optional[int]
             for comp in sorted(comp_list, key=lambda c: c.first_token.startpos):
-                if comp is comp.parent.generators[0]:
+                if isinstance(comp, ast.comprehension) and comp is comp.parent.generators[0]:
                     start = get_start(comp.parent)
                     if prev_start is not None and start < prev_start:
                         start = get_start(comp)

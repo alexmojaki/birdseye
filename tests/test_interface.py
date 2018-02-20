@@ -45,7 +45,7 @@ class TestInterface(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.PhantomJS(service_args=['--webdriver-loglevel=DEBUG'])
         self.driver.set_window_size(1400, 1000)
-        self.driver.implicitly_wait(0.5)
+        self.driver.implicitly_wait(2)
         if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
             Thread(target=lambda: app.run(port=7777)).start()
 

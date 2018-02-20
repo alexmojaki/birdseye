@@ -337,7 +337,8 @@ class TestBirdsEye(unittest.TestCase):
         @eye
         def f():
             # @formatter:off
-            len(([([x for x in [] for y in []], [x for x in [] for y in []]) for x in [x for x in [] for y in []] for y in [x for x in [] for y in []]], [([x for x in [] for y in []], [x for x in [] for y in []]) for x in [x for x in [] for y in []] for y in [x for x in [] for y in []]]))
+            for i in ([([x for x in [] for y in []], [x for x in [] for y in []]) for x in [x for x in [] for y in []] for y in [x for x in [] for y in []]], [([x for x in [] for y in []], [x for x in [] for y in []]) for x in [x for x in [] for y in []] for y in [x for x in [] for y in []]]):
+                pass
             # @formatter:on
 
         soup = get_call_stuff(get_call_ids(f)[0]).soup

@@ -152,9 +152,9 @@ $(function () {
         var tree_index = this.dataset.index;
         var json = JSON.stringify(node_values[tree_index]) || '';
         $this.toggleClass('box', tree_index in node_values && !(
-            // This is a statement node that never encounters an exception,
+            // This is a statement/comprehension node that never encounters an exception,
             // or has any metadata, so it never has a 'value' worth checking.
-            $this.hasClass('stmt') &&
+            ($this.hasClass('stmt') || $this.hasClass('loop')) &&
             -1 === json.indexOf('-1') &&
             -1 === json.indexOf('inner_call')));
         $this.toggleClass(
