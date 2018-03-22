@@ -79,6 +79,10 @@ class BirdsEye(TreeTracerBase):
 
     def after_expr(self, node, frame, value, exc_value, exc_tb):
         # type: (ast.expr, FrameType, Any, Optional[BaseException], Optional[TracebackType]) -> Optional[ChangeValue]
+
+        if _tracing_recursively(frame):
+            return None
+
         if node._is_interesting_expression:
 
             # Find the frame corresponding to the function call if we're inside a comprehension
@@ -152,7 +156,7 @@ class BirdsEye(TreeTracerBase):
 
     def after_stmt(self, node, frame, exc_value, exc_traceback, exc_node):
         # type: (ast.stmt, FrameType, Optional[BaseException], Optional[TracebackType], Optional[ast.AST]) -> Optional[bool]
-        if frame.f_code not in self._code_infos:
+        if frame.f_code not in self._code_infos or _tracing_recursively(frame):
             return None
         if exc_value and node is exc_node:
             value = self._exception_value(node, frame, exc_value)
@@ -165,7 +169,7 @@ class BirdsEye(TreeTracerBase):
     def enter_call(self, enter_info):
         # type: (EnterCallInfo) -> None
         frame = enter_info.current_frame  # type: FrameType
-        if frame.f_code not in self._code_infos:
+        if frame.f_code not in self._code_infos or _tracing_recursively(frame):
             return
         frame_info = self.stack[frame]
         frame_info.start_time = datetime.now()
@@ -198,7 +202,7 @@ class BirdsEye(TreeTracerBase):
         and sent to the database.
         """
         frame = exit_info.current_frame  # type: FrameType
-        if frame.f_code not in self._code_infos:
+        if frame.f_code not in self._code_infos or _tracing_recursively(frame):
             return
         frame_info = self.stack[frame]
 
@@ -468,6 +472,19 @@ HTMLPosition = NamedTuple('HTMLPosition', [
 
 def _deep_dict():
     return defaultdict(_deep_dict)
+
+
+_bad_codes = (eye.enter_call.__code__,
+              eye.exit_call.__code__,
+              eye.after_expr.__code__,
+              eye.after_stmt.__code__)
+
+
+def _tracing_recursively(frame):
+    while frame:
+        if frame.f_code in _bad_codes:
+            return True
+        frame = frame.f_back
 
 
 class Iteration(object):
