@@ -563,6 +563,34 @@ def f((x, y), z):
         if PY2:
             self.assertFalse(check('None', False))
 
+    def test_tracing_magic_methods(self):
+        @eye
+        class A(object):
+            def __repr__(self):
+                return '%s(label=%r)' % (self.__class__.__name__, self.label)
+
+            def __getattr__(self, item):
+                return item
+
+            def __getattribute__(self, item):
+                return object.__getattribute__(self, item)
+
+            def __len__(self):
+                return self.length
+
+        a = A()
+        a.label = 'hello'
+        a.length = 3
+
+        @eye
+        def test_A():
+            self.assertEqual(a.label, 'hello')
+            self.assertEqual(a.length, 3)
+            self.assertEqual(a.thing, 'thing')
+            self.assertEqual(repr(a), "A(label='hello')")
+
+        test_A()
+
 
 if __name__ == '__main__':
     unittest.main()
