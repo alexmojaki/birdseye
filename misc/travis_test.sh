@@ -27,6 +27,8 @@ gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e
 
+cat /home/travis/virtualenv/python2.7.14/lib/python2.7/site-packages/sqlalchemy/exc.py
+
 python setup.py test
 result=$?
 kill $(ps aux | grep birdseye.server:app | grep -v grep | awk '{print $2}')
