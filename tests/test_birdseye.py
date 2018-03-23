@@ -405,23 +405,15 @@ class TestBirdsEye(unittest.TestCase):
             json_to_file(data, path)
 
     def test_decorate_class(self):
-        def fooz(_):
-            return 'method outside class'
+        with self.assertRaises(TypeError) as e:
+            # noinspection PyUnusedLocal
+            @eye
+            class Testclass(object):
+                def barz(self):
+                    return 'class decorator test'
 
-        @eye
-        class Testclass(object):
-            call_meth = fooz
-
-            def barz(self):
-                return 'class decorator test'
-
-        def check(method, expected_value):
-            call = get_call_stuff(get_call_ids(method)[0]).call
-            self.assertEqual(expected_value, call.return_value)
-
-        x = Testclass()
-        check(x.barz, "'class decorator test'")
-        check(x.call_meth, "'method outside class'")
+        self.assertEqual(str(e.exception),
+                         'Decorating classes is no longer supported')
 
     @skipUnless(PY2, 'Nested arguments are only possible in Python 2')
     def test_nested_arguments(self):
@@ -564,17 +556,20 @@ def f((x, y), z):
             self.assertFalse(check('None', False))
 
     def test_tracing_magic_methods(self):
-        @eye
         class A(object):
+            @eye
             def __repr__(self):
                 return '%s(label=%r)' % (self.__class__.__name__, self.label)
 
+            @eye
             def __getattr__(self, item):
                 return item
 
+            @eye
             def __getattribute__(self, item):
                 return object.__getattribute__(self, item)
 
+            @eye
             def __len__(self):
                 return self.length
 

@@ -31,7 +31,7 @@ from birdseye.db import Function, Call, session
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, decorate_methods, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH
+    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
                                    ('traced_file', TracedFile),

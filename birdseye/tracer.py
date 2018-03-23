@@ -23,7 +23,7 @@ from types import FrameType, TracebackType, CodeType, FunctionType
 
 from littleutils import file_to_string
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, decorate_methods, lru_cache
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache
 
 
 class TracedFile(object):
@@ -266,12 +266,12 @@ class TreeTracerBase(object):
         new_func.traced_file = traced_file
         return new_func
 
-    def __call__(self, func_or_class):
-        # type: (Union[FunctionType, type]) -> (Union[FunctionType, type])
-        if inspect.isclass(func_or_class):
-            return decorate_methods(cast(type, func_or_class), self.trace_function)
-        else:
-            return self.trace_function(cast(FunctionType, func_or_class))
+    def __call__(self, func):
+        # type: (FunctionType) -> FunctionType
+        if inspect.isclass(func):
+            raise TypeError('Decorating classes is no longer supported')
+
+        return self.trace_function(func)
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
@@ -531,7 +531,7 @@ class _StmtContext(object):
         tracer = self.tracer
         node = self.node
         frame = self.frame
-        if isinstance(node.parent, (ast.FunctionDef, ast.Module)) and node is node.parent.body[0]:
+        if isinstance(node.parent, (ast.FunctionDef, ast.Module, ast.ClassDef)) and node is node.parent.body[0]:
             tracer._enter_call(node, frame)
         frame_info = tracer.stack[frame]
         frame_info.expression_stack = []
