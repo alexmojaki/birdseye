@@ -172,17 +172,6 @@ def is_lambda(f):
     return code.co_name == (lambda: 0).__code__.co_name
 
 
-def decorate_methods(cls, decorator):
-    # type: (type, Callable[[Callable], Callable]) -> type
-    """
-    Apply `decorator` to every method of `cls`.
-    """
-    for name, meth in iteritems(cls.__dict__):  # type: str, Callable
-        if inspect.ismethod(meth) or inspect.isfunction(meth):
-            setattr(cls, name, decorator(meth))
-    return cls
-
-
 class ProtocolEncoder(json.JSONEncoder):
     def default(self, o):
         try:

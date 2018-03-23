@@ -46,14 +46,16 @@ def use_gen_2(g):
         dummy(y)
 
 
-@eye
 class MyClass(object):
+    @eye
     def __add__(self, other):
         return other
 
+    @eye
     def __enter__(self):
         pass
 
+    @eye
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
