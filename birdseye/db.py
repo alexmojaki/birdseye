@@ -13,6 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.mysql import LONGTEXT
+from littleutils import select_attrs
 
 DB_URI = os.environ.get('BIRDSEYE_DB',
                         'sqlite:///' + os.path.join(os.path.expanduser('~'),
@@ -24,7 +25,8 @@ if DB_URI.startswith('sqlite'):
 
 engine = create_engine(DB_URI,
                        connect_args=connect_args,
-                       poolclass=StaticPool)
+                       poolclass=StaticPool,
+                       echo=False)
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -96,6 +98,15 @@ class Call(Base):
     def parsed_data(self):
         return json.loads(self.data)
 
+    @staticmethod
+    def basic_dict(call):
+        return dict(arguments=call.arguments_list,
+                    **select_attrs(call, 'id function_id return_value traceback '
+                                         'exception start_time'))
+
+    basic_columns = (id, function_id, return_value,
+                     traceback, exception, start_time, arguments)
+
 
 class Function(Base):
     id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
@@ -105,6 +116,7 @@ class Function(Base):
     lineno = Column(Integer)
     data = Column(LongText)
     hash = Column(String(length=64))
+    body_hash = Column(String(length=64))
 
     __table_args__ = (UniqueConstraint('hash',
                                        name='everything_unique'),)
@@ -112,6 +124,12 @@ class Function(Base):
     @property
     def parsed_data(self):
         return json.loads(self.data)
+
+    @staticmethod
+    def basic_dict(self):
+        return select_attrs(self, 'file name lineno hash body_hash')
+
+    basic_columns = (file, name, lineno, hash, body_hash)
 
 
 Base.metadata.create_all(engine)

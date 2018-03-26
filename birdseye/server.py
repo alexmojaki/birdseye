@@ -1,6 +1,10 @@
 from __future__ import print_function, division, absolute_import
 
+import json
+from itertools import chain
+
 from future import standard_library
+from littleutils import DecentJSONEncoder, withattrs, select_keys
 
 standard_library.install_aliases()
 import sys
@@ -44,14 +48,14 @@ def file_view(path):
 @app.route('/file/<file:path>/function/<func_name>')
 def func_view(path, func_name):
     session = Session()
-    query = (session.query(Call, Function)
-             .join(Function)
-             .filter_by(file=path, name=func_name)
-             .order_by(Call.start_time.desc())
-             [:200])
+    query = (session.query(*(Call.basic_columns + Function.basic_columns))
+                 .join(Function)
+                 .filter_by(file=path, name=func_name)
+                 .order_by(Call.start_time.desc())[:200])
     if query:
-        func = query[0][1]
-        calls = [p[0] for p in query]
+        func = query[0]
+        print(func.body_hash)
+        calls = [withattrs(Call(), **row._asdict()) for row in query]
     else:
         func = session.query(Function).filter_by(file=path, name=func_name)[0]
         calls = None
@@ -77,6 +81,47 @@ def kill():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
     return 'Server shutting down...'
+
+
+@app.route('/api/call/<call_id>')
+def api_call_view(call_id):
+    call = Session().query(Call).filter_by(id=call_id).one()
+    func = call.function
+    return DecentJSONEncoder().encode(dict(
+        call=dict(data=call.parsed_data, **Call.basic_dict(call)),
+        function=dict(data=func.parsed_data, **Function.basic_dict(func))))
+
+
+@app.route('/api/calls_by_body_hash/<body_hash>')
+def calls_by_body_hash(body_hash):
+    query = (Session().query(*Call.basic_columns + (Function.data,))
+                 .join(Function)
+                 .filter_by(body_hash=body_hash)[:200])
+
+    calls = [Call.basic_dict(withattrs(Call(), **row._asdict()))
+             for row in query]
+
+    function_data_set = {row.data for row in query}
+    ranges = set()
+    for function_data in function_data_set:
+        node_ranges = json.loads(function_data)['node_ranges']
+        for group in node_ranges:
+            for node in group['nodes']:
+                ranges.add((node['start'], node['end']))
+
+    ranges = [dict(start=start, end=end) for start, end in ranges]
+
+    return DecentJSONEncoder().encode(dict(calls=calls, ranges=ranges))
+
+
+@app.route('/api/body_hashes_present/', methods=['POST'])
+def body_hashes_present():
+    hashes = request.json
+    query = (Session().query(Function.body_hash)
+             .filter(Function.body_hash.in_(hashes))
+             .distinct())
+
+    return DecentJSONEncoder().encode(chain.from_iterable(query))
 
 
 def main():

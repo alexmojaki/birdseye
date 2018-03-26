@@ -9,6 +9,7 @@ from types import FrameType, TracebackType, CodeType, FunctionType
 import typing
 
 import ast
+# noinspection PyCompatibility
 import html
 import inspect
 import json
@@ -23,7 +24,7 @@ from uuid import uuid4
 import hashlib
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func
+from littleutils import group_by_key_func, only
 
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
@@ -276,6 +277,7 @@ class BirdsEye(TreeTracerBase):
             return new_func
 
         lines, start_lineno = inspect.getsourcelines(func)  # type: List[Text], int
+        raw_body = ''.join(lines).strip()
         end_lineno = start_lineno + len(lines)
         name = safe_qualname(func)
         source_file = inspect.getsourcefile(func)
@@ -285,25 +287,38 @@ class BirdsEye(TreeTracerBase):
             filename = os.path.abspath(source_file)
         nodes = list(self._nodes_of_interest(new_func.traced_file, start_lineno, end_lineno))
         html_body = self._nodes_html(nodes, start_lineno, end_lineno, new_func.traced_file)
-        data = json.dumps(dict(
+        tokens = new_func.traced_file.tokens
+        data = dict(
+            node_ranges=self._node_ranges(nodes, tokens, start_lineno),
+            loop_nodes=list(self._loop_nodes(nodes, tokens)),
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
                 if node._loops
-            }),
-            sort_keys=True)
-        db_func = self._db_func(data, filename, html_body, name, start_lineno)
+            })
+        data = json.dumps(data, sort_keys=True)
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, raw_body)
         arg_info = inspect.getargs(new_func.__code__)
         arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
         self._code_infos[new_func.__code__] = CodeInfo(db_func, new_func.traced_file, arg_names)
         return new_func
 
-    def _db_func(self, data, filename, html_body, name, start_lineno):
+    def _loop_nodes(self, nodes, tokens):
+        for node, (classes, _, __) in nodes:
+            if 'loop' not in classes:
+                continue
+            start, end = tokens.get_text_range(node.target)
+            yield dict(node=node._tree_index, start=start, end=end)  # TODO
+
+    def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
         Retrieve the Function object from the database if one exists, or create one.
         """
-        function_hash = hashlib.sha256((filename + name + html_body + data + str(start_lineno)
-                                        ).encode('utf8')).hexdigest()
+        def h(s):
+            return hashlib.sha256(s.encode('utf8')).hexdigest()
+
+        function_hash = h(filename + name + html_body + data + str(start_lineno))
+
         db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
         if not db_func:
             db_func = Function(file=filename,
@@ -311,10 +326,33 @@ class BirdsEye(TreeTracerBase):
                                html_body=html_body,
                                lineno=start_lineno,
                                data=data,
+                               body_hash=h(raw_body),
                                hash=function_hash)
             session.add(db_func)
             session.commit()
         return db_func
+
+    def _node_ranges(self, nodes, tokens, start_lineno):
+        func_node = only(node
+                         for node, _ in nodes
+                         if isinstance(node, ast.FunctionDef)
+                         and node.first_token.start[0] == start_lineno)
+
+        text = tokens.get_text(func_node)
+        func_start = tokens.get_text_range(func_node)[0]
+        func_start += len(text) - len(text.lstrip())
+
+        result = defaultdict(list)
+        for node, (classes, _, __) in nodes:
+            if node == func_node:
+                continue
+            start, end = tokens.get_text_range(node)
+            start -= func_start
+            end -= func_start
+            result[node._depth].append(dict(
+                node=node._tree_index, start=start, end=end, classes=classes))
+
+        return [dict(depth=k, nodes=v) for k, v in sorted(result.items())]
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
         """

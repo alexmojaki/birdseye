@@ -7,7 +7,7 @@ install_requires = ['Flask',
                     'flask-humanize',
                     'sqlalchemy',
                     'asttokens',
-                    'littleutils',
+                    'littleutils>=0.2',
                     'cheap_repr',
                     'future']
 
