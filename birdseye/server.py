@@ -3,7 +3,6 @@ from __future__ import print_function, division, absolute_import
 from future import standard_library
 
 standard_library.install_aliases()
-import sys
 
 from flask import Flask, request
 from flask.templating import render_template
@@ -12,6 +11,11 @@ from werkzeug.routing import PathConverter
 
 from birdseye.db import Call, Function, Session
 from birdseye.utils import all_file_paths, short_path, IPYTHON_FILE_PATH
+
+import argparse
+parser = argparse.ArgumentParser(description='Bird\'s Eye: A Python debugger with UI')
+parser.add_argument('-p', '--port', help='HTTP port, default is 7777', default=7777, type=int)
+parser.add_argument('--host', help='HTTP host, default is \'localhost\'', default='localhost')
 
 app = Flask('birdseye')
 Humanize(app)
@@ -80,12 +84,9 @@ def kill():
 
 
 def main():
-    try:
-        port = int(sys.argv[1])
-    except IndexError:
-        port = 7777
-
-    app.run(debug=True, port=port)
+    args = parser.parse_args()
+    host, port = args.host, args.port
+    app.run(debug=True, port=port, host=host)
 
 
 if __name__ == '__main__':
