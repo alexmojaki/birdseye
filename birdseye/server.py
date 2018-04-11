@@ -5,6 +5,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import argparse
+import os
 import sys
 
 from flask import Flask, request
@@ -92,7 +93,12 @@ def main():
     parser.add_argument('--host', help="HTTP host, default is 'localhost'", default='localhost')
 
     args = parser.parse_args()
-    app.run(debug=True, port=args.port, host=args.host)
+    app.run(
+        debug=True,
+        port=args.port,
+        host=args.host,
+        use_reloader=os.environ.get('BIRDSEYE_RELOADER') == '1',
+    )
 
 
 if __name__ == '__main__':
