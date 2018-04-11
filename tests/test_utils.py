@@ -1,5 +1,10 @@
+# coding=utf8
+
 import unittest
-from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda
+from tempfile import mkstemp
+
+from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, PY3, \
+    read_source_file
 
 
 class TestUtils(unittest.TestCase):
@@ -43,6 +48,43 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(is_lambda(min))
         self.assertFalse(is_lambda(flatten_list))
         self.assertFalse(is_lambda(self.test_is_lambda))
+
+    def test_open_with_encoding_check(self):
+        filename = mkstemp()[1]
+
+        def write(stuff):
+            with open(filename, 'wb') as f:
+                f.write(stuff)
+
+        def read():
+            return read_source_file(filename).strip()
+
+        # Correctly declared encodings
+
+        write(u'# coding=utf8\né'.encode('utf8'))
+        self.assertEqual(u'é', read())
+
+        write(u'# coding=gbk\né'.encode('gbk'))
+        self.assertEqual(u'é', read())
+
+        # Wrong encodings
+
+        write(u'# coding=utf8\né'.encode('gbk'))
+        self.assertRaises(UnicodeDecodeError, read)
+
+        write(u'# coding=gbk\né'.encode('utf8'))
+        self.assertFalse(u'é' in read())
+
+        # In Python 3 the default encoding is assumed to be UTF8
+        if PY3:
+            write(u'é'.encode('utf8'))
+            self.assertEqual(u'é', read())
+
+            write(u'é'.encode('gbk'))
+
+            # The lack of an encoding when one is needed
+            # ultimately raises a SyntaxError
+            self.assertRaises(SyntaxError, read)
 
 
 if __name__ == '__main__':

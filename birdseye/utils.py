@@ -5,13 +5,13 @@ import json
 from future import standard_library
 
 standard_library.install_aliases()
-import inspect
-from future.utils import raise_from, iteritems
+
+from future.utils import raise_from
 import ntpath
 import os
 import types
 from sys import version_info
-from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable, Callable
+from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable
 
 try:
     from typing import Type
@@ -180,3 +180,42 @@ class ProtocolEncoder(json.JSONEncoder):
             return super(ProtocolEncoder, self).default(o)
         else:
             return method()
+
+
+try:
+
+    # Python 3
+    from tokenize import open as open_with_encoding_check
+
+except ImportError:
+
+    # Python 2
+    from lib2to3.pgen2.tokenize import detect_encoding
+    import io
+
+
+    def open_with_encoding_check(filename):
+        """Open a file in read only mode using the encoding detected by
+        detect_encoding().
+        """
+        fp = io.open(filename, 'rb')
+        try:
+            encoding, lines = detect_encoding(fp.readline)
+            fp.seek(0)
+            text = io.TextIOWrapper(fp, encoding, line_buffering=True)
+            text.mode = 'r'
+            return text
+        except:
+            fp.close()
+            raise
+
+
+def read_source_file(filename):
+    from lib2to3.pgen2.tokenize import cookie_re
+
+    with open_with_encoding_check(filename) as f:
+        return ''.join([
+            '\n' if i < 2 and cookie_re.match(line)
+            else line
+            for i, line in enumerate(f)
+        ])
