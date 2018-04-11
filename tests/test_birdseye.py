@@ -1,4 +1,9 @@
 # coding=utf8
+
+"""
+Module docstrings before __future__ imports can break things...
+"""
+
 from __future__ import division
 
 import ast
