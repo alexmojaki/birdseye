@@ -53,6 +53,14 @@ class TracedFile(object):
                 node._tree_index = len(self.nodes)
                 self.nodes.append(node)
 
+            # Mark __future__ imports and anything before (i.e. module docstrings)
+            # to be ignored by the AST transformer
+            for i, stmt in enumerate(root.body):
+                if isinstance(stmt, ast.ImportFrom) and stmt.module == "__future__":
+                    for s in root.body[:i + 1]:
+                        for node in ast.walk(s):
+                            node._visit_ignore = True
+
         set_basic_node_attributes()
 
         new_root = tracer.parse_extra(root, source, filename)
@@ -435,12 +443,12 @@ class _NodeVisitor(ast.NodeTransformer):
 
     def generic_visit(self, node):
         # type: (ast.AST) -> ast.AST
-        if (isinstance(node, ast.expr) and
-                not (hasattr(node, "ctx") and not isinstance(node.ctx, ast.Load)) and
-                not isinstance(node, getattr(ast, 'Starred', ()))):
-            return self.visit_expr(node)
-        if isinstance(node, ast.stmt):
-            if not (isinstance(node, ast.ImportFrom) and node.module == "__future__"):
+        if not getattr(node, '_visit_ignore', False):
+            if (isinstance(node, ast.expr) and
+                    not (hasattr(node, "ctx") and not isinstance(node.ctx, ast.Load)) and
+                    not isinstance(node, getattr(ast, 'Starred', ()))):
+                return self.visit_expr(node)
+            if isinstance(node, ast.stmt):
                 return self.visit_stmt(node)
         return super(_NodeVisitor, self).generic_visit(node)
 
