@@ -24,6 +24,7 @@ import hashlib
 
 from asttokens import ASTTokens
 from littleutils import group_by_key_func
+from outdated import warn_if_outdated
 
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
@@ -32,6 +33,12 @@ from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallI
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH
+
+
+__version__ = '0.3.0'
+
+warn_if_outdated('birdseye', __version__)
+
 
 CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
                                    ('traced_file', TracedFile),
