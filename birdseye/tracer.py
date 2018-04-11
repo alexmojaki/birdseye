@@ -21,9 +21,7 @@ from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
-from littleutils import file_to_string
-
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file
 
 
 class TracedFile(object):
@@ -221,7 +219,7 @@ class TreeTracerBase(object):
             flags = get_ipython().compile.flags
             source = ''.join(linecache.cache[filename][2])
         else:
-            source = file_to_string(filename)
+            source = read_source_file(filename)
             flags = 0
 
         # We compile the entire file instead of just the function source
