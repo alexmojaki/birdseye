@@ -9,3 +9,4 @@ error_screenshot.png
 ghostdriver.log
 screen_*.png
 .mypy_cache/
+sandbox.py

@@ -1,3 +1,9 @@
+# coding=utf8
+
+"""
+Module docstrings before __future__ imports can break things...
+"""
+
 from __future__ import division
 
 import ast
@@ -585,6 +591,13 @@ def f((x, y), z):
             self.assertEqual(repr(a), "A(label='hello')")
 
         test_A()
+
+    def test_unicode(self):
+        @eye
+        def f():
+            return u'é'
+
+        self.assertEqual(f(), u'é')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,46 @@
+# coding=utf8
+
+import ast
 import unittest
-from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda
+from tempfile import mkstemp
+
+import asttokens
+from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, source_without_decorators, PY3, \
+    read_source_file
+
+
+def def_decorator(_):
+    def actual_decorator(f):
+        return f
+
+    return actual_decorator
+
+
+def eye(f):
+    return f
+
+
+@def_decorator('def')
+@eye
+def define(defx, defy):
+    """
+def def def
+
+@eye
+def define(defx, defy):
+    """
+    return defx + defy
+
+
+define_source = '''\
+def define(defx, defy):
+    """
+def def def
+
+@eye
+def define(defx, defy):
+    """
+    return defx + defy'''
 
 
 class TestUtils(unittest.TestCase):
@@ -43,6 +84,52 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(is_lambda(min))
         self.assertFalse(is_lambda(flatten_list))
         self.assertFalse(is_lambda(self.test_is_lambda))
+
+    def test_open_with_encoding_check(self):
+        filename = mkstemp()[1]
+
+        def write(stuff):
+            with open(filename, 'wb') as f:
+                f.write(stuff)
+
+        def read():
+            return read_source_file(filename).strip()
+
+        # Correctly declared encodings
+
+        write(u'# coding=utf8\né'.encode('utf8'))
+        self.assertEqual(u'é', read())
+
+        write(u'# coding=gbk\né'.encode('gbk'))
+        self.assertEqual(u'é', read())
+
+        # Wrong encodings
+
+        write(u'# coding=utf8\né'.encode('gbk'))
+        self.assertRaises(UnicodeDecodeError, read)
+
+        write(u'# coding=gbk\né'.encode('utf8'))
+        self.assertFalse(u'é' in read())
+
+        # In Python 3 the default encoding is assumed to be UTF8
+        if PY3:
+            write(u'é'.encode('utf8'))
+            self.assertEqual(u'é', read())
+
+            write(u'é'.encode('gbk'))
+
+            # The lack of an encoding when one is needed
+            # ultimately raises a SyntaxError
+            self.assertRaises(SyntaxError, read)
+
+    def test_source_without_decorators(self):
+        source = open(__file__).read()
+        tokens = asttokens.ASTTokens(source, parse=True)
+        function_def_node = next(n for n in ast.walk(tokens.tree)
+                                 if isinstance(n, ast.FunctionDef) and
+                                 n.name == 'define')
+        self.assertEqual(define_source,
+                         source_without_decorators(tokens, function_def_node))
 
 
 if __name__ == '__main__':
