@@ -324,7 +324,11 @@ class BirdsEye(TreeTracerBase):
         for node, (classes, _, __) in nodes:
             if 'loop' not in classes:
                 continue
-            start, end = tokens.get_text_range(node.target)
+            try:
+                target = node.target
+            except AttributeError:
+                target = node.test
+            start, end = tokens.get_text_range(target)
             start -= func_start
             end -= func_start
             yield dict(node=node._tree_index, start=start, end=end)
