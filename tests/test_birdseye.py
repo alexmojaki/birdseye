@@ -55,6 +55,10 @@ def foo():
             i + j
         for k in [5]:
             k
+    z = 0
+    while z < 2:
+        z += 1
+        z ** z
     bar()
     {'list': [n for n in [1, 2]]}
 
@@ -252,6 +256,16 @@ class TestBirdsEye(unittest.TestCase):
                             '1': ['4', 'int', {}]}},
                 'k': {'0': {'0': ['5', 'int', {}]},
                       '1': {'0': ['5', 'int', {}]}},
+
+                # These are the values of z as in z ** z, not z < 2
+                'z': {'0': ['1', 'int', {}],
+                      '1': ['2', 'int', {}]},
+
+                'z ** z': {'0': ['1', 'int', {}],
+                           '1': ['4', 'int', {}]},
+                'z < 2': {'0': ['True', 'bool', {}],
+                          '1': ['True', 'bool', {}],
+                          '2': ['False', 'bool', {}]},
                 '[n for n in [1, 2]]': ['[1, 2]', 'list',
                                         {'len': 2},
                                         ['0', ['1', 'int', {}]],
@@ -299,6 +313,9 @@ class TestBirdsEye(unittest.TestCase):
         pass
                 '''.strip(): s,
                 'pass': s,
+                'z ** z': {'0': s, '1': s},
+                'z += 1': {'0': s, '1': s},
+                'z = 0': s,
             },
             'loop': {
                 '''
@@ -317,11 +334,20 @@ class TestBirdsEye(unittest.TestCase):
             k            
                 '''.strip(): {'0': s, '1': s},
                 'for n in [1, 2]': s,
+                '''
+    while z < 2:
+        z += 1
+        z ** z
+                '''.strip(): s,
             }
         }
         self.assertEqual(byteify(actual_values), expected_values)
 
         expected_node_loops = {
+            'z': [loops['z']],
+            'z ** z': [loops['z']],
+            'z += 1': [loops['z']],
+            'z < 2': [loops['z']],
             'i + j': [loops['i'], loops['j']],
             'i': [loops['i'], loops['j']],
             'j': [loops['i'], loops['j']],

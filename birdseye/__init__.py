@@ -38,7 +38,7 @@ from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
     safe_next
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 warn_if_outdated('birdseye', __version__)
 
@@ -70,7 +70,11 @@ class BirdsEye(TreeTracerBase):
         # type: (ast.stmt, FrameType) -> None
         if frame.f_code not in self._code_infos:
             return
-        if isinstance(node.parent, (ast.For, ast.While)) and node is node.parent.body[0]:
+        if isinstance(node.parent, ast.For) and node is node.parent.body[0]:
+            self._add_iteration(node._loops, frame)
+
+    def before_expr(self, node, frame):
+        if isinstance(node.parent, ast.While) and node is node.parent.test:
             self._add_iteration(node._loops, frame)
 
     def _add_iteration(self, loops, frame):
