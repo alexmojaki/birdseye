@@ -633,7 +633,7 @@ def loops(node):
             break
 
         is_containing_loop = (((isinstance(parent, ast.For) and parent.iter is not node or
-                                isinstance(parent, ast.While) and parent.test is not node)
+                                isinstance(parent, ast.While))
                                and node not in parent.orelse) or
                               (isinstance(parent, ast.comprehension) and node in parent.ifs))
         if is_containing_loop:

@@ -67,7 +67,11 @@ class BirdsEye(TreeTracerBase):
         # type: (ast.stmt, FrameType) -> None
         if frame.f_code not in self._code_infos:
             return
-        if isinstance(node.parent, (ast.For, ast.While)) and node is node.parent.body[0]:
+        if isinstance(node.parent, ast.For) and node is node.parent.body[0]:
+            self._add_iteration(node._loops, frame)
+
+    def before_expr(self, node, frame):
+        if isinstance(node.parent, ast.While) and node is node.parent.test:
             self._add_iteration(node._loops, frame)
 
     def _add_iteration(self, loops, frame):
