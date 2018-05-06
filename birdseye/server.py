@@ -16,6 +16,7 @@ from flask import Flask, request
 from flask.templating import render_template
 from flask_humanize import Humanize
 from werkzeug.routing import PathConverter
+import sqlalchemy
 
 from birdseye.db import Call, Function, Session
 from birdseye.utils import all_file_paths, short_path, IPYTHON_FILE_PATH
@@ -100,7 +101,8 @@ def api_call_view(call_id):
 def calls_by_body_hash(body_hash):
     query = (Session().query(*Call.basic_columns + (Function.data,))
                  .join(Function)
-                 .filter_by(body_hash=body_hash)[:200])
+                 .filter_by(body_hash=body_hash)
+                 .order_by(Call.start_time.desc())[:200])
 
     calls = [Call.basic_dict(withattrs(Call(), **row._asdict()))
              for row in query]
@@ -121,11 +123,14 @@ def calls_by_body_hash(body_hash):
 @app.route('/api/body_hashes_present/', methods=['POST'])
 def body_hashes_present():
     hashes = request.json
-    query = (Session().query(Function.body_hash)
+    query = (Session().query(Function.body_hash, sqlalchemy.func.count(Call.id))
+             .outerjoin(Call)
              .filter(Function.body_hash.in_(hashes))
-             .distinct())
-
-    return DecentJSONEncoder().encode(chain.from_iterable(query))
+             .group_by(Function.body_hash))
+    return DecentJSONEncoder().encode([
+        dict(hash=h, count=count)
+        for h, count in query
+    ])
 
 
 def main():
