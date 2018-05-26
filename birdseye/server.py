@@ -110,10 +110,8 @@ def calls_by_body_hash(body_hash):
     function_data_set = {row.data for row in query}
     ranges = set()
     for function_data in function_data_set:
-        node_ranges = json.loads(function_data)['node_ranges']
-        for group in node_ranges:
-            for node in group['nodes']:
-                ranges.add((node['start'], node['end']))
+        for node in json.loads(function_data)['node_ranges']:
+            ranges.add((node['start'], node['end']))
 
     ranges = [dict(start=start, end=end) for start, end in ranges]
 

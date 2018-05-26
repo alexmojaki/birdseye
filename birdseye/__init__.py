@@ -360,7 +360,7 @@ class BirdsEye(TreeTracerBase):
         return db_func
 
     def _node_ranges(self, nodes, tokens, func_start):
-        result = defaultdict(list)
+        result = []
         for node, (classes, _, __) in nodes:
             start, end = tokens.get_text_range(node)
             start -= func_start
@@ -369,10 +369,10 @@ class BirdsEye(TreeTracerBase):
                 assert end < 0 or isinstance(node, ast.FunctionDef)
                 continue
 
-            result[node._depth].append(dict(
-                node=node._tree_index, start=start, end=end, classes=classes))
+            result.append(dict(
+                node=node._tree_index, start=start, end=end, classes=classes, depth=node._depth))
 
-        return [dict(depth=k, nodes=v) for k, v in sorted(result.items())]
+        return result
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
         """
