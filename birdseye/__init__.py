@@ -335,7 +335,7 @@ class BirdsEye(TreeTracerBase):
             start, end = tokens.get_text_range(target)
             start -= func_start
             end -= func_start
-            yield dict(node=node._tree_index, start=start, end=end)
+            yield dict(tree_index=node._tree_index, start=start, end=end)
 
     def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
@@ -370,7 +370,12 @@ class BirdsEye(TreeTracerBase):
                 continue
 
             result.append(dict(
-                node=node._tree_index, start=start, end=end, classes=classes, depth=node._depth))
+                tree_index=node._tree_index,
+                depth=node._depth,
+                start=start,
+                end=end,
+                classes=classes,
+            ))
 
         return result
 
