@@ -1,10 +1,9 @@
 from __future__ import print_function, division, absolute_import
 
 import json
-from itertools import chain
 
 from future import standard_library
-from littleutils import DecentJSONEncoder, withattrs, select_keys
+from littleutils import DecentJSONEncoder, withattrs
 
 standard_library.install_aliases()
 
@@ -109,13 +108,28 @@ def calls_by_body_hash(body_hash):
 
     function_data_set = {row.data for row in query}
     ranges = set()
+    loop_ranges = None
     for function_data in function_data_set:
-        for node in json.loads(function_data)['node_ranges']:
-            ranges.add((node['start'], node['end']))
+        function_data = json.loads(function_data)
+
+        def add(key, ranges_set):
+            for node in function_data[key]:
+                ranges_set.add((node['start'], node['end']))
+
+        add('node_ranges', ranges)
+
+        # All functions are expected to have the same set
+        # of loop nodes
+        current_loop_ranges = set()
+        add('loop_nodes', current_loop_ranges)
+        assert loop_ranges in (None, current_loop_ranges)
+        loop_ranges = current_loop_ranges
 
     ranges = [dict(start=start, end=end) for start, end in ranges]
+    loop_ranges = [dict(start=start, end=end) for start, end in loop_ranges]
 
-    return DecentJSONEncoder().encode(dict(calls=calls, ranges=ranges))
+    return DecentJSONEncoder().encode(dict(
+        calls=calls, ranges=ranges, loop_ranges=loop_ranges))
 
 
 @app.route('/api/body_hashes_present/', methods=['POST'])
