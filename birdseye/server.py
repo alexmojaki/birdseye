@@ -108,7 +108,7 @@ def calls_by_body_hash(body_hash):
 
     function_data_set = {row.data for row in query}
     ranges = set()
-    loop_ranges = None
+    loop_ranges = set()
     for function_data in function_data_set:
         function_data = json.loads(function_data)
 
@@ -122,7 +122,7 @@ def calls_by_body_hash(body_hash):
         # of loop nodes
         current_loop_ranges = set()
         add('loop_nodes', current_loop_ranges)
-        assert loop_ranges in (None, current_loop_ranges)
+        assert loop_ranges in (set(), current_loop_ranges)
         loop_ranges = current_loop_ranges
 
     ranges = [dict(start=start, end=end) for start, end in ranges]
