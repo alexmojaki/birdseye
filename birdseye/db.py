@@ -15,9 +15,9 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.mysql import LONGTEXT
 from littleutils import select_attrs
 
-DB_URI = os.environ.get('BIRDSEYE_DB',
-                        'sqlite:///' + os.path.join(os.path.expanduser('~'),
-                                                    '.birdseye.db'))
+DB_URI = (os.environ.get('BIRDSEYE_DB') or
+          'sqlite:///' + os.path.join(os.path.expanduser('~'),
+                                      '.birdseye.db'))
 
 connect_args = {}
 if DB_URI.startswith('sqlite'):
