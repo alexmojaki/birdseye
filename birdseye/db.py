@@ -49,8 +49,8 @@ class Database(object):
         Base = declarative_base(cls=Base)  # type: ignore
 
         class KeyValue(Base):
-            key = Column(String, primary_key=True)
-            value = Column(String)
+            key = Column(String(50), primary_key=True)
+            value = Column(Text)
 
         class KeyValueStore(object):
             def __getitem__(self, item):
@@ -60,6 +60,7 @@ class Database(object):
                         .scalar())
 
             def __setitem__(self, key, value):
+                session.query(KeyValue).filter_by(key=key).delete()
                 session.add(KeyValue(key=key, value=str(value)))
                 session.commit()
 
