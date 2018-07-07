@@ -20,38 +20,6 @@ from birdseye.utils import IPYTHON_FILE_PATH
 DB_VERSION = 0
 
 
-class Base(object):
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__.lower()
-
-
-Base = declarative_base(cls=Base)  # type: ignore
-
-
-class KeyValue(Base):
-    key = Column(String, primary_key=True)
-    value = Column(String)
-
-
-class KeyValueStore(object):
-    def __init__(self, session):
-        object.__setattr__(self, 'session', session)
-
-    def __getitem__(self, item):
-        return (self.session
-                .query(KeyValue.value)
-                .filter_by(key=item)
-                .scalar())
-
-    def __setitem__(self, key, value):
-        self.session.add(KeyValue(key=key, value=str(value)))
-        self.session.commit()
-
-    __getattr__ = __getitem__
-    __setattr__ = __setitem__
-
-
 class Database(object):
     def __init__(self, db_uri=None, _skip_version_check=False):
         self.db_uri = db_uri = (
@@ -71,7 +39,32 @@ class Database(object):
             echo=False)
 
         self.Session = sessionmaker(bind=engine)
-        self.session = self.Session()
+        self.session = session = self.Session()
+
+        class Base(object):
+            @declared_attr
+            def __tablename__(cls):
+                return cls.__name__.lower()
+
+        Base = declarative_base(cls=Base)  # type: ignore
+
+        class KeyValue(Base):
+            key = Column(String, primary_key=True)
+            value = Column(String)
+
+        class KeyValueStore(object):
+            def __getitem__(self, item):
+                return (session
+                        .query(KeyValue.value)
+                        .filter_by(key=item)
+                        .scalar())
+
+            def __setitem__(self, key, value):
+                session.add(KeyValue(key=key, value=str(value)))
+                session.commit()
+
+            __getattr__ = __getitem__
+            __setattr__ = __setitem__
 
         LongText = LONGTEXT if engine.name == 'mysql' else Text
 
@@ -164,8 +157,9 @@ class Database(object):
 
         self.Call = Call
         self.Function = Function
+        self.KeyValue = KeyValue
 
-        self.key_value_store = kv = KeyValueStore(self.session)
+        kv = KeyValueStore()
 
         if _skip_version_check:
             return
@@ -190,6 +184,6 @@ class Database(object):
         return paths
 
     def clear(self):
-        for model in [self.Call, self.Function, KeyValue]:
+        for model in [self.Call, self.Function, self.KeyValue]:
             if self.table_exists(model):
                 model.__table__.drop(self.engine)

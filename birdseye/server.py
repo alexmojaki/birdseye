@@ -64,7 +64,6 @@ def func_view(path, func_name):
                  .order_by(Call.start_time.desc())[:200])
     if query:
         func = query[0]
-        print(func.body_hash)
         calls = [withattrs(Call(), **row._asdict()) for row in query]
     else:
         func = session.query(Function).filter_by(file=path, name=func_name)[0]
