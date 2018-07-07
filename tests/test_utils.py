@@ -123,7 +123,7 @@ class TestUtils(unittest.TestCase):
             self.assertRaises(SyntaxError, read)
 
     def test_source_without_decorators(self):
-        source = open(__file__).read()
+        source = read_source_file(__file__)
         tokens = asttokens.ASTTokens(source, parse=True)
         function_def_node = next(n for n in ast.walk(tokens.tree)
                                  if isinstance(n, ast.FunctionDef) and
