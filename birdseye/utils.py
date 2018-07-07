@@ -50,17 +50,6 @@ def path_leaf(path):
     return tail or ntpath.basename(head)
 
 
-def all_file_paths():
-    # type: () -> List[str]
-    from birdseye.db import Function, Session
-    paths = [f[0] for f in Session().query(Function.file).distinct()]
-    paths.sort()
-    if IPYTHON_FILE_PATH in paths:
-        paths.remove(IPYTHON_FILE_PATH)
-        paths.insert(0, IPYTHON_FILE_PATH)
-    return paths
-
-
 def common_ancestor(paths):
     # type: (List[str]) -> str
     """
@@ -79,12 +68,12 @@ def common_ancestor(paths):
     return prefix
 
 
-def short_path(path, all_paths=None):
+def short_path(path, all_paths):
     # type: (str, List[str]) -> str
     if path == IPYTHON_FILE_PATH:
         return path
 
-    all_paths = [f for f in all_paths or all_file_paths()
+    all_paths = [f for f in all_paths
                  if f != IPYTHON_FILE_PATH]
     prefix = common_ancestor(all_paths)
     if prefix in r'\/':

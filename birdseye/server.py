@@ -17,8 +17,8 @@ from flask_humanize import Humanize
 from werkzeug.routing import PathConverter
 import sqlalchemy
 
-from birdseye.db import Call, Function, Session
-from birdseye.utils import all_file_paths, short_path, IPYTHON_FILE_PATH
+from birdseye.db import Database
+from birdseye.utils import short_path, IPYTHON_FILE_PATH
 
 
 app = Flask('birdseye')
@@ -32,9 +32,15 @@ class FileConverter(PathConverter):
 app.url_map.converters['file'] = FileConverter
 
 
+db = Database()
+Session = db.Session
+Function = db.Function
+Call = db.Call
+
+
 @app.route('/')
 def index():
-    files = all_file_paths()
+    files = db.all_file_paths()
     files = zip(files, [short_path(f, files) for f in files])
     return render_template('index.html',
                            files=files)
@@ -46,7 +52,7 @@ def file_view(path):
                            funcs=sorted(Session().query(Function.name).filter_by(file=path).distinct()),
                            is_ipython=path == IPYTHON_FILE_PATH,
                            full_path=path,
-                           short_path=short_path(path))
+                           short_path=short_path(path, db.all_file_paths()))
 
 
 @app.route('/file/<file:path>/function/<func_name>')

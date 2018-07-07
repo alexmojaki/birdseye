@@ -17,7 +17,7 @@ import inspect
 import json
 import os
 import traceback
-from collections import defaultdict, Sequence, Set, Mapping, deque
+from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple
 from datetime import datetime
 from functools import partial
 from itertools import chain, islice
@@ -28,10 +28,11 @@ import hashlib
 from asttokens import ASTTokens
 from littleutils import group_by_key_func, only
 from outdated import warn_if_outdated
+from cached_property import cached_property
 
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
-from birdseye.db import Function, Call, session
+from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
@@ -42,16 +43,18 @@ __version__ = '0.4.2'
 
 warn_if_outdated('birdseye', __version__)
 
-
-CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
-                                   ('traced_file', TracedFile),
-                                   ('arg_names', List[str])])
+CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
 
 class BirdsEye(TreeTracerBase):
-    def __init__(self):
+    def __init__(self, db_uri=None):
         super(BirdsEye, self).__init__()
+        self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
+
+    @cached_property
+    def db(self):
+        return Database(self._db_uri)
 
     def parse_extra(self, root, source, filename):
         # type: (ast.Module, str, str) -> None
@@ -224,13 +227,16 @@ class BirdsEye(TreeTracerBase):
         node_values = _deep_dict()
         self._extract_node_values(top_iteration, (), node_values)
 
-        db_func = self._code_infos[frame.f_code].db_func  # type: Function
+        db_func = self._code_infos[frame.f_code].db_func
         exc = exit_info.exc_value  # type: Optional[Exception]
         if exc:
             traceback_str = ''.join(traceback.format_exception(type(exc), exc, exit_info.exc_tb))
             exception = exception_string(exc)
         else:
             traceback_str = exception = None
+
+        Call = self.db.Call
+        session = self.db.session
 
         call = Call(id=frame_info.call_id,
                     function=db_func,
@@ -345,6 +351,9 @@ class BirdsEye(TreeTracerBase):
             return hashlib.sha256(s.encode('utf8')).hexdigest()
 
         function_hash = h(filename + name + html_body + data + str(start_lineno))
+
+        session = self.db.session
+        Function = self.db.Function
 
         db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
         if not db_func:
