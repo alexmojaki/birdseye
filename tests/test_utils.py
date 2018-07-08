@@ -1,10 +1,50 @@
 # coding=utf8
 
+import ast
 import unittest
 from tempfile import mkstemp
 
-from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, PY3, \
+import asttokens
+from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, source_without_decorators, PY3, \
     read_source_file
+
+
+def def_decorator(_):
+    def actual_decorator(f):
+        return f
+
+    return actual_decorator
+
+
+def eye(f):
+    return f
+
+
+@def_decorator('def')
+@eye
+def define(defx, defy):
+    """
+def def def
+
+@eye
+def define(defx, defy):
+    """
+    def inner():
+        pass
+    return defx + defy + inner
+
+
+define_source = '''\
+def define(defx, defy):
+    """
+def def def
+
+@eye
+def define(defx, defy):
+    """
+    def inner():
+        pass
+    return defx + defy + inner'''
 
 
 class TestUtils(unittest.TestCase):
@@ -85,6 +125,15 @@ class TestUtils(unittest.TestCase):
             # The lack of an encoding when one is needed
             # ultimately raises a SyntaxError
             self.assertRaises(SyntaxError, read)
+
+    def test_source_without_decorators(self):
+        source = read_source_file(__file__)
+        tokens = asttokens.ASTTokens(source, parse=True)
+        function_def_node = next(n for n in ast.walk(tokens.tree)
+                                 if isinstance(n, ast.FunctionDef) and
+                                 n.name == 'define')
+        self.assertEqual(define_source,
+                         source_without_decorators(tokens, function_def_node)[1])
 
 
 if __name__ == '__main__':

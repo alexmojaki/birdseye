@@ -62,3 +62,5 @@ error: "FrameInfo" has no attribute "inner_calls"
 error: Module has no attribute "getargs"
 error: No overload variant of "map" matches argument types [Any, builtins.list[Any], builtins.list[builtins.bool*], builtins.list[Any], builtins.list[builtins.str*]]
 error: Module has no attribute "cache"
+error: "FunctionDef" has no attribute "first_token"
+error: Module 'lib2to3.pgen2.tokenize' has no attribute 'detect_encoding'

@@ -9,12 +9,13 @@ from types import FrameType, TracebackType, CodeType, FunctionType
 import typing
 
 import ast
+# noinspection PyCompatibility
 import html
 import inspect
 import json
 import os
 import traceback
-from collections import defaultdict, Sequence, Set, Mapping, deque
+from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple
 from datetime import datetime
 from functools import partial
 from itertools import chain, islice
@@ -23,32 +24,43 @@ from uuid import uuid4
 import hashlib
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func
+from littleutils import group_by_key_func, only
 from outdated import warn_if_outdated
+from cached_property import cached_property
 
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
-from birdseye.db import Function, Call, session
+from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH
+    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
+    safe_next
 
-
-__version__ = '0.4.2'
+__version__ = '0.5.0'
 
 warn_if_outdated('birdseye', __version__)
 
-
-CodeInfo = NamedTuple('CodeInfo', [('db_func', Function),
-                                   ('traced_file', TracedFile),
-                                   ('arg_names', List[str])])
+CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
 
 class BirdsEye(TreeTracerBase):
-    def __init__(self):
+    """
+    Decorate functions with an instance of this class to debug them,
+    or just use the existing instance `eye`.
+    """
+    def __init__(self, db_uri=None):
+        """
+        Set db_uri to specify where the database lives, as an alternative to
+        the environment variable BIRDSEYE_DB.
+        """
         super(BirdsEye, self).__init__()
+        self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
+
+    @cached_property
+    def db(self):
+        return Database(self._db_uri)
 
     def parse_extra(self, root, source, filename):
         # type: (ast.Module, str, str) -> None
@@ -221,13 +233,16 @@ class BirdsEye(TreeTracerBase):
         node_values = _deep_dict()
         self._extract_node_values(top_iteration, (), node_values)
 
-        db_func = self._code_infos[frame.f_code].db_func  # type: Function
+        db_func = self._code_infos[frame.f_code].db_func
         exc = exit_info.exc_value  # type: Optional[Exception]
         if exc:
             traceback_str = ''.join(traceback.format_exception(type(exc), exc, exit_info.exc_tb))
             exception = exception_string(exc)
         else:
             traceback_str = exception = None
+
+        Call = self.db.Call
+        session = self.db.session
 
         call = Call(id=frame_info.call_id,
                     function=db_func,
@@ -296,25 +311,92 @@ class BirdsEye(TreeTracerBase):
             filename = os.path.abspath(source_file)
         nodes = list(self._nodes_of_interest(new_func.traced_file, start_lineno, end_lineno))
         html_body = self._nodes_html(nodes, start_lineno, end_lineno, new_func.traced_file)
-        data = json.dumps(dict(
+        tokens = new_func.traced_file.tokens
+        func_node = only(node
+                         for node, _ in nodes
+                         if isinstance(node, ast.FunctionDef)
+                         and node.first_token.start[0] == start_lineno)
+        func_startpos, raw_body = source_without_decorators(tokens, func_node)
+        data_dict = dict(
+            # These are for the PyCharm plugin
+            node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
+            loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
+
+            # This maps each node to the loops enclosing that node
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
                 if node._loops
-            }),
-            sort_keys=True)
-        db_func = self._db_func(data, filename, html_body, name, start_lineno)
+            })
+        data = json.dumps(data_dict, sort_keys=True)
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, raw_body)
         arg_info = inspect.getargs(new_func.__code__)
         arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
         self._code_infos[new_func.__code__] = CodeInfo(db_func, new_func.traced_file, arg_names)
         return new_func
 
-    def _db_func(self, data, filename, html_body, name, start_lineno):
+    def _loop_ranges(self, nodes, tokens, func_start):
+        # For a for loop, e.g.
+        #
+        #     for x in y:
+        #
+        # this yields the range of the target 'x'.
+        #
+        # For a while loop, e.g.
+        #
+        #     while x < 10:
+        #
+        # this yields the range of the condition 'x < 10'.
+        for node, (classes, _, __) in nodes:
+            if 'loop' not in classes:
+                continue
+
+            try:
+                target = node.target  # for loop
+            except AttributeError:
+                target = node.test  # while loop
+
+            start, end = tokens.get_text_range(target)
+            start -= func_start
+            end -= func_start
+
+            yield dict(
+                tree_index=node._tree_index,
+                start=start,
+                end=end
+            )
+
+    def _node_ranges(self, nodes, tokens, func_start):
+        for node, (classes, _, __) in nodes:
+            start, end = tokens.get_text_range(node)
+            start -= func_start
+            end -= func_start
+
+            if start < 0:
+                assert (end < 0  # nodes before the def, i.e. decorators
+                        or isinstance(node, ast.FunctionDef))
+                continue
+
+            yield dict(
+                tree_index=node._tree_index,
+                start=start,
+                end=end,
+                depth=node._depth,
+                classes=classes,
+            )
+
+    def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
         Retrieve the Function object from the database if one exists, or create one.
         """
-        function_hash = hashlib.sha256((filename + name + html_body + data + str(start_lineno)
-                                        ).encode('utf8')).hexdigest()
+        def h(s):
+            return hashlib.sha256(s.encode('utf8')).hexdigest()
+
+        function_hash = h(filename + name + html_body + data + str(start_lineno))
+
+        session = self.db.session
+        Function = self.db.Function
+
         db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
         if not db_func:
             db_func = Function(file=filename,
@@ -322,6 +404,7 @@ class BirdsEye(TreeTracerBase):
                                html_body=html_body,
                                lineno=start_lineno,
                                data=data,
+                               body_hash=h(raw_body),
                                hash=function_hash)
             session.add(db_func)
             session.commit()

@@ -22,9 +22,10 @@ install_requires = ['Flask',
                     'flask-humanize',
                     'sqlalchemy',
                     'asttokens',
-                    'littleutils',
+                    'littleutils>=0.2',
                     'cheap_repr',
                     'outdated',
+                    'cached_property',
                     'future']
 
 if version_info[0] == 2:

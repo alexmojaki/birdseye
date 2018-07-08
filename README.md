@@ -62,6 +62,20 @@ When viewing a function call, you can:
 
 Data is kept in a SQL database. You can configure this by setting the environment variable `BIRDSEYE_DB` to a [database URL used by SQLAlchemy](http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls). The default is `sqlite:///$HOME/.birdseye.db`.
 
+If environment variables are inconvenient, you can do this instead:
+
+```python
+from birdseye import BirdsEye
+
+eye = BirdsEye('<insert URL here>')
+```
+
+You can conveniently empty the database by running:
+
+```bash
+python -m birdseye.clear_db
+```
+
 ## Performance, volume of data, and limitations
 
 Every function call is recorded, and every nontrivial expression is traced. This means that:

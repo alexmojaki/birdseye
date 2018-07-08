@@ -24,12 +24,11 @@ import tests
 
 str(tests)
 from birdseye import eye, NodeValue, is_interesting_expression, is_obvious_builtin
-from birdseye.db import Call, Session
 from birdseye.utils import PY2, PY3
 from tests import golden_script
 
-
-session = Session()
+session = eye.db.session
+Call = eye.db.Call
 
 
 @eye

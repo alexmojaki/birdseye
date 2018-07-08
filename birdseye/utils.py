@@ -5,6 +5,7 @@ import json
 from future import standard_library
 
 standard_library.install_aliases()
+import token
 
 from future.utils import raise_from
 import ntpath
@@ -49,17 +50,6 @@ def path_leaf(path):
     return tail or ntpath.basename(head)
 
 
-def all_file_paths():
-    # type: () -> List[str]
-    from birdseye.db import Function, Session
-    paths = [f[0] for f in Session().query(Function.file).distinct()]
-    paths.sort()
-    if IPYTHON_FILE_PATH in paths:
-        paths.remove(IPYTHON_FILE_PATH)
-        paths.insert(0, IPYTHON_FILE_PATH)
-    return paths
-
-
 def common_ancestor(paths):
     # type: (List[str]) -> str
     """
@@ -78,12 +68,12 @@ def common_ancestor(paths):
     return prefix
 
 
-def short_path(path, all_paths=None):
+def short_path(path, all_paths):
     # type: (str, List[str]) -> str
     if path == IPYTHON_FILE_PATH:
         return path
 
-    all_paths = [f for f in all_paths or all_file_paths()
+    all_paths = [f for f in all_paths
                  if f != IPYTHON_FILE_PATH]
     prefix = common_ancestor(all_paths)
     if prefix in r'\/':
@@ -194,7 +184,7 @@ except ImportError:
     import io
 
 
-    def open_with_encoding_check(filename):
+    def open_with_encoding_check(filename):  # type: ignore
         """Open a file in read only mode using the encoding detected by
         detect_encoding().
         """
@@ -213,9 +203,23 @@ except ImportError:
 def read_source_file(filename):
     from lib2to3.pgen2.tokenize import cookie_re
 
+    if filename.endswith('.pyc'):
+        filename = filename[:-1]
+
     with open_with_encoding_check(filename) as f:
         return ''.join([
             '\n' if i < 2 and cookie_re.match(line)
             else line
             for i, line in enumerate(f)
         ])
+
+
+def source_without_decorators(tokens, function_node):
+    def_token = safe_next(t for t in tokens.get_tokens(function_node)
+                          if t.string == 'def' and t.type == token.NAME)
+
+    startpos = def_token.startpos
+    source = tokens.text[startpos:function_node.last_token.endpos].rstrip()
+    assert source.startswith('def')
+
+    return startpos, source
