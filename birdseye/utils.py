@@ -203,6 +203,9 @@ except ImportError:
 def read_source_file(filename):
     from lib2to3.pgen2.tokenize import cookie_re
 
+    if filename.endswith('.pyc'):
+        filename = filename[:-1]
+
     with open_with_encoding_check(filename) as f:
         return ''.join([
             '\n' if i < 2 and cookie_re.match(line)
