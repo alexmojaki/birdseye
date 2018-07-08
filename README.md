@@ -1,4 +1,4 @@
-# Bird's Eye
+# ![logo](https://i.imgur.com/i7uaJDO.png) birdseye
 
 [![Build Status](https://travis-ci.org/alexmojaki/birdseye.svg?branch=master)](https://travis-ci.org/alexmojaki/birdseye) [![Supports Python versions 2.7, 3.5, and 3.6](https://img.shields.io/pypi/pyversions/birdseye.svg)](https://pypi.python.org/pypi/birdseye) [![Join the chat at https://gitter.im/python_birdseye/Lobby](https://badges.gitter.im/python_birdseye/Lobby.svg)](https://gitter.im/python_birdseye/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
