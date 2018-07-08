@@ -158,9 +158,9 @@ class Database(object):
 
         self.Call = Call
         self.Function = Function
-        self.KeyValue = KeyValue
+        self._KeyValue = KeyValue
 
-        kv = KeyValueStore()
+        self.key_value_store = kv = KeyValueStore()
 
         if _skip_version_check:
             return
@@ -185,6 +185,6 @@ class Database(object):
         return paths
 
     def clear(self):
-        for model in [self.Call, self.Function, self.KeyValue]:
+        for model in [self.Call, self.Function, self._KeyValue]:
             if self.table_exists(model):
                 model.__table__.drop(self.engine)
