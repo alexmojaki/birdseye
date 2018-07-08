@@ -126,7 +126,7 @@ def calls_by_body_hash(body_hash):
         # All functions are expected to have the same set
         # of loop nodes
         current_loop_ranges = set()
-        add('loop_nodes', current_loop_ranges)
+        add('loop_ranges', current_loop_ranges)
         assert loop_ranges in (set(), current_loop_ranges)
         loop_ranges = current_loop_ranges
 

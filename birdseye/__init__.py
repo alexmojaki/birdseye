@@ -310,8 +310,8 @@ class BirdsEye(TreeTracerBase):
                          and node.first_token.start[0] == start_lineno)
         func_startpos, raw_body = source_without_decorators(tokens, func_node)
         data = dict(
-            node_ranges=self._node_ranges(nodes, tokens, func_startpos),
-            loop_nodes=list(self._loop_nodes(nodes, tokens, func_startpos)),
+            node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
+            loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
@@ -324,7 +324,7 @@ class BirdsEye(TreeTracerBase):
         self._code_infos[new_func.__code__] = CodeInfo(db_func, new_func.traced_file, arg_names)
         return new_func
 
-    def _loop_nodes(self, nodes, tokens, func_start):
+    def _loop_ranges(self, nodes, tokens, func_start):
         for node, (classes, _, __) in nodes:
             if 'loop' not in classes:
                 continue
@@ -335,7 +335,28 @@ class BirdsEye(TreeTracerBase):
             start, end = tokens.get_text_range(target)
             start -= func_start
             end -= func_start
-            yield dict(tree_index=node._tree_index, start=start, end=end)
+            yield dict(
+                tree_index=node._tree_index,
+                start=start,
+                end=end
+            )
+
+    def _node_ranges(self, nodes, tokens, func_start):
+        for node, (classes, _, __) in nodes:
+            start, end = tokens.get_text_range(node)
+            start -= func_start
+            end -= func_start
+            if start < 0:
+                assert end < 0 or isinstance(node, ast.FunctionDef)
+                continue
+
+            yield dict(
+                tree_index=node._tree_index,
+                start=start,
+                end=end,
+                depth=node._depth,
+                classes=classes,
+            )
 
     def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
@@ -361,26 +382,6 @@ class BirdsEye(TreeTracerBase):
             session.add(db_func)
             session.commit()
         return db_func
-
-    def _node_ranges(self, nodes, tokens, func_start):
-        result = []
-        for node, (classes, _, __) in nodes:
-            start, end = tokens.get_text_range(node)
-            start -= func_start
-            end -= func_start
-            if start < 0:
-                assert end < 0 or isinstance(node, ast.FunctionDef)
-                continue
-
-            result.append(dict(
-                tree_index=node._tree_index,
-                depth=node._depth,
-                start=start,
-                end=end,
-                classes=classes,
-            ))
-
-        return result
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
         """
