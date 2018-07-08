@@ -45,7 +45,15 @@ CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
 
 class BirdsEye(TreeTracerBase):
+    """
+    Decorate functions with an instance of this class to debug them,
+    or just use the existing instance `eye`.
+    """
     def __init__(self, db_uri=None):
+        """
+        Set db_uri to specify where the database lives, as an alternative to
+        the environment variable BIRDSEYE_DB.
+        """
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
@@ -310,8 +318,11 @@ class BirdsEye(TreeTracerBase):
                          and node.first_token.start[0] == start_lineno)
         func_startpos, raw_body = source_without_decorators(tokens, func_node)
         data = dict(
+            # These are for the PyCharm plugin
             node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
             loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
+
+            # This maps each node to the loops enclosing that node
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
@@ -325,16 +336,30 @@ class BirdsEye(TreeTracerBase):
         return new_func
 
     def _loop_ranges(self, nodes, tokens, func_start):
+        # For a for loop, e.g.
+        #
+        #     for x in y:
+        #
+        # this yields the range of the target 'x'.
+        #
+        # For a while loop, e.g.
+        #
+        #     while x < 10:
+        #
+        # this yields the range of the condition 'x < 10'.
         for node, (classes, _, __) in nodes:
             if 'loop' not in classes:
                 continue
+
             try:
-                target = node.target
+                target = node.target  # for loop
             except AttributeError:
-                target = node.test
+                target = node.test  # while loop
+
             start, end = tokens.get_text_range(target)
             start -= func_start
             end -= func_start
+
             yield dict(
                 tree_index=node._tree_index,
                 start=start,
@@ -346,8 +371,10 @@ class BirdsEye(TreeTracerBase):
             start, end = tokens.get_text_range(node)
             start -= func_start
             end -= func_start
+
             if start < 0:
-                assert end < 0 or isinstance(node, ast.FunctionDef)
+                assert (end < 0  # nodes before the def, i.e. decorators
+                        or isinstance(node, ast.FunctionDef))
                 continue
 
             yield dict(
