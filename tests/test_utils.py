@@ -29,7 +29,9 @@ def def def
 @eye
 def define(defx, defy):
     """
-    return defx + defy
+    def inner():
+        pass
+    return defx + defy + inner
 
 
 define_source = '''\
@@ -40,7 +42,9 @@ def def def
 @eye
 def define(defx, defy):
     """
-    return defx + defy'''
+    def inner():
+        pass
+    return defx + defy + inner'''
 
 
 class TestUtils(unittest.TestCase):
@@ -129,7 +133,7 @@ class TestUtils(unittest.TestCase):
                                  if isinstance(n, ast.FunctionDef) and
                                  n.name == 'define')
         self.assertEqual(define_source,
-                         source_without_decorators(tokens, function_def_node))
+                         source_without_decorators(tokens, function_def_node)[1])
 
 
 if __name__ == '__main__':

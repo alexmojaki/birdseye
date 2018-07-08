@@ -212,7 +212,11 @@ def read_source_file(filename):
 
 
 def source_without_decorators(tokens, function_node):
-    def_token = next(t for t in tokens.get_tokens(function_node)
-                     if t.string == 'def' and t.type == token.NAME)
+    def_token = safe_next(t for t in tokens.get_tokens(function_node)
+                          if t.string == 'def' and t.type == token.NAME)
 
-    return tokens.text[def_token.startpos:function_node.last_token.endpos].strip()
+    startpos = def_token.startpos
+    source = tokens.text[startpos:function_node.last_token.endpos].rstrip()
+    assert source.startswith('def')
+
+    return startpos, source

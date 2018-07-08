@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import token
-
 from future import standard_library
 
 standard_library.install_aliases()
@@ -310,11 +308,7 @@ class BirdsEye(TreeTracerBase):
                          for node, _ in nodes
                          if isinstance(node, ast.FunctionDef)
                          and node.first_token.start[0] == start_lineno)
-        func_startpos = safe_next(t for t in tokens.get_tokens(func_node)
-                                  if t.string == 'def' and t.type == token.NAME
-                                  ).startpos
-        raw_body = tokens.text[func_startpos:func_node.last_token.endpos].rstrip()
-        assert raw_body.startswith('def')
+        func_startpos, raw_body = source_without_decorators(tokens, func_node)
         data = dict(
             node_ranges=self._node_ranges(nodes, tokens, func_startpos),
             loop_nodes=list(self._loop_nodes(nodes, tokens, func_startpos)),
