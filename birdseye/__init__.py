@@ -317,7 +317,7 @@ class BirdsEye(TreeTracerBase):
                          if isinstance(node, ast.FunctionDef)
                          and node.first_token.start[0] == start_lineno)
         func_startpos, raw_body = source_without_decorators(tokens, func_node)
-        data = dict(
+        data_dict = dict(
             # These are for the PyCharm plugin
             node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
             loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
@@ -328,7 +328,7 @@ class BirdsEye(TreeTracerBase):
                 for node, _ in nodes
                 if node._loops
             })
-        data = json.dumps(data, sort_keys=True)
+        data = json.dumps(data_dict, sort_keys=True)
         db_func = self._db_func(data, filename, html_body, name, start_lineno, raw_body)
         arg_info = inspect.getargs(new_func.__code__)
         arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]

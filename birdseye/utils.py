@@ -184,7 +184,7 @@ except ImportError:
     import io
 
 
-    def open_with_encoding_check(filename):
+    def open_with_encoding_check(filename):  # type: ignore
         """Open a file in read only mode using the encoding detected by
         detect_encoding().
         """
