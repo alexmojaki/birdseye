@@ -22,6 +22,11 @@ Calls are organised into functions (which are organised into files) and organise
 
 ![List of function calls](https://i.imgur.com/5OrB76I.png)
 
+## Integrations with other tools
+
+- [PyCharm plugin](https://github.com/alexmojaki/birdseye-pycharm)
+- [VS Code extension](https://github.com/Almenon/birdseye-vscode/)
+
 ## Installation
 
 Simply `pip install birdseye`.
