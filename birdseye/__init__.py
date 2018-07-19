@@ -57,6 +57,7 @@ class BirdsEye(TreeTracerBase):
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
+        self._ipython_cell_data = None
 
     @cached_property
     def db(self):
@@ -197,16 +198,21 @@ class BirdsEye(TreeTracerBase):
         frame_info = self.stack[frame]
         frame_info.start_time = datetime.now()
         frame_info.iteration = Iteration()
-        f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
-        arguments = [(name, f_locals.pop(name))
-                     for name in self._code_infos[frame.f_code].arg_names
-                     if name] + [
 
-            # Local variables other than actual arguments. These are variables from
-            # the enclosing scope. It's handy to treat them like arguments in the UI
-            it for it in f_locals.items()
-            if it[0][0] != '.'  # Appears when using nested tuple arguments
-        ]
+        code_info = self._code_infos[frame.f_code]
+        if code_info.traced_file.is_ipython_cell:
+            arguments = []
+        else:
+            f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
+            arguments = [(name, f_locals.pop(name))
+                         for name in code_info.arg_names
+                         if name] + [
+
+                            # Local variables other than actual arguments. These are variables from
+                            # the enclosing scope. It's handy to treat them like arguments in the UI
+                            it for it in f_locals.items()
+                            if it[0][0] != '.'  # Appears when using nested tuple arguments
+                        ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
@@ -263,6 +269,8 @@ class BirdsEye(TreeTracerBase):
                     start_time=frame_info.start_time)
         session.add(call)
         session.commit()
+        if self._ipython_cell_data is not None:
+            self._ipython_cell_data = call
 
     def _extract_node_values(self, iteration, path, node_values):
         # type: (Iteration, Tuple[int, ...], dict) -> None
@@ -410,7 +418,7 @@ class BirdsEye(TreeTracerBase):
             session.commit()
         return db_func
 
-    def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
+    def _nodes_of_interest(self, traced_file: TracedFile, start_lineno, end_lineno):
         """
         Nodes that may have a value, show up as a box in the UI, and lie within the
         given line range.
@@ -552,6 +560,42 @@ class BirdsEye(TreeTracerBase):
                 prev_start = start
 
         return end_lineno
+
+    def exec_ipython_cell(self, source):
+        # noinspection PyPackageRequirements
+        from IPython import get_ipython
+        filename = name = '$$__IPYTHON_CELL__$$'
+        shell = get_ipython()
+        flags = shell.compile.flags
+
+        traced_file = self.compile(source, filename, flags)
+        traced_file.is_ipython_cell = True
+
+        shell.user_global_ns.update(self._trace_methods_dict(traced_file))
+
+        start_lineno = 1
+        lines = source.splitlines()
+        end_lineno = start_lineno + len(lines)
+        nodes = list(self._nodes_of_interest(traced_file, start_lineno, end_lineno))
+        html_body = self._nodes_html(nodes, start_lineno, end_lineno, traced_file)
+        data_dict = dict(
+            # This maps each node to the loops enclosing that node
+            node_loops={
+                node._tree_index: [n._tree_index for n in node._loops]
+                for node, _ in nodes
+                if node._loops
+            })
+        data = json.dumps(data_dict, sort_keys=True)
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
+        self._code_infos[traced_file.code] = CodeInfo(db_func, traced_file, ())
+
+        self._ipython_cell_data = 'waiting'
+
+        shell.ex(traced_file.code)
+
+        result = self._ipython_cell_data
+        self._ipython_cell_data = None
+        return result
 
 
 eye = BirdsEye()

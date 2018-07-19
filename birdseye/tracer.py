@@ -38,6 +38,8 @@ class TracedFile(object):
     - code: executable code object compiled from the modified AST
     """
 
+    is_ipython_cell = False
+
     def __init__(self, tracer, source, filename, flags):
         # type: (TreeTracerBase, str, str, int) -> None
         # Here the source code is parsed, modified, and compiled
