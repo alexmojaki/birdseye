@@ -34,8 +34,7 @@ from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    safe_next
+    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators
 
 __version__ = '0.5.0'
 
@@ -212,7 +211,9 @@ class BirdsEye(TreeTracerBase):
         frame_info.inner_calls = defaultdict(list)
         prev = self.stack.get(enter_info.caller_frame)
         if prev:
-            prev.inner_calls[enter_info.call_node].append(frame_info.call_id)
+            inner_calls = getattr(prev, 'inner_calls', None)
+            if inner_calls:
+                inner_calls[enter_info.call_node].append(frame_info.call_id)
 
     def _call_id(self):
         # type: () -> Text
