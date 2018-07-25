@@ -564,8 +564,8 @@ class BirdsEye(TreeTracerBase):
     def exec_ipython_cell(self, source):
         # noinspection PyPackageRequirements
         from IPython import get_ipython
-        filename = name = '$$__IPYTHON_CELL__$$'
         shell = get_ipython()
+        filename = name = shell.compile.cache(source)
         flags = shell.compile.flags
 
         traced_file = self.compile(source, filename, flags)
