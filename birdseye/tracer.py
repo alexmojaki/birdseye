@@ -21,7 +21,7 @@ from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell
 
 
 class TracedFile(object):
@@ -221,7 +221,7 @@ class TreeTracerBase(object):
 
         filename = inspect.getsourcefile(func)  # type: str
 
-        if '<ipython-input' in filename:
+        if is_ipython_cell(filename):
             # noinspection PyPackageRequirements
             from IPython import get_ipython
             import linecache

@@ -231,3 +231,7 @@ def prn(*args):
     if len(args) == 1:
         return args[0]
     return args
+
+
+def is_ipython_cell(filename):
+    return filename.startswith('<ipython-input-')
