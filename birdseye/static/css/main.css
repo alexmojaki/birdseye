@@ -71,9 +71,22 @@
     overflow: hidden;
 }
 
-#code {
-    margin-bottom: 17em;
+.flex-container {
+    display: flex;
+    width: 100%;
+}
+
+#arrows-holder {
+    width: 100px;
+    height: 100px;
+    display: inline-block;
     position: relative;
+}
+
+#code {
+    flex-grow: 1;
+    display: inline-block;
+    margin-bottom: 17em;
     overflow: visible;
 }
 

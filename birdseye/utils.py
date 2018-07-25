@@ -223,3 +223,11 @@ def source_without_decorators(tokens, function_node):
     assert source.startswith('def')
 
     return startpos, source
+
+
+def prn(*args):
+    for arg in args:
+        print(arg)
+    if len(args) == 1:
+        return args[0]
+    return args

@@ -277,7 +277,7 @@ $(function () {
             }).css({
                 position: 'absolute',
                 top: $(loop_span).offset().top - $code.offset().top,
-                right: ($code[0].offsetWidth + 5) + 'px',
+                right: '5px',
             });
 
             function mkButton(cls, disabled, html, onclick) {
@@ -343,7 +343,7 @@ $(function () {
                     changeNumber(current + 1)
                 ));
 
-                $code.append(buttonGroup);
+                $('#arrows-holder').append(buttonGroup);
             }
 
         });

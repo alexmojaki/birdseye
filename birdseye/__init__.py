@@ -34,8 +34,7 @@ from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    safe_next
+    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators
 
 __version__ = '0.5.0'
 
@@ -57,7 +56,7 @@ class BirdsEye(TreeTracerBase):
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
-        self._ipython_cell_data = None
+        self._ipython_cell_call_id = None
 
     @cached_property
     def db(self):
@@ -269,8 +268,8 @@ class BirdsEye(TreeTracerBase):
                     start_time=frame_info.start_time)
         session.add(call)
         session.commit()
-        if self._ipython_cell_data is not None:
-            self._ipython_cell_data = call
+        if self._ipython_cell_call_id is not None:
+            self._ipython_cell_call_id = frame_info.call_id
 
     def _extract_node_values(self, iteration, path, node_values):
         # type: (Iteration, Tuple[int, ...], dict) -> None
@@ -418,7 +417,8 @@ class BirdsEye(TreeTracerBase):
             session.commit()
         return db_func
 
-    def _nodes_of_interest(self, traced_file: TracedFile, start_lineno, end_lineno):
+    def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
+        # type: (TracedFile, int, int) -> Iterator[Tuple[ast.AST, Tuple]]
         """
         Nodes that may have a value, show up as a box in the UI, and lie within the
         given line range.
@@ -589,12 +589,12 @@ class BirdsEye(TreeTracerBase):
         db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
         self._code_infos[traced_file.code] = CodeInfo(db_func, traced_file, ())
 
-        self._ipython_cell_data = 'waiting'
+        self._ipython_cell_call_id = 'waiting'
 
         shell.ex(traced_file.code)
 
-        result = self._ipython_cell_data
-        self._ipython_cell_data = None
+        result = self._ipython_cell_call_id
+        self._ipython_cell_call_id = None
         return result
 
 
@@ -869,3 +869,8 @@ def is_obvious_builtin(node, value):
              node.id in builtins and
              builtins[node.id] is value) or
             isinstance(node, getattr(ast, 'NameConstant', ())))
+
+
+def load_ipython_extension(ipython_shell):
+    from birdseye.ipython import cell_magic
+    ipython_shell.register_magic_function(cell_magic, 'cell', magic_name='eye')

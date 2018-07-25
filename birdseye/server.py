@@ -74,13 +74,22 @@ def func_view(path, func_name):
                            calls=calls)
 
 
-@app.route('/call/<call_id>')
-def call_view(call_id):
+def base_call_view(call_id, template):
     call = Session().query(Call).filter_by(id=call_id).one()
     func = call.function
-    return render_template('call.html',
+    return render_template(template,
                            call=call,
                            func=func)
+
+
+@app.route('/call/<call_id>')
+def call_view(call_id):
+    return base_call_view(call_id, 'call.html')
+
+
+@app.route('/ipython_call/<call_id>')
+def ipython_call_view(call_id):
+    return base_call_view(call_id, 'ipython_call.html')
 
 
 @app.route('/kill', methods=['POST'])
@@ -150,16 +159,16 @@ def body_hashes_present():
     ])
 
 
-def main():
+def main(argv=sys.argv[1:]):
     # Support legacy CLI where there was just one positional argument: the port
-    if len(sys.argv) == 2 and sys.argv[1].isdigit():
-        sys.argv.insert(1, '--port')
+    if len(argv) == 1 and argv[0].isdigit():
+        argv.insert(0, '--port')
 
     parser = argparse.ArgumentParser(description="Bird's Eye: A graphical Python debugger")
     parser.add_argument('-p', '--port', help='HTTP port, default is 7777', default=7777, type=int)
     parser.add_argument('--host', help="HTTP host, default is 'localhost'", default='localhost')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     app.run(
         debug=True,
         port=args.port,

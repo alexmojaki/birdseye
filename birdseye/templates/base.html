@@ -10,6 +10,7 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+{% block whole_body %}
 <div class="container">
     <a href="/">
         <h1>
@@ -19,5 +20,8 @@
     <hr>
     {% block body %}{% endblock %}
 </div>
+  {% block after_container %}
+  {% endblock %}
+{% endblock %}
 </body>
 </html>
