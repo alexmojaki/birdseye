@@ -1,14 +1,17 @@
 import inspect
 import socket
 import sys
-from io import BytesIO
+from io import BytesIO, StringIO
 from threading import currentThread, Thread
 
 from IPython.core.display import HTML, display
 from werkzeug.local import LocalProxy
 from werkzeug.serving import ThreadingMixIn
 
-from birdseye import server, eye
+from birdseye import eye, PY2
+from birdseye.server import app
+
+fake_stream = BytesIO if PY2 else StringIO
 
 thread_proxies = {}
 
@@ -18,7 +21,7 @@ def stream_proxy(original):
         frame = inspect.currentframe()
         while frame:
             if frame.f_code == ThreadingMixIn.process_request_thread.__code__:
-                return BytesIO()
+                return fake_stream()
             frame = frame.f_back
         return thread_proxies.get(currentThread().ident,
                                   original)
@@ -31,9 +34,14 @@ sys.stdout = stream_proxy(sys.stdout)
 
 
 def run_server():
-    thread_proxies[currentThread().ident] = BytesIO()
+    thread_proxies[currentThread().ident] = fake_stream()
     try:
-        server.main([])
+        app.run(
+            debug=True,
+            port=7777,
+            host='127.0.0.1',
+            use_reloader=False,
+        )
     except socket.error:
         pass
 
