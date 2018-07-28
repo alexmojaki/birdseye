@@ -187,14 +187,6 @@ class TreeTracerBase(object):
         # type: (str, str, int) -> TracedFile
         return TracedFile(self, source, filename, flags)
 
-    def exec_string(self, source, filename, globs=None, locs=None):
-        # type: (str, str, dict, dict) -> None
-        traced_file = self.compile(source, filename)
-        globs = globs or {}
-        locs = locs or {}
-        globs = dict(globs, **self._trace_methods_dict(traced_file))
-        exec (traced_file.code, globs, locs)
-
     def _trace_methods_dict(self, traced_file):
         # type: (TracedFile) -> Dict[str, Callable]
         return {f.__name__: partial(f, traced_file)
