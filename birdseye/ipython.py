@@ -48,7 +48,7 @@ def run_server():
 
 def cell_magic(_line, cell):
     Thread(target=run_server).start()
-    call_id = eye.exec_ipython_cell(cell)
+    call_id, value = eye.exec_ipython_cell(cell)
     html = HTML('<iframe '
                 '    src="http://localhost:7777/ipython_call/%s"' % call_id +
                 '    style="width: 100%"'
@@ -56,3 +56,6 @@ def cell_magic(_line, cell):
                 '/>')
     # noinspection PyTypeChecker
     display(html)
+
+    # Display the value as would happen if the %eye magic wasn't there
+    return value

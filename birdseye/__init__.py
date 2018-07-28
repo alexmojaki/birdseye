@@ -57,6 +57,7 @@ class BirdsEye(TreeTracerBase):
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
         self._ipython_cell_call_id = None
+        self._ipython_cell_value = None
 
     @cached_property
     def db(self):
@@ -117,6 +118,14 @@ class BirdsEye(TreeTracerBase):
 
             if frame.f_code not in self._code_infos:
                 return None
+
+            # If this is an expression statement and the last statement
+            # in the body, the value is returned from the cell magic
+            # to be displayed as usual
+            if (self._code_infos[frame.f_code].traced_file.is_ipython_cell
+                    and isinstance(node.parent, ast.Expr)
+                    and node.parent is node.parent.parent.body[-1]):
+                self._ipython_cell_value = value
 
             if is_obvious_builtin(node, self.stack[original_frame].expression_values[node]):
                 return None
@@ -593,9 +602,11 @@ class BirdsEye(TreeTracerBase):
 
         shell.ex(traced_file.code)
 
-        result = self._ipython_cell_call_id
+        call_id = self._ipython_cell_call_id
+        value = self._ipython_cell_value
         self._ipython_cell_call_id = None
-        return result
+        self._ipython_cell_value = None
+        return call_id, value
 
 
 eye = BirdsEye()
