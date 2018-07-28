@@ -43,7 +43,7 @@ class TracedFile(object):
     def __init__(self, tracer, source, filename, flags):
         # type: (TreeTracerBase, str, str, int) -> None
         # Here the source code is parsed, modified, and compiled
-        root = ast.parse(source, filename)  # type: ast.Module
+        root = compile(source, filename, 'exec', ast.PyCF_ONLY_AST | flags, dont_inherit=True)  # type: ast.Module
 
         self.nodes = []  # type: List[ast.AST]
 
