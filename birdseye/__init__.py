@@ -838,7 +838,7 @@ class NodeValue(object):
                     continue
                 add_child(str(k), v)
         else:
-            for s in (getattr(val, '__slots__', None) or ()):
+            for s in (getattr(type(val), '__slots__', None) or ()):
                 try:
                     attr = getattr(val, s)
                 except AttributeError:
