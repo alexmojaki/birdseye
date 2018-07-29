@@ -572,7 +572,6 @@ class BirdsEye(TreeTracerBase):
         return end_lineno
 
     def exec_ipython_cell(self, source):
-        # noinspection PyPackageRequirements
         from IPython import get_ipython
         shell = get_ipython()
         filename = name = shell.compile.cache(source)
@@ -889,5 +888,5 @@ def is_obvious_builtin(node, value):
 
 
 def load_ipython_extension(ipython_shell):
-    from birdseye.ipython import cell_magic
-    ipython_shell.register_magic_function(cell_magic, 'cell', magic_name='eye')
+    from birdseye.ipython import BirdsEyeMagics
+    ipython_shell.register_magics(BirdsEyeMagics)

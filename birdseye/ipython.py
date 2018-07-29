@@ -5,6 +5,9 @@ from io import BytesIO, StringIO
 from threading import currentThread, Thread
 
 from IPython.core.display import HTML, display
+from IPython.core.magic import Magics, cell_magic, magics_class
+from jinja2 import Environment, PackageLoader, select_autoescape
+from traitlets import Unicode, Int
 from werkzeug.local import LocalProxy
 from werkzeug.serving import ThreadingMixIn
 
@@ -33,29 +36,53 @@ sys.stderr = stream_proxy(sys.stderr)
 sys.stdout = stream_proxy(sys.stdout)
 
 
-def run_server():
+def run_server(port, bind_host):
     thread_proxies[currentThread().ident] = fake_stream()
     try:
         app.run(
             debug=True,
-            port=7777,
-            host='127.0.0.1',
+            port=port,
+            host=bind_host,
             use_reloader=False,
         )
     except socket.error:
         pass
 
 
-def cell_magic(_line, cell):
-    Thread(target=run_server).start()
-    call_id, value = eye.exec_ipython_cell(cell)
-    html = HTML('<iframe '
-                '    src="http://localhost:7777/ipython_call/%s"' % call_id +
-                '    style="width: 100%"'
-                '    height="500"'
-                '/>')
-    # noinspection PyTypeChecker
-    display(html)
+templates_env = Environment(
+    loader=PackageLoader('birdseye', 'templates'),
+    autoescape=select_autoescape(['html', 'xml'])
+)
 
-    # Display the value as would happen if the %eye magic wasn't there
-    return value
+
+@magics_class
+class BirdsEyeMagics(Magics):
+    server_url = Unicode(u'', config=True)
+    port = Int(7777, config=True)
+    bind_host = Unicode('127.0.0.1', config=True)
+
+    # def __init__(self, **kwargs):
+    #     super(BirdsEyeMagics, self).__init__(**kwargs)
+    #     self.server_url = self.server_url
+
+    @cell_magic
+    def eye(self, _line, cell):
+        Thread(target=run_server, args=(self.port, self.bind_host)).start()
+
+        call_id, value = eye.exec_ipython_cell(cell)
+
+        if self.server_url:
+            url = self.server_url.rstrip('/')
+        else:
+            url = 'http://localhost:%s' % self.port
+
+        html = HTML(templates_env.get_template('ipython_iframe.html').render(
+            call_id=call_id,
+            url=url,
+        ))
+
+        # noinspection PyTypeChecker
+        display(html)
+
+        # Display the value as would happen if the %eye magic wasn't there
+        return value
