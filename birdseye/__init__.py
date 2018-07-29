@@ -833,7 +833,7 @@ class NodeValue(object):
 
         d = getattr(val, '__dict__', None)
         if d:
-            for k, v in islice(iteritems(d), 50):
+            for k, v in islice(_safe_iter(d, iteritems), 50):
                 if isinstance(v, TracedFile):
                     continue
                 add_child(str(k), v)
