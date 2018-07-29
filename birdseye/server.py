@@ -22,6 +22,8 @@ from birdseye.utils import short_path, IPYTHON_FILE_PATH
 
 
 app = Flask('birdseye')
+app.jinja_env.auto_reload = True
+
 Humanize(app)
 
 
@@ -90,6 +92,16 @@ def call_view(call_id):
 @app.route('/ipython_call/<call_id>')
 def ipython_call_view(call_id):
     return base_call_view(call_id, 'ipython_call.html')
+
+
+@app.route('/ipython_iframe/<call_id>')
+def ipython_iframe_view(call_id):
+    """
+    This view isn't generally used, it's just an easy way to play with the template
+    without a notebook.
+    """
+    return render_template('ipython_iframe.html',
+                           call_id=call_id)
 
 
 @app.route('/kill', methods=['POST'])
