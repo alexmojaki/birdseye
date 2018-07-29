@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import ast
 import json
 
 from future import standard_library
@@ -235,3 +236,7 @@ def prn(*args):
 
 def is_ipython_cell(filename):
     return filename.startswith('<ipython-input-')
+
+
+def is_future_import(node):
+    return isinstance(node, ast.ImportFrom) and node.module == "__future__"

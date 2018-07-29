@@ -21,7 +21,8 @@ from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
+    is_future_import
 
 
 class TracedFile(object):
@@ -58,7 +59,7 @@ class TracedFile(object):
             # Mark __future__ imports and anything before (i.e. module docstrings)
             # to be ignored by the AST transformer
             for i, stmt in enumerate(root.body):
-                if isinstance(stmt, ast.ImportFrom) and stmt.module == "__future__":
+                if is_future_import(stmt):
                     for s in root.body[:i + 1]:
                         for node in ast.walk(s):
                             node._visit_ignore = True

@@ -34,7 +34,8 @@ from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators
+    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
+    is_future_import
 
 __version__ = '0.5.0'
 
@@ -579,6 +580,11 @@ class BirdsEye(TreeTracerBase):
 
         traced_file = self.compile(source, filename, flags)
         traced_file.is_ipython_cell = True
+
+        for node in traced_file.root.body:
+            if is_future_import(node):
+                raise ValueError('from __future__ import ... statements '
+                                 'are not allowed in cells traced with %%eye')
 
         shell.user_global_ns.update(self._trace_methods_dict(traced_file))
 
