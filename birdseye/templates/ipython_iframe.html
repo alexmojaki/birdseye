@@ -24,8 +24,8 @@
 </head>
 <body>
 
-<div class="birdseye-iframe">
-    <iframe src="{{ url }}/ipython_call/{{ call_id }}"></iframe>
+<div class="birdseye-iframe" id="{{ container_id }}">
+
     <div class="birdseye-iframe-resizer" onmousedown="birdseyeIframeInitDrag(this, event)"></div>
 </div>
 
@@ -35,10 +35,8 @@
         var startY = event.clientY;
         var container = resizer.parentNode;
         var startHeight = parseInt(document.defaultView.getComputedStyle(container).height, 10);
-        console.log(startY, startHeight);
 
         function doDrag(e) {
-            console.log('drag', e.clientY);
             container.style.height = (startHeight + Math.max(10, e.clientY) - startY) + 'px';
         }
 
@@ -50,6 +48,19 @@
         document.documentElement.addEventListener('mousemove', doDrag, false);
         document.documentElement.addEventListener('mouseup', stopDrag, false);
     }
+
+    (function () {
+        var url;
+        {% if url %}
+            url = {{ url | tojson }};
+        {% else %}
+            var loc = window.location;
+            url = loc.protocol + "//" + loc.hostname + ':{{ port }}';
+        {% endif %}
+        url += '/ipython_call/{{ call_id }}';
+        var container = document.getElementById('{{ container_id }}');
+        container.innerHTML = '<iframe src="' + url + '"></iframe>' + container.innerHTML;
+    })()
 </script>
 
 </body>

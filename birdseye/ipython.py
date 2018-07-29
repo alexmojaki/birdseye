@@ -3,6 +3,7 @@ import socket
 import sys
 from io import BytesIO, StringIO
 from threading import currentThread, Thread
+from uuid import uuid4
 
 from IPython.core.display import HTML, display
 from IPython.core.magic import Magics, cell_magic, magics_class
@@ -61,24 +62,18 @@ class BirdsEyeMagics(Magics):
     port = Int(7777, config=True)
     bind_host = Unicode('127.0.0.1', config=True)
 
-    # def __init__(self, **kwargs):
-    #     super(BirdsEyeMagics, self).__init__(**kwargs)
-    #     self.server_url = self.server_url
-
     @cell_magic
     def eye(self, _line, cell):
-        Thread(target=run_server, args=(self.port, self.bind_host)).start()
+        if not self.server_url:
+            Thread(target=run_server, args=(self.port, self.bind_host)).start()
 
         call_id, value = eye.exec_ipython_cell(cell)
 
-        if self.server_url:
-            url = self.server_url.rstrip('/')
-        else:
-            url = 'http://localhost:%s' % self.port
-
         html = HTML(templates_env.get_template('ipython_iframe.html').render(
             call_id=call_id,
-            url=url,
+            url=self.server_url.rstrip('/'),
+            port=self.port,
+            container_id=uuid4().hex,
         ))
 
         # noinspection PyTypeChecker
