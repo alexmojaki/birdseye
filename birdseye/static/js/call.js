@@ -170,8 +170,6 @@ $(function () {
         index_to_node[tree_index] = this;
     });
 
-    $('#bottom_panel').width($code.width());
-
     function render() {
 
         $('#inspector, #resize-handle').css({display: selected_boxes.length ? 'block' : 'none'});

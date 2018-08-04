@@ -40,7 +40,7 @@
     position: fixed !important;
     bottom: 0 !important;
     margin: 0;
-    width: inherit;
+    width: 100%;
 }
 
 #box_value, #inspector {
@@ -86,7 +86,7 @@
 #code {
     flex-grow: 1;
     display: inline-block;
-    margin-bottom: 17em;
+    margin-bottom: 40em;
     overflow: visible;
 }
 
