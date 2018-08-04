@@ -8,7 +8,7 @@ from uuid import uuid4
 from IPython.core.display import HTML, display
 from IPython.core.magic import Magics, cell_magic, magics_class
 from jinja2 import Environment, PackageLoader, select_autoescape
-from traitlets import Unicode, Int
+from traitlets import Unicode, Int, Bool
 from werkzeug.local import LocalProxy
 from werkzeug.serving import ThreadingMixIn
 
@@ -37,8 +37,9 @@ sys.stderr = stream_proxy(sys.stderr)
 sys.stdout = stream_proxy(sys.stdout)
 
 
-def run_server(port, bind_host):
-    thread_proxies[currentThread().ident] = fake_stream()
+def run_server(port, bind_host, show_server_output):
+    if not show_server_output:
+        thread_proxies[currentThread().ident] = fake_stream()
     try:
         app.run(
             debug=True,
@@ -61,11 +62,19 @@ class BirdsEyeMagics(Magics):
     server_url = Unicode(u'', config=True)
     port = Int(7777, config=True)
     bind_host = Unicode('127.0.0.1', config=True)
+    show_server_output = Bool(False, config=True)
 
     @cell_magic
     def eye(self, _line, cell):
         if not self.server_url:
-            Thread(target=run_server, args=(self.port, self.bind_host)).start()
+            Thread(
+                target=run_server,
+                args=(
+                    self.port,
+                    self.bind_host,
+                    self.show_server_output,
+                ),
+            ).start()
 
         call_id, value = eye.exec_ipython_cell(cell)
 
