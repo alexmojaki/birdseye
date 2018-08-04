@@ -790,7 +790,7 @@ class NodeValue(object):
         dictionary items, etc as children. Has a max depth of `level` levels.
         """
         result = cls(cheap_repr(val), type_registry[val])
-        if isinstance(val, TypeRegistry.basic_types):
+        if isinstance(val, (TypeRegistry.basic_types, BirdsEye)):
             return result
 
         try:
