@@ -37,7 +37,7 @@ from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
     is_future_import
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 warn_if_outdated('birdseye', __version__)
 
