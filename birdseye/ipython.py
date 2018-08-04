@@ -12,8 +12,8 @@ from traitlets import Unicode, Int, Bool
 from werkzeug.local import LocalProxy
 from werkzeug.serving import ThreadingMixIn
 
-from birdseye import eye, PY2
-from birdseye.server import app
+from birdseye import PY2, Database, BirdsEye, eye
+from birdseye import server
 
 fake_stream = BytesIO if PY2 else StringIO
 
@@ -41,7 +41,7 @@ def run_server(port, bind_host, show_server_output):
     if not show_server_output:
         thread_proxies[currentThread().ident] = fake_stream()
     try:
-        app.run(
+        server.app.run(
             debug=True,
             port=port,
             host=bind_host,
@@ -63,10 +63,15 @@ class BirdsEyeMagics(Magics):
     port = Int(7777, config=True)
     bind_host = Unicode('127.0.0.1', config=True)
     show_server_output = Bool(False, config=True)
+    db_url = Unicode(u'', config=True)
 
     @cell_magic
     def eye(self, _line, cell):
         if not self.server_url:
+            server.db = Database(self.db_url)
+            server.Function = server.db.Function
+            server.Call = server.db.Call
+            server.Session = server.db.Session
             Thread(
                 target=run_server,
                 args=(
@@ -76,6 +81,7 @@ class BirdsEyeMagics(Magics):
                 ),
             ).start()
 
+        eye.db = Database(self.db_url)
         call_id, value = eye.exec_ipython_cell(cell)
 
         html = HTML(templates_env.get_template('ipython_iframe.html').render(
