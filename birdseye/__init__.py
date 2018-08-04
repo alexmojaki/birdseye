@@ -35,9 +35,9 @@ from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallI
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    safe_next
+    is_future_import
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 warn_if_outdated('birdseye', __version__)
 
@@ -57,6 +57,8 @@ class BirdsEye(TreeTracerBase):
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
+        self._ipython_cell_call_id = None
+        self._ipython_cell_value = None
 
     @cached_property
     def db(self):
@@ -117,6 +119,14 @@ class BirdsEye(TreeTracerBase):
 
             if frame.f_code not in self._code_infos:
                 return None
+
+            # If this is an expression statement and the last statement
+            # in the body, the value is returned from the cell magic
+            # to be displayed as usual
+            if (self._code_infos[frame.f_code].traced_file.is_ipython_cell
+                    and isinstance(node.parent, ast.Expr)
+                    and node.parent is node.parent.parent.body[-1]):
+                self._ipython_cell_value = value
 
             if is_obvious_builtin(node, self.stack[original_frame].expression_values[node]):
                 return None
@@ -197,16 +207,21 @@ class BirdsEye(TreeTracerBase):
         frame_info = self.stack[frame]
         frame_info.start_time = datetime.now()
         frame_info.iteration = Iteration()
-        f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
-        arguments = [(name, f_locals.pop(name))
-                     for name in self._code_infos[frame.f_code].arg_names
-                     if name] + [
 
-            # Local variables other than actual arguments. These are variables from
-            # the enclosing scope. It's handy to treat them like arguments in the UI
-            it for it in f_locals.items()
-            if it[0][0] != '.'  # Appears when using nested tuple arguments
-        ]
+        code_info = self._code_infos[frame.f_code]
+        if code_info.traced_file.is_ipython_cell:
+            arguments = []
+        else:
+            f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
+            arguments = [(name, f_locals.pop(name))
+                         for name in code_info.arg_names
+                         if name] + [
+
+                            # Local variables other than actual arguments. These are variables from
+                            # the enclosing scope. It's handy to treat them like arguments in the UI
+                            it for it in f_locals.items()
+                            if it[0][0] != '.'  # Appears when using nested tuple arguments
+                        ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
@@ -263,6 +278,8 @@ class BirdsEye(TreeTracerBase):
                     start_time=frame_info.start_time)
         session.add(call)
         session.commit()
+        if self._ipython_cell_call_id is not None:
+            self._ipython_cell_call_id = frame_info.call_id
 
     def _extract_node_values(self, iteration, path, node_values):
         # type: (Iteration, Tuple[int, ...], dict) -> None
@@ -411,6 +428,7 @@ class BirdsEye(TreeTracerBase):
         return db_func
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
+        # type: (TracedFile, int, int) -> Iterator[Tuple[ast.AST, Tuple]]
         """
         Nodes that may have a value, show up as a box in the UI, and lie within the
         given line range.
@@ -552,6 +570,48 @@ class BirdsEye(TreeTracerBase):
                 prev_start = start
 
         return end_lineno
+
+    def exec_ipython_cell(self, source):
+        from IPython import get_ipython
+        shell = get_ipython()
+        filename = name = shell.compile.cache(source)
+        flags = shell.compile.flags
+
+        traced_file = self.compile(source, filename, flags)
+        traced_file.is_ipython_cell = True
+
+        for node in traced_file.root.body:
+            if is_future_import(node):
+                raise ValueError('from __future__ import ... statements '
+                                 'are not allowed in cells traced with %%eye')
+
+        shell.user_global_ns.update(self._trace_methods_dict(traced_file))
+
+        start_lineno = 1
+        lines = source.splitlines()
+        end_lineno = start_lineno + len(lines)
+        nodes = list(self._nodes_of_interest(traced_file, start_lineno, end_lineno))
+        html_body = self._nodes_html(nodes, start_lineno, end_lineno, traced_file)
+        data_dict = dict(
+            # This maps each node to the loops enclosing that node
+            node_loops={
+                node._tree_index: [n._tree_index for n in node._loops]
+                for node, _ in nodes
+                if node._loops
+            })
+        data = json.dumps(data_dict, sort_keys=True)
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
+        self._code_infos[traced_file.code] = CodeInfo(db_func, traced_file, ())
+
+        self._ipython_cell_call_id = 'waiting'
+
+        shell.ex(traced_file.code)
+
+        call_id = self._ipython_cell_call_id
+        value = self._ipython_cell_value
+        self._ipython_cell_call_id = None
+        self._ipython_cell_value = None
+        return call_id, value
 
 
 eye = BirdsEye()
@@ -730,7 +790,7 @@ class NodeValue(object):
         dictionary items, etc as children. Has a max depth of `level` levels.
         """
         result = cls(cheap_repr(val), type_registry[val])
-        if isinstance(val, TypeRegistry.basic_types):
+        if isinstance(val, (TypeRegistry.basic_types, BirdsEye)):
             return result
 
         try:
@@ -773,12 +833,12 @@ class NodeValue(object):
 
         d = getattr(val, '__dict__', None)
         if d:
-            for k, v in islice(iteritems(d), 50):
+            for k, v in islice(_safe_iter(d, iteritems), 50):
                 if isinstance(v, TracedFile):
                     continue
                 add_child(str(k), v)
         else:
-            for s in (getattr(val, '__slots__', None) or ()):
+            for s in (getattr(type(val), '__slots__', None) or ()):
                 try:
                     attr = getattr(val, s)
                 except AttributeError:
@@ -825,3 +885,8 @@ def is_obvious_builtin(node, value):
              node.id in builtins and
              builtins[node.id] is value) or
             isinstance(node, getattr(ast, 'NameConstant', ())))
+
+
+def load_ipython_extension(ipython_shell):
+    from birdseye.ipython import BirdsEyeMagics
+    ipython_shell.register_magics(BirdsEyeMagics)
