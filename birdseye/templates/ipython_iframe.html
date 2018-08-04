@@ -9,7 +9,6 @@
         }
 
         .birdseye-iframe > iframe {
-            pointer-events: none;
             width: 100%;
             height: 98%;
         }
@@ -35,6 +34,8 @@
         var startY = event.clientY;
         var container = resizer.parentNode;
         var startHeight = parseInt(document.defaultView.getComputedStyle(container).height, 10);
+        var iframe = container.getElementsByTagName('iframe')[0];
+        iframe.style['pointer-events'] = 'none';
 
         function doDrag(e) {
             container.style.height = (startHeight + Math.max(10, e.clientY) - startY) + 'px';
@@ -43,6 +44,7 @@
         function stopDrag() {
             document.documentElement.removeEventListener('mousemove', doDrag, false);
             document.documentElement.removeEventListener('mouseup', stopDrag, false);
+            iframe.style['pointer-events'] = 'auto';
         }
 
         document.documentElement.addEventListener('mousemove', doDrag, false);
