@@ -40,7 +40,7 @@ $(function () {
                 $node: $node,
             }
         }
-        var val_repr = _.escape(val[0]).replace(/ /g, '&nbsp;');
+        var val_repr = '<div class="inspector-value">' + _.escape(val[0]) + '</div>';
         var type_index = val[1];
         var type_name = call_data.type_names[type_index];
         var is_special = type_index < call_data.num_special_types;
@@ -64,7 +64,7 @@ $(function () {
 
         var icon;
         if (special('bool')) {
-            icon = 'glyphicon glyphicon-' + (val_repr === 'True' ? 'ok' : 'remove');
+            icon = 'glyphicon glyphicon-' + (val[0] === 'True' ? 'ok' : 'remove');
         } else if (type_index === -1) {
             icon = 'glyphicon glyphicon-warning-sign';
         } else if (type_index === -2) {
@@ -350,6 +350,12 @@ $(function () {
     }
 
     render();
+
+    // This fixes a weird bug where the bottom panel disappears if the page
+    // is scrolled to the bottom at page load
+    setTimeout(function () {
+        scrollBy(0, -1)
+    }, 100);
 
     (function () {
 

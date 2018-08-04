@@ -67,7 +67,7 @@
 }
 
 #box_value {
-    height: 3em;
+    max-height: 5.7em;
     overflow: hidden;
 }
 
@@ -131,4 +131,14 @@
 
 body > .container {
     margin-left: 100px;
+}
+
+.jstree-anchor .inspector-value {
+    display: inline-block;
+    white-space: pre;
+    vertical-align: top;
+}
+
+#inspector .jstree-anchor {
+    height: auto;
 }

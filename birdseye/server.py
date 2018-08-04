@@ -101,6 +101,8 @@ def ipython_iframe_view(call_id):
     without a notebook.
     """
     return render_template('ipython_iframe.html',
+                           container_id='1234',
+                           port=7777,
                            call_id=call_id)
 
 
