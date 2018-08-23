@@ -306,9 +306,7 @@ class TreeTracerBase(object):
 
             # This is likely inside a comprehension. Find the parent frame corresponding
             # to a normal function call
-            owner_frame = frame
-            while owner_frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
-                owner_frame = owner_frame.f_back
+            owner_frame = non_comprehension_frame(frame)
             if owner_frame != frame:
                 comprehension = safe_next(of_type(self.SPECIAL_COMPREHENSION_TYPES,
                                                   ancestors(node)))  # type: ast.expr
@@ -647,3 +645,9 @@ def loops(node):
 
     result.reverse()
     return tuple(result)
+
+
+def non_comprehension_frame(frame):
+    while frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
+        frame = frame.f_back
+    return frame

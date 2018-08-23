@@ -31,13 +31,19 @@ from cached_property import cached_property
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Database
-from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
+from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
     is_future_import
 
-__version__ = '0.6.0'
+try:
+    from numpy import ndarray
+except ImportError:
+    class ndarray(object):
+        pass
+
+__version__ = '0.6.1'
 
 warn_if_outdated('birdseye', __version__)
 
@@ -112,10 +118,7 @@ class BirdsEye(TreeTracerBase):
 
             # Find the frame corresponding to the function call if we're inside a comprehension
             original_frame = frame
-            while frame.f_code.co_name in ('<listcomp>',
-                                           '<dictcomp>',
-                                           '<setcomp>'):
-                frame = frame.f_back
+            frame = non_comprehension_frame(frame)
 
             if frame.f_code not in self._code_infos:
                 return None
@@ -225,9 +228,11 @@ class BirdsEye(TreeTracerBase):
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
-        prev = self.stack.get(enter_info.caller_frame)
+        prev = self.stack.get(non_comprehension_frame(enter_info.caller_frame))
         if prev:
-            prev.inner_calls[enter_info.call_node].append(frame_info.call_id)
+            inner_calls = getattr(prev, 'inner_calls', None)
+            if inner_calls is not None:
+                inner_calls[enter_info.call_node].append(frame_info.call_id)
 
     def _call_id(self):
         # type: () -> Text
@@ -571,7 +576,7 @@ class BirdsEye(TreeTracerBase):
 
         return end_lineno
 
-    def exec_ipython_cell(self, source):
+    def exec_ipython_cell(self, source, callback):
         from IPython import get_ipython
         shell = get_ipython()
         filename = name = shell.compile.cache(source)
@@ -605,13 +610,14 @@ class BirdsEye(TreeTracerBase):
 
         self._ipython_cell_call_id = 'waiting'
 
-        shell.ex(traced_file.code)
+        try:
+            shell.ex(traced_file.code)
+        finally:
+            callback(self._ipython_cell_call_id)
+            self._ipython_cell_call_id = None
+            self._ipython_cell_value = None
 
-        call_id = self._ipython_cell_call_id
-        value = self._ipython_cell_value
-        self._ipython_cell_call_id = None
-        self._ipython_cell_value = None
-        return call_id, value
+        return self._ipython_cell_value
 
 
 eye = BirdsEye()
@@ -821,15 +827,26 @@ class NodeValue(object):
                     pass
                 else:
                     add_child(str(i), v)
+
         if isinstance(val, Mapping):
             for k, v in islice(_safe_iter(val, iteritems), 10):
                 add_child(cheap_repr(k), v)
+
         if isinstance(val, Set):
             vals = _safe_iter(val)
             if length is None or length > 8:
                 vals = islice(vals, 6)
             for i, v in enumerate(vals):
                 add_child('<%s>' % i, v)
+
+        if isinstance(val, ndarray):
+            for name in ('shape', 'dtype'):
+                try:
+                    attr = getattr(val, name)
+                except AttributeError:
+                    pass
+                else:
+                    add_child(name, attr)
 
         d = getattr(val, '__dict__', None)
         if d:
