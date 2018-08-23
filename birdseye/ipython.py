@@ -82,17 +82,25 @@ class BirdsEyeMagics(Magics):
             ).start()
 
         eye.db = Database(self.db_url)
-        call_id, value = eye.exec_ipython_cell(cell)
 
-        html = HTML(templates_env.get_template('ipython_iframe.html').render(
-            call_id=call_id,
-            url=self.server_url.rstrip('/'),
-            port=self.port,
-            container_id=uuid4().hex,
-        ))
+        def callback(call_id):
+            """
+            Always executes after the cell, whether or not an exception is raised
+            in the user code.
+            """
+            if call_id is None:  # probably means a bug
+                return
 
-        # noinspection PyTypeChecker
-        display(html)
+            html = HTML(templates_env.get_template('ipython_iframe.html').render(
+                call_id=call_id,
+                url=self.server_url.rstrip('/'),
+                port=self.port,
+                container_id=uuid4().hex,
+            ))
 
+            # noinspection PyTypeChecker
+            display(html)
+
+        value = eye.exec_ipython_cell(cell, callback)
         # Display the value as would happen if the %eye magic wasn't there
         return value

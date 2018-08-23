@@ -2,8 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 from future import standard_library
 
-from tracer import non_comprehension_frame
-
 standard_library.install_aliases()
 from future.utils import iteritems
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union, cast
@@ -33,7 +31,7 @@ from cached_property import cached_property
 from cheap_repr import cheap_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Database
-from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
+from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
@@ -572,7 +570,7 @@ class BirdsEye(TreeTracerBase):
 
         return end_lineno
 
-    def exec_ipython_cell(self, source):
+    def exec_ipython_cell(self, source, callback):
         from IPython import get_ipython
         shell = get_ipython()
         filename = name = shell.compile.cache(source)
@@ -606,13 +604,14 @@ class BirdsEye(TreeTracerBase):
 
         self._ipython_cell_call_id = 'waiting'
 
-        shell.ex(traced_file.code)
+        try:
+            shell.ex(traced_file.code)
+        finally:
+            callback(self._ipython_cell_call_id)
+            self._ipython_cell_call_id = None
+            self._ipython_cell_value = None
 
-        call_id = self._ipython_cell_call_id
-        value = self._ipython_cell_value
-        self._ipython_cell_call_id = None
-        self._ipython_cell_value = None
-        return call_id, value
+        return self._ipython_cell_value
 
 
 eye = BirdsEye()
