@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 from future import standard_library
 
+from tracer import non_comprehension_frame
+
 standard_library.install_aliases()
 from future.utils import iteritems
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union, cast
@@ -112,10 +114,7 @@ class BirdsEye(TreeTracerBase):
 
             # Find the frame corresponding to the function call if we're inside a comprehension
             original_frame = frame
-            while frame.f_code.co_name in ('<listcomp>',
-                                           '<dictcomp>',
-                                           '<setcomp>'):
-                frame = frame.f_back
+            frame = non_comprehension_frame(frame)
 
             if frame.f_code not in self._code_infos:
                 return None
@@ -225,7 +224,7 @@ class BirdsEye(TreeTracerBase):
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
-        prev = self.stack.get(enter_info.caller_frame)
+        prev = self.stack.get(non_comprehension_frame(enter_info.caller_frame))
         if prev:
             inner_calls = getattr(prev, 'inner_calls', None)
             if inner_calls is not None:
