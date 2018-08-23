@@ -15,7 +15,7 @@ from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.mysql import LONGTEXT
 from littleutils import select_attrs
-from birdseye.utils import IPYTHON_FILE_PATH
+from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
 
 DB_VERSION = 0
 
@@ -177,7 +177,8 @@ class Database(object):
 
     def all_file_paths(self):
         # type: () -> List[str]
-        paths = [f[0] for f in self.Session().query(self.Function.file).distinct()]
+        paths = [f[0] for f in self.Session().query(self.Function.file).distinct()
+                 if not is_ipython_cell(f[0])]
         paths.sort()
         if IPYTHON_FILE_PATH in paths:
             paths.remove(IPYTHON_FILE_PATH)

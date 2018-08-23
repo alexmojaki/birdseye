@@ -1,0 +1,18 @@
+<div class="flex-container">
+  <div id="arrows-holder"></div>
+  <pre id="code" class="python">{{ func.html_body | safe }}</pre>
+</div>
+<div id="bottom_panel">
+  <div id="resize-handle" class="text-center"></div>
+  <div id="inspector"></div>
+  <pre id="box_value"></pre>
+</div>
+
+<script src="/static/js/libs/highlight.pack.js"></script>
+<script>
+  var call_data = {{ call.parsed_data | tojson | safe }};
+  var func_data = {{ func.parsed_data | tojson | safe }};
+</script>
+<script src="/static/js/libs/jstree.js"></script>
+<script src="/static/js/libs/underscore.js"></script>
+<script src="/static/js/call.js"></script>

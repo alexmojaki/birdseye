@@ -21,7 +21,8 @@ from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file
+from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
+    is_future_import
 
 
 class TracedFile(object):
@@ -38,10 +39,12 @@ class TracedFile(object):
     - code: executable code object compiled from the modified AST
     """
 
+    is_ipython_cell = False
+
     def __init__(self, tracer, source, filename, flags):
         # type: (TreeTracerBase, str, str, int) -> None
         # Here the source code is parsed, modified, and compiled
-        root = ast.parse(source, filename)  # type: ast.Module
+        root = compile(source, filename, 'exec', ast.PyCF_ONLY_AST | flags, dont_inherit=True)  # type: ast.Module
 
         self.nodes = []  # type: List[ast.AST]
 
@@ -56,7 +59,7 @@ class TracedFile(object):
             # Mark __future__ imports and anything before (i.e. module docstrings)
             # to be ignored by the AST transformer
             for i, stmt in enumerate(root.body):
-                if isinstance(stmt, ast.ImportFrom) and stmt.module == "__future__":
+                if is_future_import(stmt):
                     for s in root.body[:i + 1]:
                         for node in ast.walk(s):
                             node._visit_ignore = True
@@ -185,14 +188,6 @@ class TreeTracerBase(object):
         # type: (str, str, int) -> TracedFile
         return TracedFile(self, source, filename, flags)
 
-    def exec_string(self, source, filename, globs=None, locs=None):
-        # type: (str, str, dict, dict) -> None
-        traced_file = self.compile(source, filename)
-        globs = globs or {}
-        locs = locs or {}
-        globs = dict(globs, **self._trace_methods_dict(traced_file))
-        exec (traced_file.code, globs, locs)
-
     def _trace_methods_dict(self, traced_file):
         # type: (TracedFile) -> Dict[str, Callable]
         return {f.__name__: partial(f, traced_file)
@@ -219,7 +214,7 @@ class TreeTracerBase(object):
 
         filename = inspect.getsourcefile(func)  # type: str
 
-        if '<ipython-input' in filename:
+        if is_ipython_cell(filename):
             # noinspection PyPackageRequirements
             from IPython import get_ipython
             import linecache

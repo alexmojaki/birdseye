@@ -1,0 +1,11 @@
+{% extends "call_base.html" %}
+{% block whole_body %}
+  {% include "call_core.html" %}
+  <script>
+    $(function () {
+      if (_.isEmpty(func_data.node_loops)) {
+        $('#arrows-holder').hide();
+      }
+    });
+  </script>
+{% endblock %}

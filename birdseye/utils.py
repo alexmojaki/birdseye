@@ -1,5 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
+import ast
 import json
 
 from future import standard_library
@@ -223,3 +224,19 @@ def source_without_decorators(tokens, function_node):
     assert source.startswith('def')
 
     return startpos, source
+
+
+def prn(*args):
+    for arg in args:
+        print(arg)
+    if len(args) == 1:
+        return args[0]
+    return args
+
+
+def is_ipython_cell(filename):
+    return filename.startswith('<ipython-input-')
+
+
+def is_future_import(node):
+    return isinstance(node, ast.ImportFrom) and node.module == "__future__"
