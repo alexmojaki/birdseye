@@ -40,7 +40,7 @@ from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
 try:
     from numpy import ndarray
 except ImportError:
-    class ndarray:
+    class ndarray(object):
         pass
 
 __version__ = '0.6.0'
