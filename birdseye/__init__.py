@@ -228,7 +228,7 @@ class BirdsEye(TreeTracerBase):
         prev = self.stack.get(enter_info.caller_frame)
         if prev:
             inner_calls = getattr(prev, 'inner_calls', None)
-            if inner_calls:
+            if inner_calls is not None:
                 inner_calls[enter_info.call_node].append(frame_info.call_id)
 
     def _call_id(self):
