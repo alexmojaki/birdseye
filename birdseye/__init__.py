@@ -43,7 +43,7 @@ except ImportError:
     class ndarray(object):
         pass
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 warn_if_outdated('birdseye', __version__)
 
