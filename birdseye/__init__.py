@@ -37,6 +37,12 @@ from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
     is_future_import
 
+try:
+    from numpy import ndarray
+except ImportError:
+    class ndarray:
+        pass
+
 __version__ = '0.6.0'
 
 warn_if_outdated('birdseye', __version__)
@@ -821,15 +827,26 @@ class NodeValue(object):
                     pass
                 else:
                     add_child(str(i), v)
+
         if isinstance(val, Mapping):
             for k, v in islice(_safe_iter(val, iteritems), 10):
                 add_child(cheap_repr(k), v)
+
         if isinstance(val, Set):
             vals = _safe_iter(val)
             if length is None or length > 8:
                 vals = islice(vals, 6)
             for i, v in enumerate(vals):
                 add_child('<%s>' % i, v)
+
+        if isinstance(val, ndarray):
+            for name in ('shape', 'dtype'):
+                try:
+                    attr = getattr(val, name)
+                except AttributeError:
+                    pass
+                else:
+                    add_child(name, attr)
 
         d = getattr(val, '__dict__', None)
         if d:
