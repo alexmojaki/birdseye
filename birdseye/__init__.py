@@ -815,7 +815,7 @@ class NodeValue(object):
 
         add_child = partial(result.add_child, level - 1)
 
-        if isinstance(val, Sequence) and length is not None:
+        if isinstance(val, (Sequence, ndarray)) and length is not None:
             if length <= 8:
                 indices = range(length)
             else:
