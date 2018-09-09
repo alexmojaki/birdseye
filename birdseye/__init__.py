@@ -28,7 +28,7 @@ from littleutils import group_by_key_func, only
 from outdated import warn_if_outdated
 from cached_property import cached_property
 
-from cheap_repr import cheap_repr
+from cheap_repr import cheap_repr, try_register_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
@@ -932,6 +932,24 @@ def _sample_indices(length, max_length):
         return chain(range(max_length // 2),
                      range(length - max_length // 2,
                            length))
+
+
+@try_register_repr('pandas', 'Series')
+def _repr_series_one_line(x, helper):
+    n = len(x)
+    if n == 0:
+        return repr(x)
+    newlevel = helper.level - 1
+    pieces = []
+    maxparts = _repr_series_one_line.maxparts
+    for i in _sample_indices(n, maxparts):
+        k = x.index[i:i + 1].format(sparsify=False)[0]
+        v = x.iloc[i]
+        pieces.append('%s = %s' % (k, cheap_repr(v, newlevel)))
+    if n > maxparts + 2:
+        pieces.insert(maxparts // 2, '...')
+    return '; '.join(pieces)
+
 
 
 def is_interesting_expression(node):
