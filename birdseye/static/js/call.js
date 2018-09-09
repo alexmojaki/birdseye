@@ -135,11 +135,11 @@ $(function () {
             var row;
             if (i === meta.row_break) {
                 row = $('<tr>');
-                var cell = $('<td>')
-                    .text('...')
-                    .attr('colspan', numCols + 1)
-                    .css({'text-align': 'center'});
-                row.append(cell);
+                for (j = 0; j < numCols + 1 + (meta.col_break ? 1 : 0); j++) {
+                    row.append($('<td>')
+                        .text('...')
+                        .css({'text-align': 'center'}));
+                }
                 table.append(row);
             }
             row = $('<tr>');
@@ -150,6 +150,9 @@ $(function () {
             row.append($('<th>').text(label));
         }
         for (i = 0; i < numCols; i++) {
+            if (i === meta.col_break) {
+                header.append($('<th>').text('...'));
+            }
             column = val[3 + i];
             header.append($('<th>').text(column[0]));
             var values = [];
@@ -165,6 +168,9 @@ $(function () {
                 }
             }
             for (j = 0; j < numRows; j++) {
+                if (i === meta.col_break) {
+                    rows[j].append($('<td>').text('...'));
+                }
                 value = values[j];
                 if (isNumeric) {
                     value = parseFloat(value).toFixed(Math.min(maxDecimals, 6));

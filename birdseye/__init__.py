@@ -838,11 +838,7 @@ class NodeValue(object):
             return result
 
         if isinstance(val, (Sequence, ndarray)) and length is not None:
-            if length <= 8:
-                indices = range(length)
-            else:
-                indices = chain(range(3), range(length - 3, length))
-            for i in indices:
+            for i in _sample_indices(length, 6):
                 try:
                     v = val[i]
                 except:
@@ -864,16 +860,27 @@ class NodeValue(object):
         if isinstance(val, DataFrame):
             meta = {}
             result.set_meta('dataframe', meta)
-            for formatted_name, label in zip(val.columns.format(sparsify=False), val.columns):
-                add_child(formatted_name, val[label])
 
             if level >= 3:
                 max_rows = 20
+                max_cols = 100
             else:
                 max_rows = 6
+                max_cols = 10
 
             if length > max_rows + 2:
                 meta['row_break'] = max_rows // 2
+
+            columns = val.columns
+            num_cols = len(columns)
+            if num_cols > max_cols + 2:
+                meta['col_break'] = max_cols // 2
+
+            indices = set(_sample_indices(num_cols, max_cols))
+            for i, (formatted_name, label) in enumerate(zip(val.columns.format(sparsify=False),
+                                                            val.columns)):
+                if i in indices:
+                    add_child(formatted_name, val[label])
 
             return result
 
@@ -883,12 +890,7 @@ class NodeValue(object):
             else:
                 max_rows = 6
 
-            if length <= max_rows + 2:
-                indices = range(length)
-            else:
-                indices = chain(range(max_rows // 2), range(length - max_rows // 2, length))
-
-            for i in indices:
+            for i in _sample_indices(length, max_rows):
                 try:
                     k = val.index[i:i + 1].format(sparsify=False)[0]
                     v = val.iloc[i]
@@ -921,6 +923,15 @@ def _safe_iter(val, f=lambda x: x):
             yield x
     except:
         pass
+
+
+def _sample_indices(length, max_length):
+    if length <= max_length + 2:
+        return range(length)
+    else:
+        return chain(range(max_length // 2),
+                     range(length - max_length // 2,
+                           length))
 
 
 def is_interesting_expression(node):
