@@ -57,7 +57,7 @@ $(function () {
                 text += '<i>None</i>';
             } else if (type_index === -1) { // exception
                 text += '<span style="color: red">' + val_repr + '</span>';
-            } else if (val[2].is_dataframe && val[3] && (val[3][1].length > 4)) {
+            } else if (val[2].dataframe && val[3] && (val[3][1].length > 4)) {
                 var table = dataframeTable(val);
                 text += table[0].outerHTML
             } else {
@@ -122,6 +122,7 @@ $(function () {
     }
 
     function dataframeTable(val) {
+        var meta = val[2].dataframe;
         var numCols = val.length - 3;
         var numRows = val[3][1].length - 4;
         var i, j, value, column;
@@ -131,7 +132,17 @@ $(function () {
         table.append(header);
         var rows = [];
         for (i = 0; i < numRows; i++) {
-            var row = $('<tr>');
+            var row;
+            if (i === meta.row_break) {
+                row = $('<tr>');
+                var cell = $('<td>')
+                    .text('...')
+                    .attr('colspan', numCols + 1)
+                    .css({'text-align': 'center'});
+                row.append(cell);
+                table.append(row);
+            }
+            row = $('<tr>');
             table.append(row);
             rows.push(row);
             column = val[3];

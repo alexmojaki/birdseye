@@ -862,16 +862,32 @@ class NodeValue(object):
                 add_child('<%s>' % i, v)
 
         if isinstance(val, DataFrame):
-            result.set_meta('is_dataframe', True)
+            meta = {}
+            result.set_meta('dataframe', meta)
             for formatted_name, label in zip(val.columns.format(sparsify=False), val.columns):
                 add_child(formatted_name, val[label])
+
+            if level >= 3:
+                max_rows = 20
+            else:
+                max_rows = 6
+
+            if length > max_rows + 2:
+                meta['row_break'] = max_rows // 2
+
             return result
 
         if isinstance(val, Series):
-            if length <= 8:
+            if level >= 2:
+                max_rows = 20
+            else:
+                max_rows = 6
+
+            if length <= max_rows + 2:
                 indices = range(length)
             else:
-                indices = chain(range(3), range(length - 3, length))
+                indices = chain(range(max_rows // 2), range(length - max_rows // 2, length))
+
             for i in indices:
                 try:
                     k = val.index[i:i + 1].format(sparsify=False)[0]
