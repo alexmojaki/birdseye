@@ -60,7 +60,7 @@ except ImportError:
         pass
 
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 warn_if_outdated('birdseye', __version__)
 
