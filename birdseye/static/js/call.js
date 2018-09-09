@@ -57,6 +57,9 @@ $(function () {
                 text += '<i>None</i>';
             } else if (type_index === -1) { // exception
                 text += '<span style="color: red">' + val_repr + '</span>';
+            } else if (val[2].is_dataframe && val[3] && (val[3][1].length > 4)) {
+                var table = dataframeTable(val);
+                text += table[0].outerHTML
             } else {
                 text += '<span style="color: #b5b5b5">' + _.escape(type_name) + ':</span> ' + val_repr;
             }
@@ -116,6 +119,49 @@ $(function () {
         }
 
         return result;
+    }
+
+    function dataframeTable(val) {
+        var numCols = val.length - 3;
+        var numRows = val[3][1].length - 4;
+        var i, j, value, column;
+        var table = $('<table>').addClass('dataframe table table-striped table-hover');
+        var header = $('<tr>');
+        header.append($('<th>'));
+        table.append(header);
+        var rows = [];
+        for (i = 0; i < numRows; i++) {
+            var row = $('<tr>');
+            table.append(row);
+            rows.push(row);
+            column = val[3];
+            var label = column[1][4 + i][0];
+            row.append($('<th>').text(label));
+        }
+        for (i = 0; i < numCols; i++) {
+            column = val[3 + i];
+            header.append($('<th>').text(column[0]));
+            var values = [];
+            var isNumeric = true;
+            var maxDecimals = 1;
+            for (j = 0; j < numRows; j++) {
+                value = column[1][4 + j][1][0];
+                values.push(value);
+                isNumeric &= !isNaN(parseFloat(value)) || value.toLowerCase() === 'nan';
+                var decimals = value.split(".")[1];
+                if (decimals) {
+                    maxDecimals = Math.max(maxDecimals, decimals.length);
+                }
+            }
+            for (j = 0; j < numRows; j++) {
+                value = values[j];
+                if (isNumeric) {
+                    value = parseFloat(value).toFixed(Math.min(maxDecimals, 6));
+                }
+                rows[j].append($('<td>').text(value).toggleClass('numeric', isNumeric));
+            }
+        }
+        return table;
     }
 
     var open_paths = [];

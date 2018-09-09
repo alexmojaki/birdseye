@@ -43,6 +43,16 @@ except ImportError:
     class ndarray(object):
         pass
 
+try:
+    from pandas import DataFrame, Series
+except ImportError:
+    class DataFrame(object):
+        pass
+
+
+    class Series(object):
+        pass
+
 __version__ = '0.6.1'
 
 warn_if_outdated('birdseye', __version__)
@@ -806,14 +816,26 @@ class NodeValue(object):
         else:
             result.set_meta('len', length)
 
+        add_child = partial(result.add_child, level - 1)
+
+        if isinstance(val, (Series, ndarray)):
+            attrs = ['dtype']
+            if isinstance(val, ndarray):
+                attrs.append('shape')
+            for name in attrs:
+                try:
+                    attr = getattr(val, name)
+                except AttributeError:
+                    pass
+                else:
+                    add_child(name, attr)
+
         if (level == 0 or
                 isinstance(val,
                            (str, bytes, range)
                            if PY3 else
                            (str, unicode, xrange))):
             return result
-
-        add_child = partial(result.add_child, level - 1)
 
         if isinstance(val, (Sequence, ndarray)) and length is not None:
             if length <= 8:
@@ -839,14 +861,26 @@ class NodeValue(object):
             for i, v in enumerate(vals):
                 add_child('<%s>' % i, v)
 
-        if isinstance(val, ndarray):
-            for name in ('shape', 'dtype'):
+        if isinstance(val, DataFrame):
+            result.set_meta('is_dataframe', True)
+            for formatted_name, label in zip(val.columns.format(sparsify=False), val.columns):
+                add_child(formatted_name, val[label])
+            return result
+
+        if isinstance(val, Series):
+            if length <= 8:
+                indices = range(length)
+            else:
+                indices = chain(range(3), range(length - 3, length))
+            for i in indices:
                 try:
-                    attr = getattr(val, name)
-                except AttributeError:
+                    k = val.index[i:i + 1].format(sparsify=False)[0]
+                    v = val.iloc[i]
+                except:
                     pass
                 else:
-                    add_child(name, attr)
+                    add_child(k, v)
+            return result
 
         d = getattr(val, '__dict__', None)
         if d:
