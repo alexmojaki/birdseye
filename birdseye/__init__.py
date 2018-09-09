@@ -53,6 +53,13 @@ except ImportError:
     class Series(object):
         pass
 
+try:
+    from django.db.models import QuerySet
+except ImportError:
+    class QuerySet(object):
+        pass
+
+
 __version__ = '0.6.1'
 
 warn_if_outdated('birdseye', __version__)
@@ -809,12 +816,14 @@ class NodeValue(object):
         if isinstance(val, (TypeRegistry.basic_types, BirdsEye)):
             return result
 
-        try:
-            length = len(val)
-        except:
-            length = None
-        else:
-            result.set_meta('len', length)
+        length = None
+        if not isinstance(val, QuerySet):  # len triggers a database query
+            try:
+                length = len(val)
+            except:
+                pass
+            else:
+                result.set_meta('len', length)
 
         add_child = partial(result.add_child, level - 1)
 
