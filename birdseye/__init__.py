@@ -839,32 +839,8 @@ class NodeValue(object):
                 else:
                     add_child(name, attr)
 
-        if (level == 0 or
-                isinstance(val,
-                           (str, bytes, range)
-                           if PY3 else
-                           (str, unicode, xrange))):
-            return result
-
-        if isinstance(val, (Sequence, ndarray)) and length is not None:
-            for i in _sample_indices(length, 6):
-                try:
-                    v = val[i]
-                except:
-                    pass
-                else:
-                    add_child(str(i), v)
-
-        if isinstance(val, Mapping):
-            for k, v in islice(_safe_iter(val, iteritems), 10):
-                add_child(cheap_repr(k), v)
-
-        if isinstance(val, Set):
-            vals = _safe_iter(val)
-            if length is None or length > 8:
-                vals = islice(vals, 6)
-            for i, v in enumerate(vals):
-                add_child('<%s>' % i, v)
+        # Always expand DataFrames and Series regardless of level to
+        # make the table view of DataFrames work
 
         if isinstance(val, DataFrame):
             meta = {}
@@ -908,6 +884,33 @@ class NodeValue(object):
                 else:
                     add_child(k, v)
             return result
+
+        if (level <= 0 or
+                isinstance(val,
+                           (str, bytes, range)
+                           if PY3 else
+                           (str, unicode, xrange))):
+            return result
+
+        if isinstance(val, (Sequence, ndarray)) and length is not None:
+            for i in _sample_indices(length, 6):
+                try:
+                    v = val[i]
+                except:
+                    pass
+                else:
+                    add_child(str(i), v)
+
+        if isinstance(val, Mapping):
+            for k, v in islice(_safe_iter(val, iteritems), 10):
+                add_child(cheap_repr(k), v)
+
+        if isinstance(val, Set):
+            vals = _safe_iter(val)
+            if length is None or length > 8:
+                vals = islice(vals, 6)
+            for i, v in enumerate(vals):
+                add_child('<%s>' % i, v)
 
         d = getattr(val, '__dict__', None)
         if d:
