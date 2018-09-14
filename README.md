@@ -124,3 +124,19 @@ I'd love your help! Check out [the wiki](https://github.com/alexmojaki/birdseye/
 ## How it works
 
 The source file of a decorated function is parsed into the standard Python Abstract Syntax Tree. The tree is then modified so that every statement is wrapped in its own `with` statement and every expression is wrapped in a function call. The modified tree is compiled and the resulting code object is used to directly construct a brand new function. This is why the `eye` decorator must be applied first: it's not a wrapper like most decorators, so other decorators applied first would almost certainly either have no effect or bypass the tracing. The AST modifications notify the tracer both before and after every expression and statement. This functionality is generic, and in the future it will be extracted into its own package.
+
+## Jupyter/IPython notebook integration
+
+First, load the birdseye extension, using either `%load_ext birdseye` in a notebook cell or by adding `'birdseye'` to `c.InteractiveShellApp.extensions` in your IPython configuration file, e.g. `~/.ipython/profile_default/ipython_config.py`.
+
+Use the cell magic `%%eye` at the top of a notebook cell to trace that cell. When you run the cell and it finishes executing, a frame should appear underneath with the traced code.
+
+Hovering over an expression should show the value at the bottom of the frame. This requires the bottom of the frame being visible. Sometimes notebooks fold long output (which would include the birdseye frame) into a limited space - if that happens, click the space just left of the output. You can also resize the frame by dragging the bar at the bottom, or click 'Open in new tab' just above the frame.
+
+For convenience, the cell magic automatically starts a birdseye server in the background. You can configure this by settings attributes on `BirdsEyeMagics`, e.g. `%config BirdsEyeMagics.port = 7778` in a cell or `c.BirdsEyeMagics.port = 7778` in your IPython config file. The available attributes are:
+
+- `server_url`: If set, a server will not be automatically started by `%%eye`. The iframe containing birdseye output will use this value as the base of its URL.
+- `port`: Port number for the background server.
+- `host`: Host that the background server listens on. Set to 0.0.0.0 to make it accessible anywhere.
+- `show_server_output`: Set to True to show stdout and stderr from the background server.
+- `db_url`: The database URL that the background reads from. Equivalent to the environment variable `BIRDSEYE_DB`.

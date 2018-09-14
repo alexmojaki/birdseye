@@ -629,12 +629,11 @@ class BirdsEye(TreeTracerBase):
 
         try:
             shell.ex(traced_file.code)
+            return self._ipython_cell_value
         finally:
             callback(self._ipython_cell_call_id)
             self._ipython_cell_call_id = None
             self._ipython_cell_value = None
-
-        return self._ipython_cell_value
 
 
 eye = BirdsEye()
@@ -961,7 +960,6 @@ def _repr_series_one_line(x, helper):
     if n > maxparts + 2:
         pieces.insert(maxparts // 2, '...')
     return '; '.join(pieces)
-
 
 
 def is_interesting_expression(node):
