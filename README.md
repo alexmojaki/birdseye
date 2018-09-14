@@ -24,6 +24,10 @@ Calls are organised into functions (which are organised into files) and organise
 
 ## Integrations with other tools
 
+- [Jupyter/IPython notebooks](#jupyteripython-notebook-integration)
+
+![Jupyter notebook screenshot](https://i.imgur.com/bYL5U4N.png)
+
 - [PyCharm plugin](https://github.com/alexmojaki/birdseye-pycharm)
 - [VS Code extension](https://github.com/Almenon/birdseye-vscode/)
 
