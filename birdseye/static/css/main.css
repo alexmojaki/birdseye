@@ -142,3 +142,22 @@ body > .container {
 #inspector .jstree-anchor {
     height: auto;
 }
+
+table.dataframe.table {
+    width: auto;
+    font-size: 9pt;
+    margin: 5px;
+    border: 2px solid black;
+}
+
+table.dataframe td.numeric {
+    text-align: right;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f5f5f5;
+}
+
+.table-striped.table-hover > tbody > tr:hover {
+    background-color: rgba(66, 165, 245, 0.2);
+}

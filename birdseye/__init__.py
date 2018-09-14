@@ -28,7 +28,7 @@ from littleutils import group_by_key_func, only
 from outdated import warn_if_outdated
 from cached_property import cached_property
 
-from cheap_repr import cheap_repr
+from cheap_repr import cheap_repr, try_register_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Database
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
@@ -43,7 +43,24 @@ except ImportError:
     class ndarray(object):
         pass
 
-__version__ = '0.6.1'
+try:
+    from pandas import DataFrame, Series
+except ImportError:
+    class DataFrame(object):
+        pass
+
+
+    class Series(object):
+        pass
+
+try:
+    from django.db.models import QuerySet
+except ImportError:
+    class QuerySet(object):
+        pass
+
+
+__version__ = '0.7.2'
 
 warn_if_outdated('birdseye', __version__)
 
@@ -612,12 +629,11 @@ class BirdsEye(TreeTracerBase):
 
         try:
             shell.ex(traced_file.code)
+            return self._ipython_cell_value
         finally:
             callback(self._ipython_cell_call_id)
             self._ipython_cell_call_id = None
             self._ipython_cell_value = None
-
-        return self._ipython_cell_value
 
 
 eye = BirdsEye()
@@ -799,28 +815,84 @@ class NodeValue(object):
         if isinstance(val, (TypeRegistry.basic_types, BirdsEye)):
             return result
 
-        try:
-            length = len(val)
-        except:
-            length = None
-        else:
-            result.set_meta('len', length)
+        length = None
+        if not isinstance(val, QuerySet):  # len triggers a database query
+            try:
+                length = len(val)
+            except:
+                pass
+            else:
+                result.set_meta('len', length)
 
-        if (level == 0 or
+        add_child = partial(result.add_child, level - 1)
+
+        if isinstance(val, (Series, ndarray)):
+            attrs = ['dtype']
+            if isinstance(val, ndarray):
+                attrs.append('shape')
+            for name in attrs:
+                try:
+                    attr = getattr(val, name)
+                except AttributeError:
+                    pass
+                else:
+                    add_child(name, attr)
+
+        # Always expand DataFrames and Series regardless of level to
+        # make the table view of DataFrames work
+
+        if isinstance(val, DataFrame):
+            meta = {}
+            result.set_meta('dataframe', meta)
+
+            if level >= 3:
+                max_rows = 20
+                max_cols = 100
+            else:
+                max_rows = 6
+                max_cols = 10
+
+            if length > max_rows + 2:
+                meta['row_break'] = max_rows // 2
+
+            columns = val.columns
+            num_cols = len(columns)
+            if num_cols > max_cols + 2:
+                meta['col_break'] = max_cols // 2
+
+            indices = set(_sample_indices(num_cols, max_cols))
+            for i, (formatted_name, label) in enumerate(zip(val.columns.format(sparsify=False),
+                                                            val.columns)):
+                if i in indices:
+                    add_child(formatted_name, val[label])
+
+            return result
+
+        if isinstance(val, Series):
+            if level >= 2:
+                max_rows = 20
+            else:
+                max_rows = 6
+
+            for i in _sample_indices(length, max_rows):
+                try:
+                    k = val.index[i:i + 1].format(sparsify=False)[0]
+                    v = val.iloc[i]
+                except:
+                    pass
+                else:
+                    add_child(k, v)
+            return result
+
+        if (level <= 0 or
                 isinstance(val,
                            (str, bytes, range)
                            if PY3 else
                            (str, unicode, xrange))):
             return result
 
-        add_child = partial(result.add_child, level - 1)
-
-        if isinstance(val, Sequence) and length is not None:
-            if length <= 8:
-                indices = range(length)
-            else:
-                indices = chain(range(3), range(length - 3, length))
-            for i in indices:
+        if isinstance(val, (Sequence, ndarray)) and length is not None:
+            for i in _sample_indices(length, 6):
                 try:
                     v = val[i]
                 except:
@@ -838,15 +910,6 @@ class NodeValue(object):
                 vals = islice(vals, 6)
             for i, v in enumerate(vals):
                 add_child('<%s>' % i, v)
-
-        if isinstance(val, ndarray):
-            for name in ('shape', 'dtype'):
-                try:
-                    attr = getattr(val, name)
-                except AttributeError:
-                    pass
-                else:
-                    add_child(name, attr)
 
         d = getattr(val, '__dict__', None)
         if d:
@@ -871,6 +934,32 @@ def _safe_iter(val, f=lambda x: x):
             yield x
     except:
         pass
+
+
+def _sample_indices(length, max_length):
+    if length <= max_length + 2:
+        return range(length)
+    else:
+        return chain(range(max_length // 2),
+                     range(length - max_length // 2,
+                           length))
+
+
+@try_register_repr('pandas', 'Series')
+def _repr_series_one_line(x, helper):
+    n = len(x)
+    if n == 0:
+        return repr(x)
+    newlevel = helper.level - 1
+    pieces = []
+    maxparts = _repr_series_one_line.maxparts
+    for i in _sample_indices(n, maxparts):
+        k = x.index[i:i + 1].format(sparsify=False)[0]
+        v = x.iloc[i]
+        pieces.append('%s = %s' % (k, cheap_repr(v, newlevel)))
+    if n > maxparts + 2:
+        pieces.insert(maxparts // 2, '...')
+    return '; '.join(pieces)
 
 
 def is_interesting_expression(node):

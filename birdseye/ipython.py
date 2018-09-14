@@ -59,11 +59,34 @@ templates_env = Environment(
 
 @magics_class
 class BirdsEyeMagics(Magics):
-    server_url = Unicode(u'', config=True)
-    port = Int(7777, config=True)
-    bind_host = Unicode('127.0.0.1', config=True)
-    show_server_output = Bool(False, config=True)
-    db_url = Unicode(u'', config=True)
+    server_url = Unicode(
+        u'', config=True,
+        help='If set, a server will not be automatically started by %%eye. '
+             'The iframe containing birdseye output will use this value as the base '
+             'of its URL.'
+    )
+
+    port = Int(
+        7777, config=True,
+        help='Port number for the server started by %%eye.'
+    )
+
+    bind_host = Unicode(
+        '127.0.0.1', config=True,
+        help='Host that the server started by %%eye listens on. '
+             'Set to 0.0.0.0 to make it accessible anywhere.'
+    )
+
+    show_server_output = Bool(
+        False, config=True,
+        help='Set to True to show stdout and stderr from the server started by %%eye.'
+    )
+
+    db_url = Unicode(
+        u'', config=True,
+        help='The database URL that the server started by %%eye reads from. '
+             'Equivalent to the environment variable BIRDSEYE_DB.'
+    )
 
     @cell_magic
     def eye(self, _line, cell):
