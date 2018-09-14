@@ -47,7 +47,7 @@ def foo():
 **The `eye` decorator *must* be applied before any other decorators, i.e. at the bottom of the list.**
 
 1. Call the function.
-2. Run `birdseye` or `python -m birdseye` in a terminal to run the UI server. The command has a single optional argument which is the port number, default 7777.
+2. Run `birdseye` or `python -m birdseye` in a terminal to run the UI server.
 3. Open http://localhost:7777 in your browser.
 4. Click on:
     1. The name of the file containing your function
@@ -64,6 +64,22 @@ When viewing a function call, you can:
 - If the function call you're viewing includes a function call that was also traced, the expression where the call happens will have an arrow (![blue curved arrow](https://i.imgur.com/W7DfVeg.png)) in the corner which you can click on to go to that function call. This doesn't work when calling generator functions.
 
 ## Configuration
+
+### Server
+
+```
+$ birdseye --help
+usage: birdseye [-h] [-p PORT] [--host HOST]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  HTTP port, default is 7777
+  --host HOST           HTTP host, default is 'localhost'
+```
+
+To run a remote server accessible from anywhere, run `birdseye --host 0.0.0.0`.
+
+### Database
 
 Data is kept in a SQL database. You can configure this by setting the environment variable `BIRDSEYE_DB` to a [database URL used by SQLAlchemy](http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls). The default is `sqlite:///$HOME/.birdseye.db`.
 
