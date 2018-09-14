@@ -141,6 +141,6 @@ For convenience, the cell magic automatically starts a birdseye server in the ba
 
 - `server_url`: If set, a server will not be automatically started by `%%eye`. The iframe containing birdseye output will use this value as the base of its URL.
 - `port`: Port number for the background server.
-- `host`: Host that the background server listens on. Set to 0.0.0.0 to make it accessible anywhere.
+- `bind_host`: Host that the background server listens on. Set to 0.0.0.0 to make it accessible anywhere. Note that birdseye is NOT SECURE and doesn't require any authentication to access, even if the notebook server does. Do not expose birdseye on a remote server unless you have some other form of security preventing HTTP access to the server, e.g. a VPN, or you don't care about exposing your code and data. If you don't know what any of this means, just leave this setting alone and you'll be fine.
 - `show_server_output`: Set to True to show stdout and stderr from the background server.
 - `db_url`: The database URL that the background reads from. Equivalent to the environment variable `BIRDSEYE_DB`.
