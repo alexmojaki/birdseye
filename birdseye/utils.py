@@ -240,3 +240,16 @@ def is_ipython_cell(filename):
 
 def is_future_import(node):
     return isinstance(node, ast.ImportFrom) and node.module == "__future__"
+
+
+def get_unfrozen_datetime():
+    try:
+        # if freezegun could be active, we need to use real_datetime to ensure we use the actual time instead of the
+        # time set by freezegun.
+        # we have to import this at the last possible moment because birdeye is very likely to be imported before
+        # freezegun is activated.
+        from freezegun.api import real_datetime
+    except ImportError:
+        from datetime import datetime as real_datetime
+
+    return real_datetime.now()
