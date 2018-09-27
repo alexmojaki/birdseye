@@ -16,7 +16,6 @@ import json
 import os
 import traceback
 from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple
-from datetime import datetime
 from functools import partial
 from itertools import chain, islice
 from threading import Lock
@@ -35,7 +34,7 @@ from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallI
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    is_future_import
+    is_future_import, get_unfrozen_datetime
 
 try:
     from numpy import ndarray
@@ -225,7 +224,7 @@ class BirdsEye(TreeTracerBase):
         if frame.f_code not in self._code_infos or _tracing_recursively(frame):
             return
         frame_info = self.stack[frame]
-        frame_info.start_time = datetime.now()
+        frame_info.start_time = get_unfrozen_datetime()
         frame_info.iteration = Iteration()
 
         code_info = self._code_infos[frame.f_code]
