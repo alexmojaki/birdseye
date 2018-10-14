@@ -101,6 +101,10 @@ You can conveniently empty the database by running:
 python -m birdseye.clear_db
 ```
 
+### Making tracing optional
+
+Sometimes you may want to only trace certain calls based on a condition, e.g. to increase performance or reduce database clutter. In this case, decorate your function with `@eye(optional=True)` instead of just `@eye`. Then your function will have an additional optional parameter `trace_call`, default False. When calling the decorated function, if `trace_call` is false, the underlying untraced function is used. If true, the traced version is used. 
+
 ## Performance, volume of data, and limitations
 
 Every function call is recorded, and every nontrivial expression is traced. This means that:

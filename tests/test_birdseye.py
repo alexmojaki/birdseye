@@ -36,7 +36,7 @@ def bar():
     pass
 
 
-@eye
+@eye()
 def foo():
     x = 1
     y = 2
@@ -623,6 +623,22 @@ def f((x, y), z):
             return u'é'
 
         self.assertEqual(f(), u'é')
+
+    def test_optional_eye(self):
+        @eye(optional=True)
+        def f(x):
+            return x * 3
+
+        call_stuff = get_call_stuff(get_call_ids(lambda: f(2, trace_call=True))[0])
+        self.assertEqual(call_stuff.call.result, '6')
+
+        call = eye.enter_call
+        eye.enter_call = lambda *args, **kwargs: 1 / 0
+        try:
+            self.assertEqual(f(3, trace_call=False), 9)
+            self.assertEqual(f(4), 12)
+        finally:
+            eye.enter_call = call
 
 
 if __name__ == '__main__':

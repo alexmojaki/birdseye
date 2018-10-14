@@ -16,7 +16,7 @@ import ast
 import inspect
 from collections import namedtuple
 from copy import deepcopy
-from functools import partial, update_wrapper
+from functools import partial, update_wrapper, wraps
 from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
@@ -267,12 +267,52 @@ class TreeTracerBase(object):
         new_func.traced_file = traced_file
         return new_func
 
-    def __call__(self, func):
-        # type: (FunctionType) -> FunctionType
+    def __call__(self, func=None, optional=False):
+        # type: (FunctionType, bool) -> Callable
+        """
+        Decorator which returns a (possibly optionally) traced function.
+        This decorator can be called with or without arguments.
+        Typically it is called without arguments, in which case it returns
+        a traced function.
+        If optional=True, it returns a function similar to the original
+        but with an additional optional parameter trace_call, default False.
+        If trace_call is false, the underlying untraced function is used.
+        If true, the traced version is used.
+        """
         if inspect.isclass(func):
             raise TypeError('Decorating classes is no longer supported')
 
-        return self.trace_function(func)
+        if func:
+            # The decorator has been called without arguments/parentheses,
+            # e.g.
+            # @eye
+            # def ...
+            return self.trace_function(func)
+
+        # The decorator has been called with arguments/parentheses,
+        # e.g.
+        # @eye(...)
+        # def ...
+        # We must return a decorator
+
+        if not optional:
+            return self.trace_function
+
+        def decorator(actual_func):
+
+            traced = self.trace_function(actual_func)
+
+            @wraps(actual_func)
+            def wrapper(*args, trace_call=False, **kwargs):
+                if trace_call:
+                    f = traced
+                else:
+                    f = actual_func
+                return f(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
