@@ -23,7 +23,7 @@ from littleutils import json_to_file, file_to_json, string_to_file
 import tests
 
 str(tests)
-from birdseye import eye, NodeValue, is_interesting_expression, is_obvious_builtin
+from birdseye.bird import eye, NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
 from tests import golden_script
 
