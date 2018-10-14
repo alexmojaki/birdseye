@@ -82,6 +82,12 @@ def short_path(path, all_paths):
     return strip_required_prefix(path, prefix) or path_leaf(path)
 
 
+def fix_abs_path(path):
+    if os.path.sep == '/' and not path.startswith('/'):
+        path = '/' + path
+    return path
+
+
 if PY2:
     def correct_type(obj):
         """

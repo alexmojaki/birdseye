@@ -18,7 +18,7 @@ from werkzeug.routing import PathConverter
 import sqlalchemy
 
 from birdseye.db import Database
-from birdseye.utils import short_path, IPYTHON_FILE_PATH
+from birdseye.utils import short_path, IPYTHON_FILE_PATH, fix_abs_path
 
 
 app = Flask('birdseye')
@@ -50,6 +50,7 @@ def index():
 
 @app.route('/file/<file:path>')
 def file_view(path):
+    path = fix_abs_path(path)
     return render_template('file.html',
                            funcs=sorted(Session().query(Function.name).filter_by(file=path).distinct()),
                            is_ipython=path == IPYTHON_FILE_PATH,
@@ -59,6 +60,7 @@ def file_view(path):
 
 @app.route('/file/<file:path>/function/<func_name>')
 def func_view(path, func_name):
+    path = fix_abs_path(path)
     session = Session()
     query = (session.query(*(Call.basic_columns + Function.basic_columns))
                  .join(Function)
