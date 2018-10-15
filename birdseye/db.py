@@ -16,6 +16,9 @@ from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.mysql import LONGTEXT
 from littleutils import select_attrs
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
+from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
+
+RESERVED_WORDS.add('function')
 
 DB_VERSION = 0
 
