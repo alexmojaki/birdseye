@@ -36,7 +36,7 @@ class Database(object):
             db_uri,
             connect_args=connect_args,
             poolclass=StaticPool,
-            echo=False)
+            echo=True)
 
         self.Session = sessionmaker(bind=engine)
         self.session = session = self.Session()
