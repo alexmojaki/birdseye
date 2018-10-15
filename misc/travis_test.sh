@@ -16,6 +16,7 @@ elif [ ${DB} = postgres ]; then
 elif [ ${DB} = mysql ]; then
     mysql -e 'DROP DATABASE IF EXISTS birdseye_test;'
     mysql -e 'CREATE DATABASE birdseye_test;'
+    mysql -e 'SHOW VARIABLES LIKE "%version%";'
     export BIRDSEYE_DB="mysql+mysqlconnector://root:@localhost/birdseye_test"
 else
     echo "Unknown database $DB"
