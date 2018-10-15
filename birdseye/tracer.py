@@ -303,7 +303,8 @@ class TreeTracerBase(object):
             traced = self.trace_function(actual_func)
 
             @wraps(actual_func)
-            def wrapper(*args, trace_call=False, **kwargs):
+            def wrapper(*args, **kwargs):
+                trace_call = kwargs.pop('trace_call', False)
                 if trace_call:
                     f = traced
                 else:
