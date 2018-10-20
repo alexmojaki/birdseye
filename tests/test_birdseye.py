@@ -9,11 +9,13 @@ from __future__ import division
 import ast
 import json
 import os
+import random
 import re
 import sys
 import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
+from time import sleep
 from unittest import skipUnless
 
 from bs4 import BeautifulSoup
@@ -21,13 +23,14 @@ from cheap_repr import register_repr
 from littleutils import json_to_file, file_to_json, string_to_file
 
 import tests
+from tests.utils import SharedCounter
 
 str(tests)
 from birdseye.bird import eye, NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
 from tests import golden_script
 
-session = eye.db.session
+session = eye.db.Session()
 Call = eye.db.Call
 
 
@@ -90,22 +93,20 @@ class SlotClass(object):
         return '<B>'
 
 
-call_id = 0
+call_id = SharedCounter()
 
 
 def call_id_mock(*_):
-    global call_id
-    call_id += 1
-    return 'test_id_%s' % call_id
+    return 'test_id_%s' % call_id.increment()
 
 
 eye._call_id = call_id_mock
 
 
 def get_call_ids(func):
-    start_id = call_id + 1
+    start_id = call_id.value + 1
     func()
-    end_id = call_id + 1
+    end_id = call_id.value + 1
     return ['test_id_%s' % i for i in range(start_id, end_id)]
 
 
@@ -225,7 +226,7 @@ class TestBirdsEye(unittest.TestCase):
             if PY3:
                 result.append(['__wrapped__', [repr(f.__wrapped__), 'function', {}]])
             return result
-            
+
         s = ['', -2, {}]
 
         expected_values = {
@@ -639,6 +640,21 @@ def f((x, y), z):
             self.assertEqual(f(4), 12)
         finally:
             eye.enter_call = call
+
+    def test_concurrency(self):
+        from multiprocessing.dummy import Pool as ThreadPool
+        from multiprocessing import Pool as ProcessPool
+
+        for Pool in [ThreadPool, ProcessPool]:
+            ids = get_call_ids(lambda: Pool(5).map(sleepy, range(25)))
+            results = [int(get_call_stuff(i).call.result) for i in ids]
+            self.assertEqual(sorted(results), list(range(0, 50, 2)))
+
+
+@eye
+def sleepy(x):
+    sleep(random.random())
+    return x * 2
 
 
 if __name__ == '__main__':

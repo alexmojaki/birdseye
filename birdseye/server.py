@@ -49,19 +49,20 @@ def index():
 
 
 @app.route('/file/<file:path>')
-def file_view(path):
+@db.provide_session
+def file_view(session, path):
     path = fix_abs_path(path)
     return render_template('file.html',
-                           funcs=sorted(Session().query(Function.name).filter_by(file=path).distinct()),
+                           funcs=sorted(session.query(Function.name).filter_by(file=path).distinct()),
                            is_ipython=path == IPYTHON_FILE_PATH,
                            full_path=path,
                            short_path=short_path(path, db.all_file_paths()))
 
 
 @app.route('/file/<file:path>/function/<func_name>')
-def func_view(path, func_name):
+@db.provide_session
+def func_view(session, path, func_name):
     path = fix_abs_path(path)
-    session = Session()
     query = (session.query(*(Call.basic_columns + Function.basic_columns))
                  .join(Function)
                  .filter_by(file=path, name=func_name)
@@ -78,8 +79,9 @@ def func_view(path, func_name):
                            calls=calls)
 
 
-def base_call_view(call_id, template):
-    call = Session().query(Call).filter_by(id=call_id).one()
+@db.provide_session
+def base_call_view(session, call_id, template):
+    call = session.query(Call).filter_by(id=call_id).one()
     func = call.function
     return render_template(template,
                            call=call,
@@ -118,8 +120,9 @@ def kill():
 
 
 @app.route('/api/call/<call_id>')
-def api_call_view(call_id):
-    call = Session().query(Call).filter_by(id=call_id).one()
+@db.provide_session
+def api_call_view(session, call_id):
+    call = session.query(Call).filter_by(id=call_id).one()
     func = call.function
     return DecentJSONEncoder().encode(dict(
         call=dict(data=call.parsed_data, **Call.basic_dict(call)),
@@ -127,8 +130,9 @@ def api_call_view(call_id):
 
 
 @app.route('/api/calls_by_body_hash/<body_hash>')
-def calls_by_body_hash(body_hash):
-    query = (Session().query(*Call.basic_columns + (Function.data,))
+@db.provide_session
+def calls_by_body_hash(session, body_hash):
+    query = (session.query(*Call.basic_columns + (Function.data,))
                  .join(Function)
                  .filter_by(body_hash=body_hash)
                  .order_by(Call.start_time.desc())[:200])
@@ -163,9 +167,10 @@ def calls_by_body_hash(body_hash):
 
 
 @app.route('/api/body_hashes_present/', methods=['POST'])
-def body_hashes_present():
+@db.provide_session
+def body_hashes_present(session):
     hashes = request.json
-    query = (Session().query(Function.body_hash, sqlalchemy.func.count(Call.id))
+    query = (session.query(Function.body_hash, sqlalchemy.func.count(Call.id))
              .outerjoin(Call)
              .filter(Function.body_hash.in_(hashes))
              .group_by(Function.body_hash))

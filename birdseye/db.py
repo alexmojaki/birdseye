@@ -1,18 +1,20 @@
 from __future__ import print_function, division, absolute_import
 
+import functools
+
 from future import standard_library
 
 standard_library.install_aliases()
 import json
 import os
 from typing import List
+from contextlib import contextmanager
 
 from humanize import naturaltime
 from markupsafe import Markup
 from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
-from sqlalchemy.pool import StaticPool
 from sqlalchemy.dialects.mysql import LONGTEXT
 from littleutils import select_attrs
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
@@ -31,18 +33,12 @@ class Database(object):
                 or 'sqlite:///' + os.path.join(os.path.expanduser('~'),
                                                '.birdseye.db'))
 
-        connect_args = {}
-        if db_uri.startswith('sqlite'):
-            connect_args['check_same_thread'] = False
-
         self.engine = engine = create_engine(
             db_uri,
-            connect_args=connect_args,
-            poolclass=StaticPool,
+            pool_recycle=280,
             echo=False)
 
-        self.Session = sessionmaker(bind=engine)
-        self.session = session = self.Session()
+        Session = self.Session = sessionmaker(bind=engine)
 
         class Base(object):
             @declared_attr
@@ -55,17 +51,20 @@ class Database(object):
             key = Column(String(50), primary_key=True)
             value = Column(Text)
 
+        db_self = self
+
         class KeyValueStore(object):
             def __getitem__(self, item):
-                return (session
-                        .query(KeyValue.value)
-                        .filter_by(key=item)
-                        .scalar())
+                with db_self.session_scope() as session:
+                    return (session
+                            .query(KeyValue.value)
+                            .filter_by(key=item)
+                            .scalar())
 
             def __setitem__(self, key, value):
-                session.query(KeyValue).filter_by(key=key).delete()
-                session.add(KeyValue(key=key, value=str(value)))
-                session.commit()
+                with db_self.session_scope() as session:
+                    session.query(KeyValue).filter_by(key=key).delete()
+                    session.add(KeyValue(key=key, value=str(value)))
 
             __getattr__ = __getitem__
             __setattr__ = __setitem__
@@ -180,8 +179,9 @@ class Database(object):
 
     def all_file_paths(self):
         # type: () -> List[str]
-        paths = [f[0] for f in self.Session().query(self.Function.file).distinct()
-                 if not is_ipython_cell(f[0])]
+        with self.session_scope() as session:
+            paths = [f[0] for f in session.query(self.Function.file).distinct()
+                     if not is_ipython_cell(f[0])]
         paths.sort()
         if IPYTHON_FILE_PATH in paths:
             paths.remove(IPYTHON_FILE_PATH)
@@ -192,3 +192,24 @@ class Database(object):
         for model in [self.Call, self.Function, self._KeyValue]:
             if self.table_exists(model):
                 model.__table__.drop(self.engine)
+
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope around a series of operations."""
+        session = self.Session()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def provide_session(self, func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with self.session_scope() as session:
+                return func(session, *args, **kwargs)
+
+        return wrapper

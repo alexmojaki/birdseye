@@ -277,10 +277,8 @@ class BirdsEye(TreeTracerBase):
             traceback_str = exception = None
 
         Call = self.db.Call
-        session = self.db.session
-
         call = Call(id=frame_info.call_id,
-                    function=db_func,
+                    function_id=db_func,
                     arguments=frame_info.arguments,
                     return_value=cheap_repr(exit_info.return_value),
                     exception=exception,
@@ -296,8 +294,9 @@ class BirdsEye(TreeTracerBase):
                         separators=(',', ':')
                     ),
                     start_time=frame_info.start_time)
-        session.add(call)
-        session.commit()
+        with self.db.session_scope() as session:
+            session.add(call)
+
         if self._ipython_cell_call_id is not None:
             self._ipython_cell_call_id = frame_info.call_id
 
@@ -431,21 +430,22 @@ class BirdsEye(TreeTracerBase):
 
         function_hash = h(filename + name + html_body + data + str(start_lineno))
 
-        session = self.db.session
         Function = self.db.Function
 
-        db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
-        if not db_func:
-            db_func = Function(file=filename,
-                               name=name,
-                               html_body=html_body,
-                               lineno=start_lineno,
-                               data=data,
-                               body_hash=h(raw_body),
-                               hash=function_hash)
-            session.add(db_func)
-            session.commit()
-        return db_func
+        with self.db.session_scope() as session:
+            db_func = one_or_none(session.query(Function).filter_by(hash=function_hash))  # type: Optional[Function]
+            if not db_func:
+                db_func = Function(file=filename,
+                                   name=name,
+                                   html_body=html_body,
+                                   lineno=start_lineno,
+                                   data=data,
+                                   body_hash=h(raw_body),
+                                   hash=function_hash)
+                session.add(db_func)
+                session.commit()  # ensure .id exists
+            assert isinstance(db_func.id, int)
+            return db_func.id
 
     def _nodes_of_interest(self, traced_file, start_lineno, end_lineno):
         # type: (TracedFile, int, int) -> Iterator[Tuple[ast.AST, Tuple]]
