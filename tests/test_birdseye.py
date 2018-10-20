@@ -118,7 +118,8 @@ CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
 def get_call_stuff(c_id):
-    call = session.query(Call).filter_by(id=c_id).one()
+    with eye.db.session_scope() as sess:
+        call = sess.query(Call).filter_by(id=c_id).one()
 
     # <pre> makes it preserve whitespace
     soup = BeautifulSoup('<pre>' + call.function.html_body + '</pre>', 'html.parser')
