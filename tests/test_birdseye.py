@@ -15,6 +15,7 @@ import sys
 import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
+from copy import copy
 from time import sleep
 from unittest import skipUnless
 
@@ -117,16 +118,16 @@ golden_calls = [session.query(Call).filter_by(id=c_id).one()
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
-def get_call_stuff(c_id):
-    with eye.db.session_scope() as sess:
-        call = sess.query(Call).filter_by(id=c_id).one()
+@eye.db.provide_session
+def get_call_stuff(sess, c_id):
+    call = sess.query(Call).filter_by(id=c_id).one()
 
     # <pre> makes it preserve whitespace
     soup = BeautifulSoup('<pre>' + call.function.html_body + '</pre>', 'html.parser')
 
     call_data = normalise_call_data(call.data)
     func_data = json.loads(call.function.data)
-    return CallStuff(call, soup, call_data, func_data)
+    return CallStuff(copy(call), soup, call_data, func_data)
 
 
 def byteify(x):
