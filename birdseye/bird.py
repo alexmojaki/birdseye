@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from future import standard_library
+from sqlalchemy.exc import OperationalError
 
 standard_library.install_aliases()
 from future.utils import iteritems
@@ -23,7 +24,7 @@ from uuid import uuid4
 import hashlib
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func, only
+from littleutils import group_by_key_func, only, retry
 from outdated import warn_if_outdated
 from cached_property import cached_property
 
@@ -276,26 +277,30 @@ class BirdsEye(TreeTracerBase):
         else:
             traceback_str = exception = None
 
-        Call = self.db.Call
-        call = Call(id=frame_info.call_id,
-                    function_id=db_func,
-                    arguments=frame_info.arguments,
-                    return_value=cheap_repr(exit_info.return_value),
-                    exception=exception,
-                    traceback=traceback_str,
-                    data=json.dumps(
-                        dict(
-                            node_values=node_values,
-                            loop_iterations=top_iteration.extract_iterations()['loops'],
-                            type_names=type_registry.names(),
-                            num_special_types=type_registry.num_special_types,
+        @retry(3, OperationalError)
+        def add_call():
+            Call = self.db.Call
+            call = Call(id=frame_info.call_id,
+                        function_id=db_func,
+                        arguments=frame_info.arguments,
+                        return_value=cheap_repr(exit_info.return_value),
+                        exception=exception,
+                        traceback=traceback_str,
+                        data=json.dumps(
+                            dict(
+                                node_values=node_values,
+                                loop_iterations=top_iteration.extract_iterations()['loops'],
+                                type_names=type_registry.names(),
+                                num_special_types=type_registry.num_special_types,
+                            ),
+                            cls=ProtocolEncoder,
+                            separators=(',', ':')
                         ),
-                        cls=ProtocolEncoder,
-                        separators=(',', ':')
-                    ),
-                    start_time=frame_info.start_time)
-        with self.db.session_scope() as session:
-            session.add(call)
+                        start_time=frame_info.start_time)
+            with self.db.session_scope() as session:
+                session.add(call)
+
+        add_call()
 
         if self._ipython_cell_call_id is not None:
             self._ipython_cell_call_id = frame_info.call_id
@@ -421,6 +426,7 @@ class BirdsEye(TreeTracerBase):
                 classes=classes,
             )
 
+    @retry(3, OperationalError)
     def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
         Retrieve the Function object from the database if one exists, or create one.

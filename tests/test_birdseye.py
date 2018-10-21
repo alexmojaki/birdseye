@@ -21,7 +21,8 @@ from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import json_to_file, file_to_json, string_to_file
+from littleutils import json_to_file, file_to_json, string_to_file, retry
+from sqlalchemy.exc import OperationalError
 
 import tests
 from tests.utils import SharedCounter
@@ -118,6 +119,7 @@ golden_calls = [session.query(Call).filter_by(id=c_id).one()
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
+@retry(3, OperationalError)
 @eye.db.provide_session
 def get_call_stuff(sess, c_id):
     call = sess.query(Call).filter_by(id=c_id).one()
