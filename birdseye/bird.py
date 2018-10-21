@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 from future import standard_library
-from sqlalchemy.exc import OperationalError
 
 standard_library.install_aliases()
 from future.utils import iteritems
@@ -24,13 +23,13 @@ from uuid import uuid4
 import hashlib
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func, only, retry
+from littleutils import group_by_key_func, only
 from outdated import warn_if_outdated
 from cached_property import cached_property
 
 from cheap_repr import cheap_repr, try_register_repr
 from cheap_repr.utils import safe_qualname, exception_string
-from birdseye.db import Database
+from birdseye.db import Database, retry_db
 from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
@@ -311,7 +310,7 @@ class BirdsEye(TreeTracerBase):
         else:
             traceback_str = exception = None
 
-        @retry(3, OperationalError)
+        @retry_db
         def add_call():
             Call = self.db.Call
             call = Call(id=frame_info.call_id,
@@ -460,7 +459,7 @@ class BirdsEye(TreeTracerBase):
                 classes=classes,
             )
 
-    @retry(3, OperationalError)
+    @retry_db
     def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
         """
         Retrieve the Function object from the database if one exists, or create one.

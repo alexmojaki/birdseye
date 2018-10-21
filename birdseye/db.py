@@ -3,6 +3,7 @@ from __future__ import print_function, division, absolute_import
 import functools
 
 from future import standard_library
+from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError
 
 standard_library.install_aliases()
 import json
@@ -16,7 +17,7 @@ from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Intege
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.dialects.mysql import LONGTEXT
-from littleutils import select_attrs
+from littleutils import select_attrs, retry
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
 from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
 
@@ -212,4 +213,8 @@ class Database(object):
             with self.session_scope() as session:
                 return func(session, *args, **kwargs)
 
-        return wrapper
+        return retry_db(wrapper)
+
+
+# Based on https://docs.sqlalchemy.org/en/latest/errors.html#error-dbapi
+retry_db = retry(3, (InterfaceError, OperationalError, InternalError, ProgrammingError))
