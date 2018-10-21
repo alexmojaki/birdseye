@@ -71,7 +71,8 @@ class BirdsEye(TreeTracerBase):
     Decorate functions with an instance of this class to debug them,
     or just use the existing instance `eye`.
     """
-    def __init__(self, db_uri=None):
+
+    def __init__(self, db_uri=None, num_samples=None):
         """
         Set db_uri to specify where the database lives, as an alternative to
         the environment variable BIRDSEYE_DB.
@@ -81,6 +82,24 @@ class BirdsEye(TreeTracerBase):
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
         self._ipython_cell_call_id = None
         self._ipython_cell_value = None
+        self.num_samples = num_samples or dict(
+            big=dict(
+                attributes=50,
+                dict=50,
+                list=30,
+                set=30,
+                pandas_rows=20,
+                pandas_cols=100,
+            ),
+            small=dict(
+                attributes=50,
+                dict=10,
+                list=6,
+                set=6,
+                pandas_rows=6,
+                pandas_cols=10,
+            ),
+        )
 
     @cached_property
     def db(self):
@@ -154,7 +173,11 @@ class BirdsEye(TreeTracerBase):
             if exc_value:
                 node_value = self._exception_value(node, frame, exc_value)
             else:
-                node_value = NodeValue.expression(value, level=max(1, 3 - len(node._loops)))
+                node_value = NodeValue.expression(
+                    self.num_samples,
+                    value,
+                    level=max(1, 3 - len(node._loops)),
+                )
                 self._set_node_value(node, frame, node_value)
             self._check_inner_call(frame_info, node, node_value)
 
@@ -782,10 +805,10 @@ class NodeValue(object):
         self.meta = self.meta or {}
         self.meta[key] = value
 
-    def add_child(self, level, key, value):
-        # type: (int, str, Any) -> None
+    def add_child(self, samples, level, key, value):
+        # type: (dict, int, str, Any) -> None
         self.children = self.children or []
-        self.children.append((key, NodeValue.expression(value, level)))
+        self.children.append((key, NodeValue.expression(samples, value, level)))
 
     def as_json(self):
         result = [self.val_repr, self.type_index, self.meta or {}]  # type: list
@@ -809,8 +832,8 @@ class NodeValue(object):
         return cls(exception_string(exc_value), -1)
 
     @classmethod
-    def expression(cls, val, level):
-        # type: (Any, int) -> NodeValue
+    def expression(cls, samples, val, level):
+        # type: (dict, Any, int) -> NodeValue
         """
         The value of an expression or one of its children, with attributes,
         dictionary items, etc as children. Has a max depth of `level` levels.
@@ -828,7 +851,7 @@ class NodeValue(object):
             else:
                 result.set_meta('len', length)
 
-        add_child = partial(result.add_child, level - 1)
+        add_child = partial(result.add_child, samples, level - 1)
 
         if isinstance(val, (Series, ndarray)):
             attrs = ['dtype']
@@ -842,6 +865,13 @@ class NodeValue(object):
                 else:
                     add_child(name, attr)
 
+        if level >= 3 or level >= 2 and isinstance(val, Series):
+            sample_type = 'big'
+        else:
+            sample_type = 'small'
+
+        samples = samples[sample_type]
+
         # Always expand DataFrames and Series regardless of level to
         # make the table view of DataFrames work
 
@@ -849,12 +879,8 @@ class NodeValue(object):
             meta = {}
             result.set_meta('dataframe', meta)
 
-            if level >= 3:
-                max_rows = 20
-                max_cols = 100
-            else:
-                max_rows = 6
-                max_cols = 10
+            max_rows = samples['pandas_rows']
+            max_cols = samples['pandas_cols']
 
             if length > max_rows + 2:
                 meta['row_break'] = max_rows // 2
@@ -873,12 +899,7 @@ class NodeValue(object):
             return result
 
         if isinstance(val, Series):
-            if level >= 2:
-                max_rows = 20
-            else:
-                max_rows = 6
-
-            for i in _sample_indices(length, max_rows):
+            for i in _sample_indices(length, samples['pandas_rows']):
                 try:
                     k = val.index[i:i + 1].format(sparsify=False)[0]
                     v = val.iloc[i]
@@ -896,7 +917,7 @@ class NodeValue(object):
             return result
 
         if isinstance(val, (Sequence, ndarray)) and length is not None:
-            for i in _sample_indices(length, 6):
+            for i in _sample_indices(length, samples['list']):
                 try:
                     v = val[i]
                 except:
@@ -905,19 +926,20 @@ class NodeValue(object):
                     add_child(str(i), v)
 
         if isinstance(val, Mapping):
-            for k, v in islice(_safe_iter(val, iteritems), 10):
+            for k, v in islice(_safe_iter(val, iteritems), samples['dict']):
                 add_child(cheap_repr(k), v)
 
         if isinstance(val, Set):
             vals = _safe_iter(val)
-            if length is None or length > 8:
-                vals = islice(vals, 6)
+            num_items = samples['set']
+            if length is None or length > num_items + 2:
+                vals = islice(vals, num_items)
             for i, v in enumerate(vals):
                 add_child('<%s>' % i, v)
 
         d = getattr(val, '__dict__', None)
         if d:
-            for k, v in islice(_safe_iter(d, iteritems), 50):
+            for k, v in islice(_safe_iter(d, iteritems), samples['attributes']):
                 if isinstance(v, TracedFile):
                     continue
                 add_child(str(k), v)

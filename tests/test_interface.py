@@ -30,7 +30,7 @@ def foo():
                     pass
     str(bar())
 
-    x = list(range(1, 20, 2))
+    x = list(range(1, 30, 2))
     list(x)
 
 
@@ -142,13 +142,17 @@ class TestInterface(unittest.TestCase):
         tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in tree_nodes(tree_node)],
-                         ['len() = 10',
+                         ['len() = 15',
                           '0 = int: 1',
                           '1 = int: 3',
                           '2 = int: 5',
-                          '7 = int: 15',
-                          '8 = int: 17',
-                          '9 = int: 19'])
+                          '3 = int: 7',
+                          '4 = int: 9',
+                          '10 = int: 21',
+                          '11 = int: 23',
+                          '12 = int: 25',
+                          '13 = int: 27',
+                          '14 = int: 29']),
 
         # Click on an inner call
         find_expr('bar()').find_element_by_class_name('inner-call').click()

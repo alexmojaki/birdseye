@@ -16,6 +16,7 @@ import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
 from copy import copy
+from functools import partial
 from time import sleep
 from unittest import skipUnless
 
@@ -482,7 +483,7 @@ def f((x, y), z):
         self.assertEqual(without_future.foo(), eye(without_future.foo)())
 
     def test_expand_exceptions(self):
-        expand = NodeValue.expression
+        expand = partial(NodeValue.expression, eye.num_samples)
 
         class A(object):
             def __len__(self):

@@ -105,21 +105,69 @@ python -m birdseye.clear_db
 
 Sometimes you may want to only trace certain calls based on a condition, e.g. to increase performance or reduce database clutter. In this case, decorate your function with `@eye(optional=True)` instead of just `@eye`. Then your function will have an additional optional parameter `trace_call`, default False. When calling the decorated function, if `trace_call` is false, the underlying untraced function is used. If true, the traced version is used. 
 
+### Collecting more or less data
+
+Only pieces of objects are recorded, e.g. the first and last 3 items of a list. The number depends on the type of object and the context, and it can be configured according to the `num_samples` attribute of a `BirdsEye` instance. This can be set directly when constructing the instance, e.g.:
+
+```python
+from birdseye import BirdsEye
+
+eye = BirdsEye(num_samples=dict(...))
+```
+
+or modify the dict of an existing instance:
+
+```python
+from birdseye.bird import eye
+
+eye.num_samples['big']['list'] = 100
+```
+
+The default value is this:
+
+```python
+dict(
+    big=dict(
+        attributes=50,
+        dict=50,
+        list=30,
+        set=30,
+        pandas_rows=20,
+        pandas_cols=100,
+    ),
+    small=dict(
+        attributes=50,
+        dict=10,
+        list=6,
+        set=6,
+        pandas_rows=6,
+        pandas_cols=10,
+    ),
+)
+```
+
+Any value of `num_samples` must have this structure.
+
+The values of the `big` dict are used when recording an expression directly (as opposed to recording a piece of an expression, e.g. an item of a list, which is just part of the tree that is viewed in the UI) outside of any loop. In this case more data is collected because using too much time or space is less of a concern. Otherwise, the `small` values are used. The inner keys correspond to different types:
+
+- `attributes`: (e.g. `x.y`) collected from the `__dict__`. This applies to any type of object.
+- `dict` (or any instance of `Mapping`)
+- `list` (or any `Sequence`, such as tuples, or numpy arrays)
+- `set` (or any instance of `Set`)
+- `pandas_rows`: the number of rows of a `pandas` `DataFrame` or `Series`.
+- `pandas_cols`: the number of columns of a `pandas` `DataFrame`.
+
 ## Performance, volume of data, and limitations
 
 Every function call is recorded, and every nontrivial expression is traced. This means that:
 
-- Programs are greatly slowed down, and you should be wary of tracing code that has many function calls or iterations. Function calls are not visible in the interface until they have been completed.
+- Programs are greatly slowed down, and you should be wary of tracing functions that are called many times or that run through many loop iterations. Note that function calls are not visible in the interface until they have been completed.
 - A large amount of data may be collected for every function call, especially for functions with many loop iterations and large nested objects and data structures. This may be a problem for memory both when running the program and viewing results in your browser.
 - To limit the amount of data saved, only a sample is stored. Specifically:
   - The first and last 3 iterations of loops.
-  - The first and last 3 values of sequences such as lists.
-  - 10 items of mappings such as dictionaries.
-  - 6 values of sets.
   - A limited version of the `repr()` of values is used, provided by the [cheap_repr](https://github.com/alexmojaki/cheap_repr) package.
   - Nested data structures and objects can only be expanded by up to 3 levels. Inside loops, this is decreased.
-
-There is no API at the moment to collect more or less data. Suggestions are welcome as it's not obvious how to deal with the problem. But the idea of this tool is to be as quick and convenient as possible and to work for most cases. If in a particular situation you have to think carefully about how to use it, it may be better to use more conventional debugging methods.
+  - Only pieces of objects are recorded - see 'Collecting more or less data' above.
 
 Asynchronous code is not supported.
 
