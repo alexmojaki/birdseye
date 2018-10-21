@@ -24,6 +24,24 @@ $(function () {
     $code.find('.loop').each(function (_, loop_span) {
         _current_iteration[loop_span.dataset.index] = 0;
     });
+
+    if (!call_success) {
+        // Go to the end of all loops to see what
+        // happened when there was an exception
+        var fill_last_iterations = function (loops) {
+            if (!loops) {
+                return;
+            }
+            Object.keys(loops).forEach(function (tree_index) {
+                var loop = loops[tree_index];
+                var iteration = _.last(loop);
+                _current_iteration[tree_index] = iteration.index;
+                fill_last_iterations(iteration.loops);
+            });
+        };
+        fill_last_iterations(loop_iterations);
+    }
+
     var normal_stmt_value = 'fine';
 
     var selected_boxes = [];
