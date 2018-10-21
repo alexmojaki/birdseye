@@ -16,7 +16,7 @@ import inspect
 import json
 import os
 import traceback
-from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple
+from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple, Counter
 from functools import partial
 from itertools import chain, islice
 from threading import Lock
@@ -230,6 +230,7 @@ class BirdsEye(TreeTracerBase):
         iteration = self.stack[frame].iteration  # type: Iteration
         for loop_node in node._loops:  # type: ast.AST
             loop = iteration.loops[loop_node._tree_index]
+            loop.recorded_node(node)
             iteration = loop.last()
         iteration.vals[node._tree_index] = value
 
@@ -719,6 +720,7 @@ class Iteration(object):
 
         # 0-based index of this iteration
         self.index = None  # type: int
+        self.keep = False
 
     def extract_iterations(self):
         # type: () -> Dict[str, Union[int, Dict]]
@@ -735,20 +737,39 @@ class Iteration(object):
 class IterationList(Iterable[Iteration]):
     """
     A list of Iterations, corresponding to a run of a loop.
-    If the loop has many iterations, only contains the first and last few.
+    If the loop has many iterations, only contains the first and last few
+    and any in the middle where unique nodes had values, so that
+    any node which appeared during this loop exists in at least some iterations.
     """
     side_len = 3
 
     def __init__(self):
+        # Contains the first few iterations
+        # and any after that have unique nodes in them
         self.start = []  # type: List[Iteration]
+
+        # Contains the last few iterations
         self.end = deque(maxlen=self.side_len)  # type: Deque[Iteration]
+
+        # Total number of iterations in the loop, not all of which
+        # are kept
         self.length = 0  # type: int
+
+        # Number of times each node has been recorded in this loop
+        self.recorded = Counter()
 
     def append(self, iteration):
         # type: (Iteration) -> None
         if self.length < self.side_len:
             self.start.append(iteration)
         else:
+            # If self.end is too long, the first element self.end[0]
+            # is about to be dropped by the deque. If that iteration
+            # should be kept because of some node that was recorded,
+            # add it to self.start
+            if len(self.end) >= self.side_len and self.end[0].keep:
+                self.start.append(self.end[0])
+
             self.end.append(iteration)
         iteration.index = self.length
         self.length += 1
@@ -763,6 +784,16 @@ class IterationList(Iterable[Iteration]):
             return self.end[-1]
         else:
             return self.start[-1]
+
+    def recorded_node(self, node):
+        # type: (ast.AST) -> None
+        if self.recorded[node] >= 2:
+            # We've already seen this node enough
+            return
+
+        # This node is new(ish), make sure we keep this iteration
+        self.last().keep = True
+        self.recorded[node] += 1
 
 
 class TypeRegistry(object):

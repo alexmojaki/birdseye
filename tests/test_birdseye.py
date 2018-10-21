@@ -22,7 +22,7 @@ from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import json_to_file, file_to_json, string_to_file, retry
+from littleutils import json_to_file, file_to_json, string_to_file, retry, only
 from sqlalchemy.exc import OperationalError
 
 import tests
@@ -654,6 +654,24 @@ def f((x, y), z):
             ids = get_call_ids(lambda: Pool(5).map(sleepy, range(25)))
             results = [int(get_call_stuff(i).call.result) for i in ids]
             self.assertEqual(sorted(results), list(range(0, 50, 2)))
+
+    def test_middle_iterations(self):
+        @eye
+        def f():
+            for i in range(20):
+                for j in range(20):
+                    if i == 10 and j >= 12:
+                        str(i + 1)
+
+        stuff = get_call_stuff(get_call_ids(f)[0])
+
+        iteration_list = only(stuff.call_data['loop_iterations'].values())
+        indexes = [i['index'] for i in iteration_list]
+        self.assertEqual(indexes, [0, 1, 2, 10, 17, 18, 19])
+
+        iteration_list = only(iteration_list[3]['loops'].values())
+        indexes = [i['index'] for i in iteration_list]
+        self.assertEqual(indexes, [0, 1, 2, 12, 13, 17, 18, 19])
 
 
 @eye
