@@ -148,7 +148,7 @@ dict(
 
 Any value of `num_samples` must have this structure.
 
-The values of the `big` dict are used when recording an expression directly (as opposed to recording a piece of an expression, e.g. an item of a list, which is just part of the tree that is viewed in the UI) outside of any loop. In this case more data is collected because using too much time or space is less of a concern. Otherwise, the `small` values are used. The inner keys correspond to different types:
+The values of the `big` dict are used when recording an expression directly (as opposed to recording a piece of an expression, e.g. an item of a list, which is just part of the tree that is viewed in the UI) outside of any loop or in the first iteration of all current loops. In these cases more data is collected because using too much time or space is less of a concern. Otherwise, the `small` values are used. The inner keys correspond to different types:
 
 - `attributes`: (e.g. `x.y`) collected from the `__dict__`. This applies to any type of object.
 - `dict` (or any instance of `Mapping`)

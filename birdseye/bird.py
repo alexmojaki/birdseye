@@ -176,7 +176,7 @@ class BirdsEye(TreeTracerBase):
                 node_value = NodeValue.expression(
                     self.num_samples,
                     value,
-                    level=max(1, 3 - len(node._loops)),
+                    level=max(1, 3 - len(node._loops) * (not self._is_first_loop_iteration(node, frame))),
                 )
                 self._set_node_value(node, frame, node_value)
             self._check_inner_call(frame_info, node, node_value)
@@ -215,10 +215,20 @@ class BirdsEye(TreeTracerBase):
         if inner_calls:
             node_value.set_meta('inner_calls', inner_calls)
 
+    def _is_first_loop_iteration(self, node, frame):
+        # type: (ast.AST, FrameType) -> bool
+        iteration = self.stack[frame].iteration  # type: Iteration
+        for loop_node in node._loops:  # type: ast.AST
+            loop = iteration.loops[loop_node._tree_index]
+            iteration = loop.last()
+            if iteration.index > 0:
+                return False
+        return True
+
     def _set_node_value(self, node, frame, value):
         # type: (ast.AST, FrameType, NodeValue) -> None
         iteration = self.stack[frame].iteration  # type: Iteration
-        for i, loop_node in enumerate(node._loops):  # type: int, ast.AST
+        for loop_node in node._loops:  # type: ast.AST
             loop = iteration.loops[loop_node._tree_index]
             iteration = loop.last()
         iteration.vals[node._tree_index] = value
