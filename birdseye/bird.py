@@ -571,7 +571,9 @@ class BirdsEye(TreeTracerBase):
                 ['<span data-index="%s" class="%s">' % (node._tree_index, ' '.join(classes)),
                  '</span>']))
 
-        end_lineno = self._separate_comprehensions(end_lineno, positions, traced_file)
+        end_lineno = self._separate_comprehensions(
+            [n[0] for n in nodes],
+            end_lineno, positions, traced_file)
 
         # This just makes the loop below simpler
         positions.append(HTMLPosition(len(traced_file.source), False, 0, ''))
@@ -589,8 +591,8 @@ class BirdsEye(TreeTracerBase):
 
         return html_body
 
-    def _separate_comprehensions(self, end_lineno, positions, traced_file):
-        # type: (int, List[HTMLPosition], TracedFile) -> int
+    def _separate_comprehensions(self, nodes, end_lineno, positions, traced_file):
+        # type: (list, int, List[HTMLPosition], TracedFile) -> int
         """
         Comprehensions (e.g. list comprehensions) are troublesome because they can
         be navigated like loops, and the buttons for these need to be on separate lines.
@@ -607,7 +609,7 @@ class BirdsEye(TreeTracerBase):
          for y in range(5)]
         """
 
-        comprehensions = group_by_key_func(of_type((ast.comprehension, ast.While, ast.For), traced_file.nodes),
+        comprehensions = group_by_key_func(of_type((ast.comprehension, ast.While, ast.For), nodes),
                                            lambda c: c.first_token.start[0]
                                            )  # type: Dict[Any, Iterable[ast.comprehension]]
 
