@@ -12,7 +12,7 @@ from traitlets import Unicode, Int, Bool
 from werkzeug.local import LocalProxy
 from werkzeug.serving import ThreadingMixIn
 
-from birdseye import PY2, Database, eye
+from birdseye.bird import PY2, Database, eye
 from birdseye import server
 
 fake_stream = BytesIO if PY2 else StringIO

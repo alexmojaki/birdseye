@@ -383,31 +383,87 @@ class BirdsEye(TreeTracerBase):
             filename = IPYTHON_FILE_PATH
         else:
             filename = os.path.abspath(source_file)
-        nodes = list(self._nodes_of_interest(new_func.traced_file, start_lineno, end_lineno))
-        html_body = self._nodes_html(nodes, start_lineno, end_lineno, new_func.traced_file)
-        tokens = new_func.traced_file.tokens
-        func_node = only(node
-                         for node, _ in nodes
-                         if isinstance(node, ast.FunctionDef)
-                         and node.first_token.start[0] == start_lineno)
-        func_startpos, raw_body = source_without_decorators(tokens, func_node)
-        data_dict = dict(
-            # These are for the PyCharm plugin
-            node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
-            loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
+        traced_file = new_func.traced_file
 
+        arg_info = inspect.getargs(new_func.__code__)
+        arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
+        self._trace(name, filename, traced_file, start_lineno, end_lineno, new_func.__code__,
+                    is_function=True, arg_names=arg_names)
+
+        return new_func
+
+    def exec_ipython_cell(self, source, callback):
+        from IPython import get_ipython
+        shell = get_ipython()
+        filename = name = shell.compile.cache(source)
+        flags = shell.compile.flags
+
+        traced_file = self.compile(source, filename, flags)
+        traced_file.is_ipython_cell = True
+
+        for node in traced_file.root.body:
+            if is_future_import(node):
+                raise ValueError('from __future__ import ... statements '
+                                 'are not allowed in cells traced with %%eye')
+
+        shell.user_global_ns.update(self._trace_methods_dict(traced_file))
+
+        start_lineno = 1
+        lines = source.splitlines()
+        end_lineno = start_lineno + len(lines)
+
+        self._trace(name, filename, traced_file, start_lineno, end_lineno,
+                    traced_file.code, is_function=False, source=source)
+
+        self._ipython_cell_call_id = 'waiting'
+
+        try:
+            shell.ex(traced_file.code)
+            return self._ipython_cell_value
+        finally:
+            callback(self._ipython_cell_call_id)
+            self._ipython_cell_call_id = None
+            self._ipython_cell_value = None
+
+    def _trace(
+            self,
+            name,
+            filename,
+            traced_file,
+            start_lineno,
+            end_lineno,
+            code,
+            is_function,
+            source='',
+            arg_names=(),
+    ):
+        nodes = list(self._nodes_of_interest(traced_file, start_lineno, end_lineno))
+        html_body = self._nodes_html(nodes, start_lineno, end_lineno, traced_file)
+
+        data_dict = dict(
             # This maps each node to the loops enclosing that node
             node_loops={
                 node._tree_index: [n._tree_index for n in node._loops]
                 for node, _ in nodes
                 if node._loops
-            })
+            },
+        )
+        if is_function:
+            tokens = traced_file.tokens
+            func_node = only(node
+                             for node, _ in nodes
+                             if isinstance(node, ast.FunctionDef)
+                             and node.first_token.start[0] == start_lineno)
+            func_startpos, source = source_without_decorators(tokens, func_node)
+            # These are for the PyCharm plugin
+            data_dict.update(
+                node_ranges=list(self._node_ranges(nodes, tokens, func_startpos)),
+                loop_ranges=list(self._loop_ranges(nodes, tokens, func_startpos)),
+            )
+
         data = json.dumps(data_dict, sort_keys=True)
-        db_func = self._db_func(data, filename, html_body, name, start_lineno, raw_body)
-        arg_info = inspect.getargs(new_func.__code__)
-        arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
-        self._code_infos[new_func.__code__] = CodeInfo(db_func, new_func.traced_file, arg_names)
-        return new_func
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
+        self._code_infos[code] = CodeInfo(db_func, traced_file, arg_names)
 
     def _loop_ranges(self, nodes, tokens, func_start):
         # For a for loop, e.g.
@@ -460,7 +516,7 @@ class BirdsEye(TreeTracerBase):
             )
 
     @retry_db
-    def _db_func(self, data, filename, html_body, name, start_lineno, raw_body):
+    def _db_func(self, data, filename, html_body, name, start_lineno, source):
         """
         Retrieve the Function object from the database if one exists, or create one.
         """
@@ -479,7 +535,7 @@ class BirdsEye(TreeTracerBase):
                                    html_body=html_body,
                                    lineno=start_lineno,
                                    data=data,
-                                   body_hash=h(raw_body),
+                                   body_hash=h(source),
                                    hash=function_hash)
                 session.add(db_func)
                 session.commit()  # ensure .id exists
@@ -631,48 +687,6 @@ class BirdsEye(TreeTracerBase):
                 prev_start = start
 
         return end_lineno
-
-    def exec_ipython_cell(self, source, callback):
-        from IPython import get_ipython
-        shell = get_ipython()
-        filename = name = shell.compile.cache(source)
-        flags = shell.compile.flags
-
-        traced_file = self.compile(source, filename, flags)
-        traced_file.is_ipython_cell = True
-
-        for node in traced_file.root.body:
-            if is_future_import(node):
-                raise ValueError('from __future__ import ... statements '
-                                 'are not allowed in cells traced with %%eye')
-
-        shell.user_global_ns.update(self._trace_methods_dict(traced_file))
-
-        start_lineno = 1
-        lines = source.splitlines()
-        end_lineno = start_lineno + len(lines)
-        nodes = list(self._nodes_of_interest(traced_file, start_lineno, end_lineno))
-        html_body = self._nodes_html(nodes, start_lineno, end_lineno, traced_file)
-        data_dict = dict(
-            # This maps each node to the loops enclosing that node
-            node_loops={
-                node._tree_index: [n._tree_index for n in node._loops]
-                for node, _ in nodes
-                if node._loops
-            })
-        data = json.dumps(data_dict, sort_keys=True)
-        db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
-        self._code_infos[traced_file.code] = CodeInfo(db_func, traced_file, ())
-
-        self._ipython_cell_call_id = 'waiting'
-
-        try:
-            shell.ex(traced_file.code)
-            return self._ipython_cell_value
-        finally:
-            callback(self._ipython_cell_call_id)
-            self._ipython_cell_call_id = None
-            self._ipython_cell_value = None
 
 
 eye = BirdsEye()
@@ -1059,8 +1073,3 @@ def is_obvious_builtin(node, value):
              node.id in builtins and
              builtins[node.id] is value) or
             isinstance(node, getattr(ast, 'NameConstant', ())))
-
-
-def load_ipython_extension(ipython_shell):
-    from birdseye.ipython import BirdsEyeMagics
-    ipython_shell.register_magics(BirdsEyeMagics)
