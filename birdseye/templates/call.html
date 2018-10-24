@@ -1,13 +1,26 @@
 {% extends "call_base.html" %}
 {% block body %}
-    <h2>Call to function:
-        <a class="code-font"
-           href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
-            {{ func.name }}
-        </a>
-    </h2>
-    <p><strong>File: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
-    <p><strong>Line: </strong>{{ func.lineno }}</p>
+
+    {% if module_execution %}
+        <h2>Execution of module:
+            <a class="code-font"
+               href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+                {{ short_path }}
+            </a>
+        </h2>
+    {% else %}
+        <h2>Call to function:
+            <a class="code-font"
+               href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+                {{ func.name }}
+            </a>
+        </h2>
+        <p><strong>Line: </strong>{{ func.lineno }}</p>
+    {% endif %}
+
+    <p><strong>Full file path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
+
+    {% if not module_execution %}
     {% if call.arguments_list %}
         <p><strong>Arguments:</strong></p>
         <table class="code-font table table-bordered table-striped args-table">
@@ -21,6 +34,8 @@
     {% else %}
         <p><strong>No arguments</strong></p>
     {% endif %}
+    {% endif %}
+
     <p>
         <strong>Start time:</strong> {{ call.pretty_start_time }}
     </p>

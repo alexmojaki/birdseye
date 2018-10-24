@@ -21,6 +21,7 @@ from itertools import chain, islice
 from threading import Lock
 from uuid import uuid4
 import hashlib
+import sys
 
 from asttokens import ASTTokens
 from littleutils import group_by_key_func, only
@@ -34,7 +35,7 @@ from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallI
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    is_future_import, get_unfrozen_datetime
+    is_future_import, get_unfrozen_datetime, FILE_SENTINEL_NAME, read_source_file
 from birdseye import __version__
 
 try:
@@ -79,7 +80,7 @@ class BirdsEye(TreeTracerBase):
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
-        self._ipython_cell_call_id = None
+        self._last_call_id = None
         self._ipython_cell_value = None
         self.num_samples = num_samples or dict(
             big=dict(
@@ -261,7 +262,7 @@ class BirdsEye(TreeTracerBase):
         frame_info.iteration = Iteration()
 
         code_info = self._code_infos[frame.f_code]
-        if code_info.traced_file.is_ipython_cell:
+        if isinstance(enter_info.enter_node.parent, ast.Module):
             arguments = []
         else:
             f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
@@ -335,8 +336,7 @@ class BirdsEye(TreeTracerBase):
 
         add_call()
 
-        if self._ipython_cell_call_id is not None:
-            self._ipython_cell_call_id = frame_info.call_id
+        self._last_call_id = frame_info.call_id
 
     def _extract_node_values(self, iteration, path, node_values):
         # type: (Iteration, Tuple[int, ...], dict) -> None
@@ -387,7 +387,8 @@ class BirdsEye(TreeTracerBase):
 
         arg_info = inspect.getargs(new_func.__code__)
         arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
-        self._trace(name, filename, traced_file, start_lineno, end_lineno, new_func.__code__,
+        self._trace(name, filename, traced_file, new_func.__code__,
+                    start_lineno=start_lineno, end_lineno=end_lineno,
                     is_function=True, arg_names=arg_names)
 
         return new_func
@@ -408,35 +409,56 @@ class BirdsEye(TreeTracerBase):
 
         shell.user_global_ns.update(self._trace_methods_dict(traced_file))
 
-        start_lineno = 1
-        lines = source.splitlines()
-        end_lineno = start_lineno + len(lines)
-
-        self._trace(name, filename, traced_file, start_lineno, end_lineno,
-                    traced_file.code, is_function=False, source=source)
-
-        self._ipython_cell_call_id = 'waiting'
+        self._trace(name, filename, traced_file, traced_file.code, source)
 
         try:
             shell.ex(traced_file.code)
             return self._ipython_cell_value
         finally:
-            callback(self._ipython_cell_call_id)
-            self._ipython_cell_call_id = None
+            callback(self._last_call_id)
             self._ipython_cell_value = None
+
+    def trace_this_module(self, context=0):
+        frame = inspect.currentframe()
+        filename = None
+        while context >= 0:
+            frame = frame.f_back
+            filename = inspect.getsourcefile(frame)
+            if filename is not None:
+                context -= 1
+
+        lines = read_source_file(filename).splitlines()
+        lines[:frame.f_lineno] = [''] * frame.f_lineno
+        source = '\n'.join(lines)
+        self.exec_string(source, filename, frame.f_globals, frame.f_locals)
+        sys.exit(0)
+
+    def exec_string(self, source, filename, globs=None, locs=None):
+        globs = globs or {}
+        locs = locs or {}
+
+        traced_file = self.compile(source, filename)
+
+        globs.update(self._trace_methods_dict(traced_file))
+
+        self._trace(FILE_SENTINEL_NAME, filename, traced_file, traced_file.code, source)
+
+        exec(traced_file.code, globs, locs)
 
     def _trace(
             self,
             name,
             filename,
             traced_file,
-            start_lineno,
-            end_lineno,
             code,
-            is_function,
             source='',
+            is_function=False,
+            start_lineno=1,
+            end_lineno=None,
             arg_names=(),
     ):
+        if not end_lineno:
+            end_lineno = start_lineno + len(source.splitlines())
         nodes = list(self._nodes_of_interest(traced_file, start_lineno, end_lineno))
         html_body = self._nodes_html(nodes, start_lineno, end_lineno, traced_file)
 
@@ -644,7 +666,7 @@ class BirdsEye(TreeTracerBase):
         html_body = ''.join(html_parts)
         html_body = '\n'.join(html_body.split('\n')[start_lineno - 1:end_lineno - 1])
 
-        return html_body
+        return html_body.strip('\n')
 
     def _separate_comprehensions(self, nodes, end_lineno, positions, traced_file):
         # type: (list, int, List[HTMLPosition], TracedFile) -> int

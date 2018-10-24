@@ -6,13 +6,23 @@
     <h2>File: <span class="code-font">{{ short_path }}</span></h2>
     <p><strong>Full path: </strong>{{ full_path }}</p>
     {% endif %}
+
+    {% if module_execution %}
+        <a class="code-font"
+           href="{{ url_for('func_view', path=full_path, func_name=FILE_SENTINEL_NAME) }}">
+            Execution of module
+        </a>
+    {% endif %}
+
+    {% if funcs %}
     <h3>Functions:</h3>
     {% for func in funcs %}
         <li>
             <a class="code-font"
-               href="{{ url_for('func_view', path=full_path, func_name=func.0) }}">
-                {{ func.0 }}
+               href="{{ url_for('func_view', path=full_path, func_name=func) }}">
+                {{ func }}
             </a>
         </li>
     {% endfor %}
+    {% endif %}
 {% endblock %}

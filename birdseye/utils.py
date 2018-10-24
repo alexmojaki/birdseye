@@ -37,6 +37,7 @@ PY3 = not PY2
 T = TypeVar('T')
 RT = TypeVar('RT')
 IPYTHON_FILE_PATH = 'IPython notebook or shell'
+FILE_SENTINEL_NAME = '$$__FILE__$$'
 
 if PY2:
     Text = unicode
