@@ -420,12 +420,16 @@ class BirdsEye(TreeTracerBase):
 
     def trace_this_module(self, context=0):
         frame = inspect.currentframe()
+
         filename = None
         while context >= 0:
             frame = frame.f_back
             filename = inspect.getsourcefile(frame)
             if filename is not None:
                 context -= 1
+
+        if frame.f_globals.get('__name__') != '__main__':
+            return
 
         lines = read_source_file(filename).splitlines()
         lines[:frame.f_lineno] = [''] * frame.f_lineno
