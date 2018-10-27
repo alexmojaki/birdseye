@@ -33,7 +33,7 @@ str(tests)
 from birdseye.bird import eye, NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
 
-Session = eye.db.Session
+session = eye.db.Session()
 Call = eye.db.Call
 
 
@@ -115,7 +115,7 @@ def get_call_ids(func):
 
 # Do this here to make call ids consistent
 golden_calls = {
-    name: [Session().query(Call).filter_by(id=c_id).one()
+    name: [session.flush() or session.query(Call).filter_by(id=c_id).one()
            for c_id in get_call_ids(lambda: import_module('test_scripts.' + name))]
     for name in ('gold', 'traced')
 }
