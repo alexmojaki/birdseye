@@ -1,20 +1,31 @@
 import logging
 import sys
 from importlib.util import spec_from_loader
+import ast
 
+
+# This is based on the MacroPy import hook
+# https://github.com/lihaoyi/macropy/blob/46ee500b877d5a32b17391bb8122c09b15a1826a/macropy/core/import_hooks.py
 
 class BirdsEyeLoader:
 
-    def __init__(self, spec, source):
+    def __init__(self, spec, source, deep):
         self._spec = spec
         self.source = source
+        self.deep = deep
 
     def create_module(self, spec):
         pass
 
     def exec_module(self, module):
         from birdseye.bird import eye
-        eye.exec_string(self.source, self._spec.origin, module.__dict__, module.__dict__)
+        eye.exec_string(
+            source=self.source,
+            filename=self._spec.origin,
+            globs=module.__dict__,
+            locs=module.__dict__,
+            deep=self.deep,
+        )
 
     def get_filename(self, fullname):
         return self._spec.loader.get_filename(fullname)
@@ -68,17 +79,36 @@ class BirdsEyeFinder(object):
             logging.exception('Loader for %s raised an error', fullname)
             return
 
-        if not source:
+        if not source or 'birdseye' not in source:
             return
 
         lines = source.splitlines()
-        line = 'import birdseye.trace_module'
-        if line not in lines:
+        deep, trace_stmt = should_trace(source)
+
+        if not trace_stmt:
             return
 
-        lines[lines.index(line)] = ''
+        lines[trace_stmt.lineno - 1] = ''
         source = '\n'.join(lines)
-
-        loader = BirdsEyeLoader(spec, source)
-
+        loader = BirdsEyeLoader(spec, source, deep)
         return spec_from_loader(fullname, loader)
+
+
+def should_trace(source):
+    trace_stmt = None
+    deep = False
+    for stmt in ast.parse(source).body:
+        if isinstance(stmt, ast.Import):
+            for alias in stmt.names:
+                if alias.name.startswith('birdseye.trace_module'):
+                    trace_stmt = stmt
+                    if alias.name.endswith('deep'):
+                        deep = True
+
+        if isinstance(stmt, ast.ImportFrom) and stmt.module == 'birdseye':
+            for alias in stmt.names:
+                if alias.name.startswith('trace_module'):
+                    trace_stmt = stmt
+                    if alias.name.endswith('deep'):
+                        deep = True
+    return deep, trace_stmt
