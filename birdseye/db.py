@@ -1,6 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
 import functools
+import sys
 
 from future import standard_library
 from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError
@@ -23,7 +24,7 @@ from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
 
 RESERVED_WORDS.add('function')
 
-DB_VERSION = 0
+DB_VERSION = 1
 
 
 class Database(object):
@@ -39,7 +40,7 @@ class Database(object):
             pool_recycle=280,
             echo=False)
 
-        Session = self.Session = sessionmaker(bind=engine)
+        self.Session = sessionmaker(bind=engine)
 
         class Base(object):
             @declared_attr
@@ -140,6 +141,7 @@ class Database(object):
             id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
             file = Column(Text)
             name = Column(Text)
+            type = Column(Text)
             html_body = Column(LongText)
             lineno = Column(Integer)
             data = Column(LongText)
@@ -155,9 +157,9 @@ class Database(object):
 
             @staticmethod
             def basic_dict(func):
-                return select_attrs(func, 'file name lineno hash body_hash')
+                return select_attrs(func, 'file name lineno hash body_hash type')
 
-            basic_columns = (file, name, lineno, hash, body_hash)
+            basic_columns = (file, name, lineno, hash, body_hash, type)
 
         self.Call = Call
         self.Function = Function
@@ -172,8 +174,8 @@ class Database(object):
             Base.metadata.create_all(engine)
             kv.version = DB_VERSION
         elif not self.table_exists(KeyValue) or int(kv.version) < DB_VERSION:
-            raise ValueError('The birdseye database schema is out of date. '
-                             'Run "python -m birdseye.clear_db" to delete the existing tables.')
+            sys.exit('The birdseye database schema is out of date. '
+                     'Run "python -m birdseye.clear_db" to delete the existing tables.')
 
     def table_exists(self, table):
         return self.engine.dialect.has_table(self.engine, table.__name__)

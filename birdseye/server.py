@@ -3,7 +3,7 @@ from __future__ import print_function, division, absolute_import
 import json
 
 from future import standard_library
-from littleutils import DecentJSONEncoder, withattrs
+from littleutils import DecentJSONEncoder, withattrs, group_by_attr
 
 standard_library.install_aliases()
 
@@ -52,16 +52,11 @@ def index():
 @db.provide_session
 def file_view(session, path):
     path = fix_abs_path(path)
-    funcs = sorted(session.query(Function.name).filter_by(file=path).distinct())
-    funcs = [f[0] for f in funcs]
-    module_execution = FILE_SENTINEL_NAME in funcs
-    if module_execution:
-        funcs.remove(FILE_SENTINEL_NAME)
+    funcs = sorted(session.query(Function.name, Function.type).filter_by(file=path).distinct())
+    funcs = group_by_attr(funcs, 'type')
 
     return render_template('file.html',
                            funcs=funcs,
-                           module_execution=module_execution,
-                           FILE_SENTINEL_NAME=FILE_SENTINEL_NAME,
                            is_ipython=path == IPYTHON_FILE_PATH,
                            full_path=path,
                            short_path=short_path(path, db.all_file_paths()))
@@ -84,7 +79,6 @@ def func_view(session, path, func_name):
 
     return render_template('function.html',
                            func=func,
-                           module_execution=func_name == FILE_SENTINEL_NAME,
                            short_path=short_path(path, db.all_file_paths()),
                            calls=calls)
 
@@ -94,7 +88,6 @@ def base_call_view(session, call_id, template):
     call = session.query(Call).filter_by(id=call_id).one()
     func = call.function
     return render_template(template,
-                           module_execution=func.name == FILE_SENTINEL_NAME,
                            short_path=short_path(func.file, db.all_file_paths()),
                            call=call,
                            func=func)

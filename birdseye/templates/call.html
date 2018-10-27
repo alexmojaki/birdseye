@@ -1,39 +1,47 @@
 {% extends "call_base.html" %}
 {% block body %}
 
-    {% if module_execution %}
-        <h2>Execution of module:
-            <a class="code-font"
-               href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+    {% set typ = func.type %}
+
+    <h2>
+        {% if typ == 'module' %}
+            Execution of module:
+        {% elif typ == 'class' %}
+            Class definition:
+        {% else %}
+            Call to function:
+        {% endif %}
+
+        <a class="code-font"
+           href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+            {% if typ == 'module' %}
                 {{ short_path }}
-            </a>
-        </h2>
-    {% else %}
-        <h2>Call to function:
-            <a class="code-font"
-               href="{{ url_for('func_view', path=func.file, func_name=func.name) }}">
+            {% else %}
                 {{ func.name }}
-            </a>
-        </h2>
+            {% endif %}
+        </a>
+    </h2>
+
+    {% if typ != 'module' %}
         <p><strong>Line: </strong>{{ func.lineno }}</p>
     {% endif %}
 
     <p><strong>Full file path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
 
-    {% if not module_execution %}
-    {% if call.arguments_list %}
-        <p><strong>Arguments:</strong></p>
-        <table class="code-font table table-bordered table-striped args-table">
-            {% for k, v in call.arguments_list %}
-                <tr>
-                    <td>{{ k }}</td>
-                    <td>{{ v }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p><strong>No arguments</strong></p>
-    {% endif %}
+    {% if typ == 'function' %}
+        {% if call.arguments_list %}
+            <p><strong>Arguments:</strong></p>
+            <table class="code-font table table-bordered table-striped args-table">
+                {% for k, v in call.arguments_list %}
+                    <tr>
+                        <td>{{ k }}</td>
+                        <td>{{ v }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p><strong>No arguments</strong></p>
+        {% endif %}
     {% endif %}
 
     <p>
@@ -49,5 +57,5 @@
     <p><strong>Code:</strong></p>
 {% endblock %}
 {% block after_container %}
-  {% include "call_core.html" %}
+    {% include "call_core.html" %}
 {% endblock %}

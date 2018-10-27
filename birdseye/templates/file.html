@@ -3,26 +3,29 @@
     {% if is_ipython %}
         <h2>{{ short_path }}</h2>
     {% else %}
-    <h2>File: <span class="code-font">{{ short_path }}</span></h2>
-    <p><strong>Full path: </strong>{{ full_path }}</p>
+        <h2>File: <span class="code-font">{{ short_path }}</span></h2>
+        <p><strong>Full path: </strong>{{ full_path }}</p>
     {% endif %}
 
-    {% if module_execution %}
+    {% if funcs.module %}
         <a class="code-font"
-           href="{{ url_for('func_view', path=full_path, func_name=FILE_SENTINEL_NAME) }}">
+           href="{{ url_for('func_view', path=full_path, func_name=funcs.module[0].name) }}">
             Execution of module
         </a>
     {% endif %}
 
-    {% if funcs %}
-    <h3>Functions:</h3>
-    {% for func in funcs %}
-        <li>
-            <a class="code-font"
-               href="{{ url_for('func_view', path=full_path, func_name=func) }}">
-                {{ func }}
-            </a>
-        </li>
+    {% for type, title in [('function', 'Functions'), ('class', 'Class definitions')] %}
+        {% set funcs_of_type = funcs[type] %}
+        {% if funcs_of_type %}
+            <h3>{{ title }}:</h3>
+            {% for func in funcs_of_type %}
+                <li>
+                    <a class="code-font"
+                       href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
+                        {{ func.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
     {% endfor %}
-    {% endif %}
 {% endblock %}

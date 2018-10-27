@@ -605,7 +605,7 @@ class _StmtContext(object):
 
         parent = node.parent  # type: ast.AST
         return_node = frame_info.return_node
-        exiting = (isinstance(parent, (ast.FunctionDef, ast.Module)) and
+        exiting = (isinstance(parent, (ast.FunctionDef, ast.Module, ast.ClassDef)) and
                    (node is parent.body[-1] or
                     exc_val or
                     return_node))

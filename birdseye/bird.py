@@ -262,7 +262,7 @@ class BirdsEye(TreeTracerBase):
         frame_info.iteration = Iteration()
 
         code_info = self._code_infos[frame.f_code]
-        if isinstance(enter_info.enter_node.parent, ast.Module):
+        if isinstance(enter_info.enter_node.parent, (ast.Module, ast.ClassDef)):
             arguments = []
         else:
             f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
@@ -387,9 +387,9 @@ class BirdsEye(TreeTracerBase):
 
         arg_info = inspect.getargs(new_func.__code__)
         arg_names = list(chain(flatten_list(arg_info[0]), arg_info[1:]))  # type: List[str]
-        self._trace(name, filename, traced_file, new_func.__code__,
+        self._trace(name, filename, traced_file, new_func.__code__, typ='function',
                     start_lineno=start_lineno, end_lineno=end_lineno,
-                    is_function=True, arg_names=arg_names)
+                    arg_names=arg_names)
 
         return new_func
 
@@ -409,7 +409,7 @@ class BirdsEye(TreeTracerBase):
 
         shell.user_global_ns.update(self._trace_methods_dict(traced_file))
 
-        self._trace(name, filename, traced_file, traced_file.code, source)
+        self._trace(name, filename, traced_file, traced_file.code, 'module', source)
 
         try:
             shell.ex(traced_file.code)
@@ -418,7 +418,7 @@ class BirdsEye(TreeTracerBase):
             callback(self._last_call_id)
             self._ipython_cell_value = None
 
-    def trace_this_module(self, context=0):
+    def trace_this_module(self, context=0, deep=False):
         frame = inspect.currentframe()
 
         filename = None
@@ -434,10 +434,10 @@ class BirdsEye(TreeTracerBase):
         lines = read_source_file(filename).splitlines()
         lines[:frame.f_lineno] = [''] * frame.f_lineno
         source = '\n'.join(lines)
-        self.exec_string(source, filename, frame.f_globals, frame.f_locals)
+        self.exec_string(source, filename, frame.f_globals, frame.f_locals, deep)
         sys.exit(0)
 
-    def exec_string(self, source, filename, globs=None, locs=None):
+    def exec_string(self, source, filename, globs=None, locs=None, deep=False):
         globs = globs or {}
         locs = locs or {}
 
@@ -445,7 +445,37 @@ class BirdsEye(TreeTracerBase):
 
         globs.update(self._trace_methods_dict(traced_file))
 
-        self._trace(FILE_SENTINEL_NAME, filename, traced_file, traced_file.code, source)
+        self._trace(FILE_SENTINEL_NAME, filename, traced_file, traced_file.code, 'module', source)
+
+        if deep:
+            nodes_by_lineno = {
+                node.lineno: node
+                for node in traced_file.nodes
+                if isinstance(node, (ast.FunctionDef, ast.ClassDef))
+            }
+
+            def find_code(root_code):
+                # type: (CodeType) -> None
+                for code in root_code.co_consts:  # type: CodeType
+                    if not inspect.iscode(code):
+                        continue
+
+                    find_code(code)
+
+                    if code.co_name.startswith('<'):
+                        return
+
+                    lineno = code.co_firstlineno
+                    node = nodes_by_lineno[lineno]
+                    self._trace(
+                        code.co_name, filename, traced_file, code,
+                        typ={ast.FunctionDef: 'function', ast.ClassDef: 'class'}[type(node)],
+                        source=source,
+                        start_lineno=lineno,
+                        end_lineno=node.last_token.end[0] + 1,
+                    )
+
+            find_code(traced_file.code)
 
         exec(traced_file.code, globs, locs)
 
@@ -455,8 +485,8 @@ class BirdsEye(TreeTracerBase):
             filename,
             traced_file,
             code,
+            typ,
             source='',
-            is_function=False,
             start_lineno=1,
             end_lineno=None,
             arg_names=(),
@@ -474,7 +504,7 @@ class BirdsEye(TreeTracerBase):
                 if node._loops
             },
         )
-        if is_function:
+        if typ == 'function':
             tokens = traced_file.tokens
             func_node = only(node
                              for node, _ in nodes
@@ -488,7 +518,7 @@ class BirdsEye(TreeTracerBase):
             )
 
         data = json.dumps(data_dict, sort_keys=True)
-        db_func = self._db_func(data, filename, html_body, name, start_lineno, source)
+        db_func = self._db_func(data, filename, html_body, name, start_lineno, source, typ)
         self._code_infos[code] = CodeInfo(db_func, traced_file, arg_names)
 
     def _loop_ranges(self, nodes, tokens, func_start):
@@ -542,7 +572,7 @@ class BirdsEye(TreeTracerBase):
             )
 
     @retry_db
-    def _db_func(self, data, filename, html_body, name, start_lineno, source):
+    def _db_func(self, data, filename, html_body, name, start_lineno, source, typ):
         """
         Retrieve the Function object from the database if one exists, or create one.
         """
@@ -558,6 +588,7 @@ class BirdsEye(TreeTracerBase):
             if not db_func:
                 db_func = Function(file=filename,
                                    name=name,
+                                   type=typ,
                                    html_body=html_body,
                                    lineno=start_lineno,
                                    data=data,
