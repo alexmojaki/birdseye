@@ -117,7 +117,7 @@ def get_call_ids(func):
 golden_calls = {
     name: [session.query(Call).filter_by(id=c_id).one()
            for c_id in get_call_ids(lambda: import_module('test_scripts.' + name))]
-    for name in ('golden_script', 'traced_module')
+    for name in ('gold', 'traced')
 }
 
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
