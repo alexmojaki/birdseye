@@ -1,6 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
 import json
+from os.path import basename
 
 from future import standard_library
 from littleutils import DecentJSONEncoder, withattrs, group_by_attr
@@ -59,7 +60,7 @@ def file_view(session, path):
                            funcs=funcs,
                            is_ipython=path == IPYTHON_FILE_PATH,
                            full_path=path,
-                           short_path=short_path(path, db.all_file_paths()))
+                           short_path=basename(path))
 
 
 @app.route('/file/<file:path>/function/<func_name>')
@@ -79,7 +80,7 @@ def func_view(session, path, func_name):
 
     return render_template('function.html',
                            func=func,
-                           short_path=short_path(path, db.all_file_paths()),
+                           short_path=basename(path),
                            calls=calls)
 
 
@@ -88,7 +89,7 @@ def base_call_view(session, call_id, template):
     call = session.query(Call).filter_by(id=call_id).one()
     func = call.function
     return render_template(template,
-                           short_path=short_path(func.file, db.all_file_paths()),
+                           short_path=basename(func.file),
                            call=call,
                            func=func)
 
