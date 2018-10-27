@@ -1,6 +1,6 @@
 import os
 from cheap_repr import repr_str, cheap_repr
-from birdseye.bird import eye
+from birdseye import eye
 
 path = os.path.join(os.path.expanduser('~'), '.birdseye_test.db')
 

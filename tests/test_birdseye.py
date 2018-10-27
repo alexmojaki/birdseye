@@ -30,7 +30,8 @@ import tests
 from tests.utils import SharedCounter
 
 str(tests)
-from birdseye.bird import eye, NodeValue, is_interesting_expression, is_obvious_builtin
+from birdseye import eye
+from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
 
 Session = eye.db.Session

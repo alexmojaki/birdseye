@@ -118,7 +118,7 @@ eye = BirdsEye(num_samples=dict(...))
 or modify the dict of an existing instance:
 
 ```python
-from birdseye.bird import eye
+from birdseye import eye
 
 eye.num_samples['big']['list'] = 100
 ```
