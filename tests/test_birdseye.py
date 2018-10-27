@@ -17,6 +17,7 @@ import weakref
 from collections import namedtuple, Set, Mapping
 from copy import copy
 from functools import partial
+from importlib import import_module
 from time import sleep
 from unittest import skipUnless
 
@@ -31,7 +32,6 @@ from tests.utils import SharedCounter
 str(tests)
 from birdseye.bird import eye, NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
-from tests import golden_script
 
 session = eye.db.Session()
 Call = eye.db.Call
@@ -114,8 +114,11 @@ def get_call_ids(func):
 
 
 # Do this here to make call ids consistent
-golden_calls = [session.query(Call).filter_by(id=c_id).one()
-                for c_id in get_call_ids(golden_script.main)]
+golden_calls = {
+    name: [session.query(Call).filter_by(id=c_id).one()
+           for c_id in get_call_ids(lambda: import_module('test_scripts.' + name))]
+    for name in ('golden_script', 'traced_module')
+}
 
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
@@ -419,26 +422,27 @@ class TestBirdsEye(unittest.TestCase):
         def normalise_addresses(string):
             return re.sub(r'at 0x\w+>', 'at 0xABC>', string)
 
-        data = [dict(
-            arguments=byteify(json.loads(normalise_addresses(call.arguments))),
-            return_value=byteify(normalise_addresses(call.return_value)),
-            exception=call.exception,
-            traceback=call.traceback,
-            data=normalise_call_data(normalise_addresses(call.data)),
-            function=dict(
-                name=byteify(call.function.name),
-                html_body=byteify(call.function.html_body),
-                lineno=call.function.lineno,
-                data=byteify(json.loads(call.function.data)),
-            ),
-        ) for call in golden_calls]
-        version = re.match(r'\d\.\d', sys.version).group()
-        path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
+        for name, calls in golden_calls.items():
+            data = [dict(
+                arguments=byteify(json.loads(normalise_addresses(call.arguments))),
+                return_value=byteify(normalise_addresses(call.return_value)),
+                exception=call.exception,
+                traceback=call.traceback,
+                data=normalise_call_data(normalise_addresses(call.data)),
+                function=dict(
+                    name=byteify(call.function.name),
+                    html_body=byteify(call.function.html_body),
+                    lineno=call.function.lineno,
+                    data=byteify(json.loads(call.function.data)),
+                ),
+            ) for call in calls]
+            version = re.match(r'\d\.\d', sys.version).group()
+            path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
-        if 1:  # change to 0 to write new data instead of reading and testing
-            self.assertEqual(data, byteify(file_to_json(path)))
-        else:
-            json_to_file(data, path)
+            if 1:  # change to 0 to write new data instead of reading and testing
+                self.assertEqual(data, byteify(file_to_json(path)))
+            else:
+                json_to_file(data, path)
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:
