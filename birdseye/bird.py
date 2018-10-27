@@ -429,6 +429,10 @@ class BirdsEye(TreeTracerBase):
                 context -= 1
 
         if frame.f_globals.get('__name__') != '__main__':
+            if PY3 and self._treetrace_hidden_with_stmt.__name__ not in frame.f_globals:
+                raise RuntimeError(
+                    'To trace an imported module, you must import birdseye before '
+                    'importing that module.')
             return
 
         lines = read_source_file(filename).splitlines()
