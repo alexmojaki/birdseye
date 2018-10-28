@@ -14,7 +14,8 @@ from contextlib import contextmanager
 
 from humanize import naturaltime
 from markupsafe import Markup
-from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String
+from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String, \
+    Index
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 from sqlalchemy.dialects.mysql import LONGTEXT
@@ -139,8 +140,8 @@ class Database(object):
 
         class Function(Base):
             id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
-            file = Column(Text, index=True)
-            name = Column(Text, index=True)
+            file = Column(Text)
+            name = Column(Text)
             type = Column(Text)  # function, class, or module
             html_body = Column(LongText)
             lineno = Column(Integer)
@@ -148,8 +149,12 @@ class Database(object):
             hash = Column(String(length=64), index=True)
             body_hash = Column(String(length=64), index=True)
 
-            __table_args__ = (UniqueConstraint('hash',
-                                               name='everything_unique'),)
+            __table_args__ = (
+                UniqueConstraint('hash',
+                                 name='everything_unique'),
+                Index('idx_file', 'file', mysql_length=256),
+                Index('idx_name', 'name', mysql_length=32),
+            )
 
             @property
             def parsed_data(self):
