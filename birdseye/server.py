@@ -14,7 +14,7 @@ import argparse
 import os
 import sys
 
-from flask import Flask, request
+from flask import Flask, request, jsonify, url_for
 from flask.templating import render_template
 from flask_humanize import Humanize
 from werkzeug.routing import PathConverter
@@ -112,10 +112,7 @@ def file_view(session, path):
 @db.provide_session
 def func_view(session, path, func_name):
     path = fix_abs_path(path)
-    query = (session.query(*(Call.basic_columns + Function.basic_columns))
-                 .join(Function)
-                 .filter_by(file=path, name=func_name)
-                 .order_by(Call.start_time.desc())[:200])
+    query = get_calls(session, path, func_name, 200)
     if query:
         func = query[0]
         calls = [withattrs(Call(), **row._asdict()) for row in query]
@@ -127,6 +124,25 @@ def func_view(session, path, func_name):
                            func=func,
                            short_path=basename(path),
                            calls=calls)
+
+
+@app.route('/api/file/<file:path>/function/<func_name>/latest_call/')
+@db.provide_session
+def latest_call(session, path, func_name):
+    path = fix_abs_path(path)
+    call = get_calls(session, path, func_name, 1)[0]
+    return jsonify(dict(
+        id=call.id,
+        url=url_for(call_view.__name__,
+                    call_id=call.id),
+    ))
+
+
+def get_calls(session, path, func_name, limit):
+    return (session.query(*(Call.basic_columns + Function.basic_columns))
+                .join(Function)
+                .filter_by(file=path, name=func_name)
+                .order_by(Call.start_time.desc())[:limit])
 
 
 @db.provide_session

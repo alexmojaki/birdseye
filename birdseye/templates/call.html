@@ -55,6 +55,51 @@
             <pre>{{ call.traceback }}</pre>
         {% endif %}
     <p><strong>Code:</strong></p>
+
+    {% from 'info_panel.html' import info_panel %}
+
+    <div id="new-call">
+        {% call info_panel() %}
+            <a id="new-call-link" href="#">
+                <i class="glyphicon glyphicon-play-circle"></i> Go to newest call
+            </a>
+        {% endcall %}
+    </div>
+
+    <script>
+        var func_name = {{ func.name | tojson | safe }};
+        var func_file = {{ func.file | tojson | safe }};
+
+        $(function () {
+            var shown = false;
+            setInterval(function () {
+                $.get(
+                    '/api/file/' + func_file + '/function/' + func_name + '/latest_call/'
+                ).done(function (data) {
+                    if (data.url === location.pathname) {
+                        return;
+                    }
+                    $('#new-call').show();
+                    $('#new-call-link').attr('href', data.url);
+
+                    if (shown) {
+                        return;
+                    }
+                    shown = true;
+
+                    function bounce() {
+                        $('#new-call').toggleClass('animate', true);
+                    }
+
+                    if (document.hasFocus()) {
+                        bounce();
+                    } else {
+                        window.addEventListener('focus', bounce, false);
+                    }
+                });
+            }, 1000);
+        });
+    </script>
 {% endblock %}
 {% block after_container %}
     {% include "call_core.html" %}
