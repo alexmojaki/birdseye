@@ -60,11 +60,22 @@ class TestInterface(unittest.TestCase):
         foo()
         driver = self.driver
 
-        # Navigate to function call
+        # On the index page, note the links to the function and call
         driver.get('http://localhost:7777/')
+        function_link = driver.find_element_by_link_text('foo')
+        function_url = function_link.get_attribute('href')
+        call_url = function_link.find_element_by_xpath('..//i/..').get_attribute('href')
+
+        # On the file page, check that the links still match
         driver.find_element_by_partial_link_text('test_interface').click()
-        driver.find_element_by_link_text('foo').click()
+        function_link = driver.find_element_by_link_text('foo')
+        self.assertEqual(function_link.get_attribute('href'), function_url)
+        self.assertEqual(call_url, function_link.find_element_by_xpath('..//i/..').get_attribute('href'))
+
+        # Finally navigate to the call and check the original call_url
+        function_link.click()
         driver.find_element_by_css_selector('table a').click()
+        self.assertEqual(driver.current_url, call_url)
 
         # Test hovering, clicking on expressions, and stepping through loops
 

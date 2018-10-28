@@ -84,6 +84,8 @@ def short_path(path, all_paths):
 
 
 def fix_abs_path(path):
+    if path == IPYTHON_FILE_PATH:
+        return path
     if os.path.sep == '/' and not path.startswith('/'):
         path = '/' + path
     return path

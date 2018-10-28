@@ -1,0 +1,12 @@
+{% macro info_panel () -%}
+    <div class="panel panel-info">
+        <div class="panel-leftheading">
+            <i class="glyphicon glyphicon-info-sign"></i>
+        </div>
+        <div class="panel-rightbody">
+            {{ caller() }}
+        </div>
+        <div class="clearfix">
+        </div>
+    </div>
+{%- endmacro  %}

@@ -1,6 +1,8 @@
 from __future__ import print_function, division, absolute_import
 
 import json
+from collections import OrderedDict
+from functools import partial
 from os.path import basename
 
 from future import standard_library
@@ -19,7 +21,7 @@ from werkzeug.routing import PathConverter
 import sqlalchemy
 
 from birdseye.db import Database
-from birdseye.utils import short_path, IPYTHON_FILE_PATH, fix_abs_path, FILE_SENTINEL_NAME
+from birdseye.utils import short_path, IPYTHON_FILE_PATH, fix_abs_path, is_ipython_cell
 
 
 app = Flask('birdseye')
@@ -42,10 +44,34 @@ Call = db.Call
 
 
 @app.route('/')
-def index():
-    files = db.all_file_paths()
-    files = zip(files, [short_path(f, files) for f in files])
+@db.provide_session
+def index(session):
+    all_paths = db.all_file_paths()
+
+    recent_calls = (session.query(*(Call.basic_columns + Function.basic_columns))
+                        .join(Function)
+                        .order_by(Call.start_time.desc())[:100])
+
+    files = OrderedDict()
+
+    for row in recent_calls:
+        if is_ipython_cell(row.file):
+            continue
+        files.setdefault(
+            row.file, OrderedDict()
+        ).setdefault(
+            row.name, row
+        )
+
+    for path in all_paths:
+        files.setdefault(
+            path, OrderedDict()
+        )
+
+    short = partial(short_path, all_paths=all_paths)
+
     return render_template('index.html',
+                           short=short,
                            files=files)
 
 
@@ -53,8 +79,27 @@ def index():
 @db.provide_session
 def file_view(session, path):
     path = fix_abs_path(path)
-    funcs = sorted(session.query(Function.name, Function.type).filter_by(file=path).distinct())
-    funcs = group_by_attr(funcs, 'type')
+
+    filtered_calls = (session.query(*(Call.basic_columns + Function.basic_columns))
+                      .join(Function)
+                      .filter_by(file=path)
+                      .subquery('filtered_calls'))
+
+    latest_calls = session.query(
+        filtered_calls.c.name,
+        sqlalchemy.func.max(filtered_calls.c.start_time).label('maxtime')
+    ).group_by(
+        filtered_calls.c.name,
+    ).subquery('latest_calls')
+
+    query = session.query(filtered_calls).join(
+        latest_calls,
+        sqlalchemy.and_(
+            filtered_calls.c.name == latest_calls.c.name,
+            filtered_calls.c.start_time == latest_calls.c.maxtime,
+        )
+    ).order_by(filtered_calls.c.start_time.desc())
+    funcs = group_by_attr(query, 'type')
 
     return render_template('file.html',
                            funcs=funcs,

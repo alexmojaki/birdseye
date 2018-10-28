@@ -75,14 +75,14 @@ class Database(object):
 
         class Call(Base):
             id = Column(String(length=32), primary_key=True)
-            function_id = Column(Integer, ForeignKey('function.id'))
+            function_id = Column(Integer, ForeignKey('function.id'), index=True)
             function = relationship('Function', backref=backref('calls', lazy='dynamic'))
             arguments = Column(Text)
             return_value = Column(Text)
             exception = Column(Text)
             traceback = Column(Text)
             data = Column(LongText)
-            start_time = Column(DateTime)
+            start_time = Column(DateTime, index=True)
 
             @property
             def pretty_start_time(self):
@@ -139,14 +139,14 @@ class Database(object):
 
         class Function(Base):
             id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
-            file = Column(Text)
-            name = Column(Text)
+            file = Column(Text, index=True)
+            name = Column(Text, index=True)
             type = Column(Text)  # function, class, or module
             html_body = Column(LongText)
             lineno = Column(Integer)
             data = Column(LongText)
-            hash = Column(String(length=64))
-            body_hash = Column(String(length=64))
+            hash = Column(String(length=64), index=True)
+            body_hash = Column(String(length=64), index=True)
 
             __table_args__ = (UniqueConstraint('hash',
                                                name='everything_unique'),)

@@ -7,6 +7,16 @@
         <p><strong>Full path: </strong>{{ full_path }}</p>
     {% endif %}
 
+    {% from 'info_panel.html' import info_panel %}
+
+    {% call info_panel() %}
+        <p>Click on a function/class name to view calls to that function.</p>
+        <p>Click on the <i class="glyphicon glyphicon-play-circle"></i> icon
+            to view the most recent call to that function.</p>
+    {% endcall %}
+
+    <br/>
+
     {% if funcs.module %}
         <a class="code-font"
            href="{{ url_for('func_view', path=full_path, func_name=funcs.module[0].name) }}">
@@ -14,12 +24,16 @@
         </a>
     {% endif %}
 
+    <ul class="no-bullet">
     {% for type, title in [('function', 'Functions'), ('class', 'Class definitions')] %}
         {% set funcs_of_type = funcs[type] %}
         {% if funcs_of_type %}
             <h3>{{ title }}:</h3>
             {% for func in funcs_of_type %}
                 <li>
+                    <a href="{{ url_for('call_view', call_id=func.id) }}">
+                        <i class="glyphicon glyphicon-play-circle"></i>
+                    </a>
                     <a class="code-font"
                        href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
                         {{ func.name }}
@@ -28,4 +42,5 @@
             {% endfor %}
         {% endif %}
     {% endfor %}
+    </ul>
 {% endblock %}

@@ -161,3 +161,51 @@ table.dataframe td.numeric {
 .table-striped.table-hover > tbody > tr:hover {
     background-color: rgba(66, 165, 245, 0.2);
 }
+
+/* Based on https://bootsnipp.com/snippets/949K6 */
+.panel.panel-info {
+    position: relative;
+    /*
+    Shrink to fit text:
+    https://stackoverflow.com/a/3917059/2482744
+    */
+    display: inline-block;
+}
+
+.panel-leftheading {
+    width: 34px;
+    text-align: center;
+    border-right: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    float: left;
+    height: 100%;
+    position: absolute;
+    /*
+    Center text vertically:
+    https://stackoverflow.com/a/13515693/2482744
+     */
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+}
+
+.panel-leftheading > .glyphicon {
+    font-size: 160%;
+}
+
+.panel-rightbody {
+    float: left;
+    margin-left: 45px;
+    padding: 15px;
+}
+
+.panel-info > .panel-leftheading {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.no-bullet {
+    list-style-type: none;
+}
