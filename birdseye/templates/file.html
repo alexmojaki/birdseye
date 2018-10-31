@@ -18,8 +18,12 @@
     <br/>
 
     {% if funcs.module %}
+        {% set func = funcs.module[0] %}
+        <a href="{{ url_for('call_view', call_id=func.id) }}">
+            <i class="glyphicon glyphicon-play-circle"></i>
+        </a>
         <a class="code-font"
-           href="{{ url_for('func_view', path=full_path, func_name=funcs.module[0].name) }}">
+           href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
             Execution of module
         </a>
     {% endif %}
