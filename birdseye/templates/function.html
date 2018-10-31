@@ -2,8 +2,10 @@
 {% block head %}
     <script>
         $(function () {
-            $('.call-row td').wrapInner(function () {
-                return "<a href='/call/" + this.parentNode.dataset.id + "'></a>";
+            $('.call-row').each(function (i, row) {
+                $(row).find('td').wrapInner("<a href='/call/" + row.dataset.id + (
+                    i > 0 ? '?not-newest=1' : ''
+                ) + "'></a>");
             })
         });
     </script>

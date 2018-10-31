@@ -67,12 +67,13 @@
     </div>
 
     <script>
-        var func_name = {{ func.name | tojson | safe }};
-        var func_file = {{ func.file | tojson | safe }};
-
-        $(function () {
+        (function () {
+            var func_name = {{ func.name | tojson | safe }};
+            var func_file = {{ func.file | tojson | safe }};
             var shown = false;
-            setInterval(function () {
+            var notNewest = location.search.indexOf('not-newest=1') >= 0;
+
+            function checkLatest() {
                 $.get(
                     '/api/file/' + func_file + '/function/' + func_name + '/latest_call/'
                 ).done(function (data) {
@@ -82,7 +83,7 @@
                     $('#new-call').show();
                     $('#new-call-link').attr('href', data.url);
 
-                    if (shown) {
+                    if (shown || notNewest) {
                         return;
                     }
                     shown = true;
@@ -97,8 +98,13 @@
                         window.addEventListener('focus', bounce, false);
                     }
                 });
-            }, 1000);
-        });
+            }
+
+            $(function () {
+                checkLatest();
+                setInterval(checkLatest, 1000);
+            });
+        })();
     </script>
 {% endblock %}
 {% block after_container %}
