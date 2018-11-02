@@ -82,14 +82,11 @@ class BirdsEyeFinder(object):
         if not source or 'birdseye' not in source:
             return
 
-        lines = source.splitlines()
         deep, trace_stmt = should_trace(source)
 
         if not trace_stmt:
             return
 
-        lines[trace_stmt.lineno - 1] = ''
-        source = '\n'.join(lines)
         loader = BirdsEyeLoader(spec, source, deep)
         return spec_from_loader(fullname, loader)
 
