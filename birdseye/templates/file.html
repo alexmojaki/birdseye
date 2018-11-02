@@ -28,11 +28,11 @@
         </a>
     {% endif %}
 
-    <ul class="no-bullet">
     {% for type, title in [('function', 'Functions'), ('class', 'Class definitions')] %}
         {% set funcs_of_type = funcs[type] %}
         {% if funcs_of_type %}
             <h3>{{ title }}:</h3>
+            <ul class="no-bullet">
             {% for func in funcs_of_type %}
                 <li>
                     <a href="{{ url_for('call_view', call_id=func.id) }}">
@@ -44,7 +44,7 @@
                     </a>
                 </li>
             {% endfor %}
+            </ul>
         {% endif %}
     {% endfor %}
-    </ul>
 {% endblock %}
