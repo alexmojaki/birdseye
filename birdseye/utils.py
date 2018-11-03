@@ -37,6 +37,7 @@ PY3 = not PY2
 T = TypeVar('T')
 RT = TypeVar('RT')
 IPYTHON_FILE_PATH = 'IPython notebook or shell'
+FILE_SENTINEL_NAME = '$$__FILE__$$'
 
 if PY2:
     Text = unicode
@@ -80,6 +81,14 @@ def short_path(path, all_paths):
     if prefix in r'\/':
         prefix = ''
     return strip_required_prefix(path, prefix) or path_leaf(path)
+
+
+def fix_abs_path(path):
+    if path == IPYTHON_FILE_PATH:
+        return path
+    if os.path.sep == '/' and not path.startswith('/'):
+        path = '/' + path
+    return path
 
 
 if PY2:

@@ -9,25 +9,32 @@ from __future__ import division
 import ast
 import json
 import os
+import random
 import re
 import sys
 import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
+from copy import copy
+from functools import partial
+from importlib import import_module
+from time import sleep
 from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import json_to_file, file_to_json, string_to_file
+from littleutils import json_to_file, file_to_json, string_to_file, retry, only
+from sqlalchemy.exc import OperationalError
 
 import tests
+from tests.utils import SharedCounter
 
 str(tests)
-from birdseye import eye, NodeValue, is_interesting_expression, is_obvious_builtin
+from birdseye import eye
+from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3
-from tests import golden_script
 
-session = eye.db.session
+Session = eye.db.Session
 Call = eye.db.Call
 
 
@@ -36,7 +43,7 @@ def bar():
     pass
 
 
-@eye
+@eye()
 def foo():
     x = 1
     y = 2
@@ -90,41 +97,48 @@ class SlotClass(object):
         return '<B>'
 
 
-call_id = 0
+call_id = SharedCounter()
 
 
 def call_id_mock(*_):
-    global call_id
-    call_id += 1
-    return 'test_id_%s' % call_id
+    return 'test_id_%s' % call_id.increment()
 
 
 eye._call_id = call_id_mock
 
 
 def get_call_ids(func):
-    start_id = call_id + 1
+    start_id = call_id.value + 1
     func()
-    end_id = call_id + 1
+    end_id = call_id.value + 1
     return ['test_id_%s' % i for i in range(start_id, end_id)]
 
 
+def hydrate(call):
+    str(call.function.name)
+    return copy(call)
+
+
 # Do this here to make call ids consistent
-golden_calls = [session.query(Call).filter_by(id=c_id).one()
-                for c_id in get_call_ids(golden_script.main)]
+golden_calls = {
+    name: [hydrate(Session().query(Call).filter_by(id=c_id).one())
+           for c_id in get_call_ids(lambda: import_module('test_scripts.' + name))]
+    for name in ('gold', 'traced')
+}
 
 CallStuff = namedtuple('CallStuff', 'call, soup, call_data, func_data')
 
 
-def get_call_stuff(c_id):
-    call = session.query(Call).filter_by(id=c_id).one()
+@eye.db.provide_session
+def get_call_stuff(sess, c_id):
+    call = sess.query(Call).filter_by(id=c_id).one()
 
     # <pre> makes it preserve whitespace
     soup = BeautifulSoup('<pre>' + call.function.html_body + '</pre>', 'html.parser')
 
     call_data = normalise_call_data(call.data)
     func_data = json.loads(call.function.data)
-    return CallStuff(call, soup, call_data, func_data)
+    return CallStuff(copy(call), soup, call_data, func_data)
 
 
 def byteify(x):
@@ -225,7 +239,7 @@ class TestBirdsEye(unittest.TestCase):
             if PY3:
                 result.append(['__wrapped__', [repr(f.__wrapped__), 'function', {}]])
             return result
-            
+
         s = ['', -2, {}]
 
         expected_values = {
@@ -414,26 +428,27 @@ class TestBirdsEye(unittest.TestCase):
         def normalise_addresses(string):
             return re.sub(r'at 0x\w+>', 'at 0xABC>', string)
 
-        data = [dict(
-            arguments=byteify(json.loads(normalise_addresses(call.arguments))),
-            return_value=byteify(normalise_addresses(call.return_value)),
-            exception=call.exception,
-            traceback=call.traceback,
-            data=normalise_call_data(normalise_addresses(call.data)),
-            function=dict(
-                name=byteify(call.function.name),
-                html_body=byteify(call.function.html_body),
-                lineno=call.function.lineno,
-                data=byteify(json.loads(call.function.data)),
-            ),
-        ) for call in golden_calls]
-        version = re.match(r'\d\.\d', sys.version).group()
-        path = os.path.join(os.path.dirname(__file__), 'golden-files', version, 'calls.json')
+        for name, calls in golden_calls.items():
+            data = [dict(
+                arguments=byteify(json.loads(normalise_addresses(call.arguments))),
+                return_value=byteify(normalise_addresses(call.return_value)),
+                exception=call.exception,
+                traceback=call.traceback,
+                data=normalise_call_data(normalise_addresses(call.data)),
+                function=dict(
+                    name=byteify(call.function.name),
+                    html_body=byteify(call.function.html_body),
+                    lineno=call.function.lineno,
+                    data=byteify(json.loads(call.function.data)),
+                ),
+            ) for call in calls]
+            version = re.match(r'\d\.\d', sys.version).group()
+            path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
-        if 1:  # change to 0 to write new data instead of reading and testing
-            self.assertEqual(data, byteify(file_to_json(path)))
-        else:
-            json_to_file(data, path)
+            if 1:  # change to 0 to write new data instead of reading and testing
+                self.assertEqual(data, byteify(file_to_json(path)))
+            else:
+                json_to_file(data, path)
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:
@@ -477,7 +492,7 @@ def f((x, y), z):
         self.assertEqual(without_future.foo(), eye(without_future.foo)())
 
     def test_expand_exceptions(self):
-        expand = NodeValue.expression
+        expand = partial(NodeValue.expression, eye.num_samples)
 
         class A(object):
             def __len__(self):
@@ -623,6 +638,55 @@ def f((x, y), z):
             return u'é'
 
         self.assertEqual(f(), u'é')
+
+    def test_optional_eye(self):
+        @eye(optional=True)
+        def f(x):
+            return x * 3
+
+        call_stuff = get_call_stuff(get_call_ids(lambda: f(2, trace_call=True))[0])
+        self.assertEqual(call_stuff.call.result, '6')
+
+        call = eye.enter_call
+        eye.enter_call = lambda *args, **kwargs: 1 / 0
+        try:
+            self.assertEqual(f(3, trace_call=False), 9)
+            self.assertEqual(f(4), 12)
+        finally:
+            eye.enter_call = call
+
+    def test_concurrency(self):
+        from multiprocessing.dummy import Pool as ThreadPool
+        from multiprocessing import Pool as ProcessPool
+
+        for Pool in [ThreadPool, ProcessPool]:
+            ids = get_call_ids(lambda: Pool(5).map(sleepy, range(25)))
+            results = [int(get_call_stuff(i).call.result) for i in ids]
+            self.assertEqual(sorted(results), list(range(0, 50, 2)))
+
+    def test_middle_iterations(self):
+        @eye
+        def f():
+            for i in range(20):
+                for j in range(20):
+                    if i == 10 and j >= 12:
+                        str(i + 1)
+
+        stuff = get_call_stuff(get_call_ids(f)[0])
+
+        iteration_list = only(stuff.call_data['loop_iterations'].values())
+        indexes = [i['index'] for i in iteration_list]
+        self.assertEqual(indexes, [0, 1, 2, 10, 17, 18, 19])
+
+        iteration_list = only(iteration_list[3]['loops'].values())
+        indexes = [i['index'] for i in iteration_list]
+        self.assertEqual(indexes, [0, 1, 2, 12, 13, 17, 18, 19])
+
+
+@eye
+def sleepy(x):
+    sleep(random.random())
+    return x * 2
 
 
 if __name__ == '__main__':

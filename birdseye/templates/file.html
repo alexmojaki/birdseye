@@ -3,16 +3,48 @@
     {% if is_ipython %}
         <h2>{{ short_path }}</h2>
     {% else %}
-    <h2>File: <span class="code-font">{{ short_path }}</span></h2>
-    <p><strong>Full path: </strong>{{ full_path }}</p>
+        <h2>File: <span class="code-font">{{ short_path }}</span></h2>
+        <p><strong>Full path: </strong>{{ full_path }}</p>
     {% endif %}
-    <h3>Functions:</h3>
-    {% for func in funcs %}
-        <li>
-            <a class="code-font"
-               href="{{ url_for('func_view', path=full_path, func_name=func.0) }}">
-                {{ func.0 }}
-            </a>
-        </li>
+
+    {% from 'info_panel.html' import info_panel %}
+
+    {% call info_panel() %}
+        <p>Click on a function/class name to view calls to that function.</p>
+        <p>Click on the <i class="glyphicon glyphicon-play-circle"></i> icon
+            to view the most recent call to that function.</p>
+    {% endcall %}
+
+    <br/>
+
+    {% if funcs.module %}
+        {% set func = funcs.module[0] %}
+        <a href="{{ url_for('call_view', call_id=func.id) }}">
+            <i class="glyphicon glyphicon-play-circle"></i>
+        </a>
+        <a class="code-font"
+           href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
+            Execution of module
+        </a>
+    {% endif %}
+
+    {% for type, title in [('function', 'Functions'), ('class', 'Class definitions')] %}
+        {% set funcs_of_type = funcs[type] %}
+        {% if funcs_of_type %}
+            <h3>{{ title }}:</h3>
+            <ul class="no-bullet">
+            {% for func in funcs_of_type %}
+                <li>
+                    <a href="{{ url_for('call_view', call_id=func.id) }}">
+                        <i class="glyphicon glyphicon-play-circle"></i>
+                    </a>
+                    <a class="code-font"
+                       href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
+                        {{ func.name }}
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
     {% endfor %}
 {% endblock %}

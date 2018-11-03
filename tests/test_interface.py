@@ -30,7 +30,7 @@ def foo():
                     pass
     str(bar())
 
-    x = list(range(1, 20, 2))
+    x = list(range(1, 30, 2))
     list(x)
 
 
@@ -60,11 +60,22 @@ class TestInterface(unittest.TestCase):
         foo()
         driver = self.driver
 
-        # Navigate to function call
+        # On the index page, note the links to the function and call
         driver.get('http://localhost:7777/')
+        function_link = driver.find_element_by_link_text('foo')
+        function_url = function_link.get_attribute('href')
+        call_url = function_link.find_element_by_xpath('..//i/..').get_attribute('href')
+
+        # On the file page, check that the links still match
         driver.find_element_by_partial_link_text('test_interface').click()
-        driver.find_element_by_link_text('foo').click()
+        function_link = driver.find_element_by_link_text('foo')
+        self.assertEqual(function_link.get_attribute('href'), function_url)
+        self.assertEqual(call_url, function_link.find_element_by_xpath('..//i/..').get_attribute('href'))
+
+        # Finally navigate to the call and check the original call_url
+        function_link.click()
         driver.find_element_by_css_selector('table a').click()
+        self.assertEqual(driver.current_url, call_url)
 
         # Test hovering, clicking on expressions, and stepping through loops
 
@@ -142,13 +153,17 @@ class TestInterface(unittest.TestCase):
         tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in tree_nodes(tree_node)],
-                         ['len() = 10',
+                         ['len() = 15',
                           '0 = int: 1',
                           '1 = int: 3',
                           '2 = int: 5',
-                          '7 = int: 15',
-                          '8 = int: 17',
-                          '9 = int: 19'])
+                          '3 = int: 7',
+                          '4 = int: 9',
+                          '10 = int: 21',
+                          '11 = int: 23',
+                          '12 = int: 25',
+                          '13 = int: 27',
+                          '14 = int: 29']),
 
         # Click on an inner call
         find_expr('bar()').find_element_by_class_name('inner-call').click()
