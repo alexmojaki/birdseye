@@ -42,8 +42,9 @@ ordered by time, letting you see what happens at a glance:
 .. |Join the chat at https://gitter.im/python_birdseye/Lobby| image:: https://badges.gitter.im/python_birdseye/Lobby.svg
    :target: https://gitter.im/python_birdseye/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. inclusion-end-marker
 
-**`Read more documentation here <http://birdseye.readthedocs.io>`_.**
+**Read more documentation** `here <http://birdseye.readthedocs.io>`_
+
+.. inclusion-end-marker
 
 birdseye can be used no matter how you write or run your code, requiring only a browser for the interface. But it's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
