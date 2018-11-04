@@ -341,17 +341,21 @@ class TreeTracerBase(object):
 
         frame_info = self.stack.get(frame)
         if frame_info is None:
-            # This means there are no statements in this frame, and it's just started
-            frame_info = FrameInfo()
-            self.stack[frame] = frame_info
 
-            # This is likely inside a comprehension. Find the parent frame corresponding
-            # to a normal function call
+            # This means there are no statements in this frame, and it's just started
             owner_frame = non_comprehension_frame(frame)
             if owner_frame != frame:
+
+                # We're inside a comprehension, make a FrameInfo for it
+                frame_info = FrameInfo()
+                self.stack[frame] = frame_info
                 comprehension = safe_next(of_type(self.SPECIAL_COMPREHENSION_TYPES,
                                                   ancestors(node)))  # type: ast.expr
                 self.stack[owner_frame].comprehension_frames[comprehension] = frame
+            else:
+
+                # We're inside a lambda - do nothing
+                return node
 
         frame_info.expression_stack.append(node)
 
@@ -372,7 +376,9 @@ class TreeTracerBase(object):
         return value
 
     def _after_expr(self, node, frame, value, exc_value, exc_tb):
-        frame_info = self.stack[frame]
+        frame_info = self.stack.get(frame)
+        if not frame_info:
+            return
         frame_info.expression_stack.pop()
         frame_info.expression_values[node] = value
         return self.after_expr(node, frame, value, exc_value, exc_tb)
