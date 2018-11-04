@@ -4,10 +4,27 @@
     {% from 'info_panel.html' import info_panel %}
 
     {% call info_panel() %}
-        <p>Click on a file to view all the functions in that file (some of which may not be listed here).</p>
-        <p>Click on a function/class name to view calls to that function.</p>
-        <p>Click on the <i class="glyphicon glyphicon-play-circle"></i> icon
-            to view the most recent call to that function.</p>
+        {% if files %}
+            <p>Click on a file to view all the functions in that file (some of which may not be listed here).</p>
+            <p>Click on a function/class name to view calls to that function.</p>
+            <p>Click on the <i class="glyphicon glyphicon-play-circle"></i> icon
+                to view the most recent call to that function.</p>
+        {% else %}
+            <p>You haven't traced any functions! Decorate a function with <code>@eye</code> to get started:</p>
+            <pre id="example-code">
+from birdseye import eye
+
+@eye
+def foo():</pre>
+            <p>Read more documentation
+                <a href="https://birdseye.readthedocs.io/en/latest/quickstart.html">here</a>.
+            </p>
+            <script src="/static/js/libs/highlight.pack.js"></script>
+            <link rel="stylesheet" href="/static/css/hljs.min.css">
+            <script>
+                hljs.highlightBlock(document.getElementById("example-code"));
+            </script>
+        {% endif %}
     {% endcall %}
 
     <ul class="no-bullet">
