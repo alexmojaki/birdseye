@@ -28,7 +28,8 @@ Database
 
 Data is kept in a SQL database. You can configure this by setting the
 environment variable ``BIRDSEYE_DB`` to a `database URL used by
-SQLAlchemy`_. The default is ``sqlite:///$HOME/.birdseye.db``. The variable is checked
+SQLAlchemy`_, or just a path to a file for a simple sqlite database.
+The default is ``.birdseye.db`` under the home directory. The variable is checked
 by both the server and the tracing by the ``@eye`` decorator.
 
 If environment variables are inconvenient, you can do this instead:

@@ -4,7 +4,7 @@ import functools
 import sys
 
 from future import standard_library
-from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError
+from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError, ArgumentError
 
 standard_library.install_aliases()
 import json
@@ -33,13 +33,21 @@ class Database(object):
         self.db_uri = db_uri = (
                 db_uri
                 or os.environ.get('BIRDSEYE_DB')
-                or 'sqlite:///' + os.path.join(os.path.expanduser('~'),
-                                               '.birdseye.db'))
+                or os.path.join(os.path.expanduser('~'),
+                                '.birdseye.db'))
 
-        self.engine = engine = create_engine(
-            db_uri,
+        kwargs = dict(
             pool_recycle=280,
-            echo=False)
+            echo=False,  # for convenience when debugging
+        )
+
+        try:
+            engine = create_engine(db_uri, **kwargs)
+        except ArgumentError:
+            db_uri = 'sqlite:///' + db_uri
+            engine = create_engine(db_uri, **kwargs)
+
+        self.engine = engine
 
         self.Session = sessionmaker(bind=engine)
 
