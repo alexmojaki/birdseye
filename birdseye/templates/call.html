@@ -6,8 +6,6 @@
     <h2>
         {% if typ == 'module' %}
             Execution of module:
-        {% elif typ == 'class' %}
-            Class definition:
         {% else %}
             Call to function:
         {% endif %}
@@ -22,7 +20,7 @@
         </a>
     </h2>
 
-    {% if typ != 'module' %}
+    {% if typ == 'function' %}
         <p><strong>Line: </strong>{{ func.lineno }}</p>
     {% endif %}
 

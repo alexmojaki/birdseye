@@ -17,8 +17,6 @@
     <h2>
         {% if typ == 'module' %}
             Executions of module:
-        {% elif typ == 'class' %}
-            Class definition:
         {% else %}
             Function:
         {% endif %}
@@ -34,7 +32,7 @@
 
     <p><strong>Full file path: </strong><a href="{{ url_for('file_view', path=func.file) }}">{{ func.file }}</a></p>
 
-    {% if typ != 'module' %}
+    {% if typ == 'function' %}
         {# if there are no calls then this may not be the most recent function object #}
         {% if calls %}
             <p><strong>Line: </strong>{{ func.lineno }}</p>
