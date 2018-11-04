@@ -682,6 +682,12 @@ def f((x, y), z):
         indexes = [i['index'] for i in iteration_list]
         self.assertEqual(indexes, [0, 1, 2, 12, 13, 17, 18, 19])
 
+    @classmethod
+    def tearDownClass(cls):
+        assert not eye.stack, eye.stack
+        assert not eye.main_to_secondary_frames, eye.main_to_secondary_frames
+        assert not eye.secondary_to_main_frames, eye.secondary_to_main_frames
+
 
 @eye
 def sleepy(x):

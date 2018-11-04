@@ -14,14 +14,15 @@ standard_library.install_aliases()
 
 import ast
 import inspect
-from collections import namedtuple
+import sys
+from collections import namedtuple, defaultdict
 from copy import deepcopy
 from functools import partial, update_wrapper, wraps
 from itertools import takewhile
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
 
-from birdseye.utils import of_type, safe_next, PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
+from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
     is_future_import
 
 
@@ -107,11 +108,6 @@ class FrameInfo(object):
         # There may be parent nodes such as enclosing loops that still need to finish executing
         self.return_node = None  # type: Optional[ast.Return]
 
-        # Mapping from expression nodes of list/set/dictionary comprehensions
-        # which create a new frame of execution without a function call
-        # to the most recent such frame.
-        self.comprehension_frames = {}  # type: Dict[ast.expr, FrameType]
-
         # Most recent exception raised in the frame
         self.exc_value = None  # type: Optional[BaseException]
 
@@ -172,16 +168,12 @@ class TreeTracerBase(object):
     to trace them.
     """
 
-    # Classes of expression nodes corresponding to expressions which create a new frame
-    # of execution when evaluated, but are still evaluated immediately in the parent frame.
-    SPECIAL_COMPREHENSION_TYPES = (ast.DictComp, ast.SetComp)  # type: Tuple[Type[ast.expr], ...]
-    if PY3:
-        SPECIAL_COMPREHENSION_TYPES += (ast.ListComp,)
-
     def __init__(self):
         # Mapping from frames of execution being traced to FrameInfo objects
         # for extra metadata.
         self.stack = {}  # type: Dict[FrameType, FrameInfo]
+        self.main_to_secondary_frames = defaultdict(list)
+        self.secondary_to_main_frames = {}
 
     @lru_cache()
     def compile(self, source, filename, flags=0):
@@ -315,6 +307,32 @@ class TreeTracerBase(object):
 
         return decorator
 
+    def _main_frame(self, node):
+        # type: (ast.AST) -> Optional[FrameType]
+        frame = sys._getframe(2)
+        result = self.secondary_to_main_frames.get(frame)
+        if result:
+            return result
+
+        original_frame = frame
+
+        while frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
+            frame = frame.f_back
+
+        for node in ancestors(node):
+            if isinstance(node, (ast.FunctionDef, ast.Lambda)):
+                break
+
+            if isinstance(node, ast.ClassDef):
+                frame = frame.f_back
+
+        if frame.f_code.co_name == '<lambda>':
+            return None
+
+        self.secondary_to_main_frames[original_frame] = frame
+        self.main_to_secondary_frames[frame].append(original_frame)
+        return frame
+
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):
         # type: (TracedFile, int) -> _StmtContext
         """
@@ -326,7 +344,7 @@ class TreeTracerBase(object):
         """
         node = traced_file.nodes[_tree_index]
         node = cast(ast.stmt, node)
-        frame = inspect.currentframe().f_back  # type: FrameType
+        frame = self._main_frame(node)
         return _StmtContext(self, node, frame)
 
     def _treetrace_hidden_before_expr(self, traced_file, _tree_index):
@@ -337,26 +355,11 @@ class TreeTracerBase(object):
         """
         node = traced_file.nodes[_tree_index]
         node = cast(ast.expr, node)
-        frame = inspect.currentframe().f_back  # type: FrameType
+        frame = self._main_frame(node)
+        if frame is None:
+            return node
 
-        frame_info = self.stack.get(frame)
-        if frame_info is None:
-
-            # This means there are no statements in this frame, and it's just started
-            owner_frame = non_comprehension_frame(frame)
-            if owner_frame != frame:
-
-                # We're inside a comprehension, make a FrameInfo for it
-                frame_info = FrameInfo()
-                self.stack[frame] = frame_info
-                comprehension = safe_next(of_type(self.SPECIAL_COMPREHENSION_TYPES,
-                                                  ancestors(node)))  # type: ast.expr
-                self.stack[owner_frame].comprehension_frames[comprehension] = frame
-            else:
-
-                # We're inside a lambda - do nothing
-                return node
-
+        frame_info = self.stack[frame]
         frame_info.expression_stack.append(node)
 
         self.before_expr(node, frame)
@@ -368,7 +371,10 @@ class TreeTracerBase(object):
         Called directly from the modified code after an expression is
         evaluated.
         """
-        frame = inspect.currentframe().f_back  # type: FrameType
+        frame = self._main_frame(node)
+        if frame is None:
+            return value
+
         result = self._after_expr(node, frame, value, None, None)
         if result is not None:
             assert isinstance(result, ChangeValue), "after_expr must return None or an instance of ChangeValue"
@@ -376,9 +382,7 @@ class TreeTracerBase(object):
         return value
 
     def _after_expr(self, node, frame, value, exc_value, exc_tb):
-        frame_info = self.stack.get(frame)
-        if not frame_info:
-            return
+        frame_info = self.stack[frame]
         frame_info.expression_stack.pop()
         frame_info.expression_values[node] = value
         return self.after_expr(node, frame, value, exc_value, exc_tb)
@@ -393,7 +397,9 @@ class TreeTracerBase(object):
         # type: (FrameType) -> Tuple[FrameType, Optional[Union[ast.expr, ast.stmt]]]
         caller_frame = frame.f_back
         call_node = None
-        if caller_frame in self.stack:
+        main_frame = self.secondary_to_main_frames.get(caller_frame)
+        if main_frame:
+            caller_frame = main_frame
             frame_info = self.stack[caller_frame]
             expression_stack = frame_info.expression_stack
             if expression_stack:
@@ -401,19 +407,6 @@ class TreeTracerBase(object):
             else:
                 call_node = frame_info.statement_stack[-1]  # type: ignore
         return caller_frame, call_node
-
-    def _inner_node_and_frame(self, frame):
-        """
-        Given a normal frame with a nonempty expression stack, returns the actual
-        frame and top of the expression stack after accounting for comprehensions
-        that have their own frames.
-        """
-        frame_info = self.stack[frame]
-        expression_stack = frame_info.expression_stack
-        while isinstance(expression_stack[-1], TreeTracerBase.SPECIAL_COMPREHENSION_TYPES):
-            frame = frame_info.comprehension_frames[expression_stack[-1]]
-            expression_stack = self.stack[frame].expression_stack
-        return expression_stack[-1], frame
 
     # The methods below are hooks meant to be overridden in subclasses to take custom actions
 
@@ -577,7 +570,7 @@ class _StmtContext(object):
         tracer = self.tracer
         node = self.node
         frame = self.frame
-        if isinstance(node.parent, (ast.FunctionDef, ast.Module, ast.ClassDef)) and node is node.parent.body[0]:
+        if isinstance(node.parent, (ast.FunctionDef, ast.Module)) and node is node.parent.body[0]:
             tracer._enter_call(node, frame)
         frame_info = tracer.stack[frame]
         frame_info.expression_stack = []
@@ -601,8 +594,8 @@ class _StmtContext(object):
             # Call the after_expr hook if the exception was raised by an exception
             expression_stack = frame_info.expression_stack
             if expression_stack:
-                exc_node, inner_frame = tracer._inner_node_and_frame(frame)
-                tracer._after_expr(exc_node, inner_frame, None, exc_val, exc_tb)
+                exc_node = expression_stack[-1]
+                tracer._after_expr(exc_node, frame, None, exc_val, exc_tb)
 
         result = tracer.after_stmt(node, frame, exc_val, exc_tb, exc_node)
 
@@ -611,7 +604,7 @@ class _StmtContext(object):
 
         parent = node.parent  # type: ast.AST
         return_node = frame_info.return_node
-        exiting = (isinstance(parent, (ast.FunctionDef, ast.Module, ast.ClassDef)) and
+        exiting = (isinstance(parent, (ast.FunctionDef, ast.Module)) and
                    (node is parent.body[-1] or
                     exc_val or
                     return_node))
@@ -630,8 +623,8 @@ class _StmtContext(object):
                                           ))
 
             del tracer.stack[frame]
-            for comprehension_frame in frame_info.comprehension_frames.values():
-                del tracer.stack[comprehension_frame]
+            for secondary_frame in self.tracer.main_to_secondary_frames.pop(frame):
+                del self.tracer.secondary_to_main_frames[secondary_frame]
 
         return result
 
@@ -669,7 +662,7 @@ def loops(node):
             parent = node.parent
         except AttributeError:
             break
-        if isinstance(parent, (ast.FunctionDef, ast.ClassDef)):
+        if isinstance(parent, ast.FunctionDef):
             break
 
         is_containing_loop = (((isinstance(parent, ast.For) and parent.iter is not node or
@@ -692,9 +685,3 @@ def loops(node):
 
     result.reverse()
     return tuple(result)
-
-
-def non_comprehension_frame(frame):
-    while frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
-        frame = frame.f_back
-    return frame

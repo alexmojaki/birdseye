@@ -31,7 +31,7 @@ from cached_property import cached_property
 from cheap_repr import cheap_repr, try_register_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from birdseye.db import Database, retry_db
-from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop, non_comprehension_frame
+from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
@@ -149,15 +149,10 @@ class BirdsEye(TreeTracerBase):
         if _tracing_recursively(frame):
             return None
 
+        if frame.f_code not in self._code_infos:
+            return None
+
         if node._is_interesting_expression:
-
-            # Find the frame corresponding to the function call if we're inside a comprehension
-            original_frame = frame
-            frame = non_comprehension_frame(frame)
-
-            if frame.f_code not in self._code_infos:
-                return None
-
             # If this is an expression statement and the last statement
             # in the body, the value is returned from the cell magic
             # to be displayed as usual
@@ -166,7 +161,7 @@ class BirdsEye(TreeTracerBase):
                     and node.parent is node.parent.parent.body[-1]):
                 self._ipython_cell_value = value
 
-            if is_obvious_builtin(node, self.stack[original_frame].expression_values[node]):
+            if is_obvious_builtin(node, self.stack[frame].expression_values[node]):
                 return None
 
             frame_info = self.stack[frame]
@@ -262,7 +257,7 @@ class BirdsEye(TreeTracerBase):
         frame_info.iteration = Iteration()
 
         code_info = self._code_infos[frame.f_code]
-        if isinstance(enter_info.enter_node.parent, (ast.Module, ast.ClassDef)):
+        if isinstance(enter_info.enter_node.parent, ast.Module):
             arguments = []
         else:
             f_locals = frame.f_locals.copy()  # type: Dict[str, Any]
@@ -278,7 +273,7 @@ class BirdsEye(TreeTracerBase):
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
-        prev = self.stack.get(non_comprehension_frame(enter_info.caller_frame))
+        prev = self.stack.get(enter_info.caller_frame)
         if prev:
             inner_calls = getattr(prev, 'inner_calls', None)
             if inner_calls is not None:
@@ -455,25 +450,25 @@ class BirdsEye(TreeTracerBase):
             nodes_by_lineno = {
                 node.lineno: node
                 for node in traced_file.nodes
-                if isinstance(node, (ast.FunctionDef, ast.ClassDef))
+                if isinstance(node, ast.FunctionDef)
             }
 
             def find_code(root_code):
                 # type: (CodeType) -> None
                 for code in root_code.co_consts:  # type: CodeType
-                    if not inspect.iscode(code):
+                    if not inspect.iscode(code) or code.co_name.startswith('<'):
                         continue
 
                     find_code(code)
 
-                    if code.co_name.startswith('<'):
-                        return
-
                     lineno = code.co_firstlineno
-                    node = nodes_by_lineno[lineno]
+                    node = nodes_by_lineno.get(lineno)
+                    if not node:
+                        continue
+
                     self._trace(
                         code.co_name, filename, traced_file, code,
-                        typ={ast.FunctionDef: 'function', ast.ClassDef: 'class'}[type(node)],
+                        typ='function',
                         source=source,
                         start_lineno=lineno,
                         end_lineno=node.last_token.end[0] + 1,

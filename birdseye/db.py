@@ -142,7 +142,7 @@ class Database(object):
             id = Column(Integer, Sequence('function_id_seq'), primary_key=True)
             file = Column(Text)
             name = Column(Text)
-            type = Column(Text)  # function, class, or module
+            type = Column(Text)  # function or module
             html_body = Column(LongText)
             lineno = Column(Integer)
             data = Column(LongText)

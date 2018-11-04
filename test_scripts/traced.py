@@ -9,10 +9,17 @@ def m():
     qwe = 9
     str(qwe)
 
-    @deco
     class A:
         for i in range(3):
             str(i * i)
+
+        class B:
+            str([[i * 2 for i in range(j)]
+                 for j in range(3)])
+
+        (lambda *_: 9)(None)
+        (lambda x: [i * x for i in range(3)])(8)
+        str({(lambda x: i + x)(7) for i in range(3)})
 
         @deco
         def foo(self):
@@ -20,7 +27,6 @@ def m():
             str(1 + 2 + x)
             return self
 
-        @deco
         def bar(self):
             return 1 + 3
 
