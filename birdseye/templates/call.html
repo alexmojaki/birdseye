@@ -73,7 +73,7 @@
 
             function checkLatest() {
                 $.get(
-                    '/api/file/' + func_file + '/function/' + func_name + '/latest_call/'
+                    '/api/file/' + func_file + '/__function__/' + func_name + '/latest_call/'
                 ).done(function (data) {
                     if (data.url === location.pathname) {
                         return;
