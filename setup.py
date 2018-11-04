@@ -1,20 +1,24 @@
 import os
 from sys import version_info
 import re
+import codecs
 
 from setuptools import setup
 
 
 package = 'birdseye'
+dirname = os.path.dirname(__file__)
+
+
+def file_to_string(*path):
+    with codecs.open(os.path.join(dirname, *path), encoding='utf8') as f:
+        return f.read()
+
 
 # __version__ is defined inside the package, but we can't import
 # it because it imports dependencies which may not be installed yet,
 # so we extract it manually
-init_path = os.path.join(os.path.dirname(__file__),
-                         package,
-                         '__init__.py')
-with open(init_path) as f:
-    contents = f.read()
+contents = file_to_string(package, '__init__.py')
 __version__ = re.search(r"__version__ = '([.\d]+)'", contents).group(1)
 
 
@@ -34,7 +38,10 @@ if version_info[0] == 2:
 
 setup(name=package,
       version=__version__,
-      description='Quick, convenient, expression-centric, graphical Python debugger using the AST',
+      description='Graphical Python debugger which lets you easily view '
+                  'the values of all evaluated expressions',
+      long_description=file_to_string('README.rst'),
+      long_description_content_type='test/x-rst',
       classifiers=[
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python',
