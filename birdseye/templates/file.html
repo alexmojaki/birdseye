@@ -35,9 +35,11 @@
             <ul class="no-bullet">
             {% for func in funcs_of_type %}
                 <li>
-                    <a href="{{ url_for('call_view', call_id=func.id) }}">
-                        <i class="glyphicon glyphicon-play-circle"></i>
-                    </a>
+                    {% if func.id %}
+                        <a href="{{ url_for('call_view', call_id=func.id) }}">
+                            <i class="glyphicon glyphicon-play-circle"></i>
+                        </a>
+                    {% endif %}
                     <a class="code-font"
                        href="{{ url_for('func_view', path=full_path, func_name=func.name) }}">
                         {{ func.name }}

@@ -80,11 +80,13 @@ def index(session):
 def file_view(session, path):
     path = fix_abs_path(path)
 
+    # Get all calls and functions in this file
     filtered_calls = (session.query(*(Call.basic_columns + Function.basic_columns))
                       .join(Function)
                       .filter_by(file=path)
                       .subquery('filtered_calls'))
 
+    # Get the latest call *time* for each function in the file
     latest_calls = session.query(
         filtered_calls.c.name,
         sqlalchemy.func.max(filtered_calls.c.start_time).label('maxtime')
@@ -92,6 +94,7 @@ def file_view(session, path):
         filtered_calls.c.name,
     ).subquery('latest_calls')
 
+    # Get the latest call for each function
     query = session.query(filtered_calls).join(
         latest_calls,
         sqlalchemy.and_(
@@ -100,6 +103,15 @@ def file_view(session, path):
         )
     ).order_by(filtered_calls.c.start_time.desc())
     funcs = group_by_attr(query, 'type')
+
+    # Add any functions which were never called
+    all_funcs = sorted(session.query(Function.name, Function.type)
+                       .filter_by(file=path)
+                       .distinct())
+    func_names = {row.name for row in query}
+    for func in all_funcs:
+        if func.name not in func_names:
+            funcs[func.type].append(func)
 
     return render_template('file.html',
                            funcs=funcs,
