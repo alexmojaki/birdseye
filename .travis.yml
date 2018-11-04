@@ -11,6 +11,10 @@ env:
   - DB=sqlite
   - DB=mysql
   - DB=postgres
+os:
+  - windows
+  - linux
+  - osx
 services:
   - mysql
   - postgresql
