@@ -108,7 +108,7 @@ def file_view(session, path):
                            short_path=basename(path))
 
 
-@app.route('/file/<file:path>/function/<func_name>')
+@app.route('/file/<file:path>/__function__/<func_name>')
 @db.provide_session
 def func_view(session, path, func_name):
     path = fix_abs_path(path)
@@ -126,7 +126,7 @@ def func_view(session, path, func_name):
                            calls=calls)
 
 
-@app.route('/api/file/<file:path>/function/<func_name>/latest_call/')
+@app.route('/api/file/<file:path>/__function__/<func_name>/latest_call/')
 @db.provide_session
 def latest_call(session, path, func_name):
     path = fix_abs_path(path)
