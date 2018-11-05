@@ -23,8 +23,7 @@ from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import json_to_file, file_to_json, string_to_file, retry, only
-from sqlalchemy.exc import OperationalError
+from littleutils import json_to_file, file_to_json, string_to_file, only
 
 import tests
 from tests.utils import SharedCounter
@@ -162,7 +161,6 @@ def byteify(x):
 def normalise_call_data(call_data):
     """
     Replace type indices with type names.
-    Sort non-numeric attributes and dict items inside expanded values.
     Sort type_names.
     :type call_data: str
     :rtype: dict
@@ -181,19 +179,11 @@ def normalise_call_data(call_data):
                 result.append(type_index)
             else:
                 result.append(types[type_index])
+            result.append(x[2])
 
-            non_numeric = []
-            for y in x[2:]:
-                if isinstance(y, list):
-                    y = [y[0], fix(y[1])]
-                    if y[0].isdigit():
-                        result.append(y)
-                    else:
-                        non_numeric.append(y)
-                else:
-                    result.append(y)
-            non_numeric.sort()
-            result.extend(non_numeric)
+            for y in x[3:]:
+                y[1] = fix(y[1])
+                result.append(y)
             return result
         else:
             return x

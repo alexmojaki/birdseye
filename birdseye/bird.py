@@ -1051,12 +1051,15 @@ class NodeValue(object):
 
         d = getattr(val, '__dict__', None)
         if d:
-            for k, v in islice(_safe_iter(d, iteritems), samples['attributes']):
+            for k in sorted(islice(_safe_iter(d),
+                                   samples['attributes']),
+                            key=str):
+                v = d[k]
                 if isinstance(v, TracedFile):
                     continue
                 add_child(str(k), v)
         else:
-            for s in (getattr(type(val), '__slots__', None) or ()):
+            for s in sorted(getattr(type(val), '__slots__', None) or ()):
                 try:
                     attr = getattr(val, s)
                 except AttributeError:
