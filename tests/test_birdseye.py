@@ -16,7 +16,7 @@ import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
 from copy import copy
-from functools import partial, wraps
+from functools import partial
 from importlib import import_module
 from time import sleep
 from unittest import skipUnless
@@ -647,11 +647,8 @@ def f((x, y), z):
 
     def test_first_check(self):
         def deco(f):
-            @wraps(f)
-            def wrapper(*args, **kwargs):
-                return f(*args, **kwargs)
-
-            return wrapper
+            f.attr = 3
+            return f
 
         # Correct order, everything fine
         @deco
