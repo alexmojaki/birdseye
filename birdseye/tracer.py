@@ -195,6 +195,11 @@ class TreeTracerBase(object):
         Returns a version of the passed function with the AST modified to
         trigger the tracing hooks.
         """
+        if not isinstance(func, FunctionType):
+            raise ValueError('You can only trace user-defined functions. '
+                             'The birdseye decorator must be applied first, '
+                             'at the bottom of the list.')
+
         try:
             if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
                 raise ValueError('You cannot trace async functions')
@@ -221,6 +226,10 @@ class TreeTracerBase(object):
         # because it can contain context which affects the function code,
         # e.g. enclosing functions and classes or __future__ imports
         traced_file = self.compile(source, filename, flags)
+
+        if func.__dict__:
+            raise ValueError('The birdseye decorator must be applied first, '
+                             'at the bottom of the list.')
 
         # Then we have to recursively search through the newly compiled
         # code to find the code we actually want corresponding to this function

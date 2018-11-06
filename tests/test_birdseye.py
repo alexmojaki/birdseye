@@ -16,7 +16,7 @@ import unittest
 import weakref
 from collections import namedtuple, Set, Mapping
 from copy import copy
-from functools import partial
+from functools import partial, wraps
 from importlib import import_module
 from time import sleep
 from unittest import skipUnless
@@ -644,6 +644,28 @@ def f((x, y), z):
             self.assertEqual(f(4), 12)
         finally:
             eye.enter_call = call
+
+    def test_first_check(self):
+        def deco(f):
+            @wraps(f)
+            def wrapper(*args, **kwargs):
+                return f(*args, **kwargs)
+
+            return wrapper
+
+        # Correct order, everything fine
+        @deco
+        @eye
+        def baz():
+            pass
+
+        with self.assertRaises(ValueError):
+            # @eye should notice it was applied second
+            # because of __wrapped__ attribute
+            @eye
+            @deco
+            def baz():
+                pass
 
     def test_concurrency(self):
         from multiprocessing.dummy import Pool as ThreadPool
