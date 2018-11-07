@@ -5,7 +5,7 @@ from future import standard_library
 standard_library.install_aliases()
 from future.utils import iteritems
 from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union, cast
-from types import FrameType, TracebackType, CodeType, FunctionType
+from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
 import typing
 
 import ast
@@ -962,6 +962,9 @@ class NodeValue(object):
                 pass
             else:
                 result.set_meta('len', length)
+
+        if isinstance(val, ModuleType):
+            level = min(level, 2)
 
         add_child = partial(result.add_child, samples, level - 1)
 
