@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block head %}
     <script>
+        var call_url = "{{ url_for('call_view', call_id='') }}";
         $(function () {
             $('.call-row').each(function (i, row) {
-                $(row).find('td').wrapInner("<a href='/call/" + row.dataset.id + (
+                $(row).find('td').wrapInner("<a href='" + call_url + row.dataset.id + (
                     i > 0 ? '?not-newest=1' : ''
                 ) + "'></a>");
             })
