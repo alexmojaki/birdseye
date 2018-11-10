@@ -143,3 +143,27 @@ This will start the server and show a browser pane with the UI inside VS Code.
 
 You can also search for birdseye under settings for configuration and possibly
 troubleshooting.
+
+PythonAnywhere
+--------------
+
+This isn't really an integration, just some instructions.
+
+The birdseye server needs to run in a web app for you to access it. You can either use a dedicated web app, or if you can't afford to spare one, combine it with an existing app.
+
+To use a dedicated web app, create a new web app, choose any framework you want (manual configuration will do), and in the WSGI configuration file ``/var/www/your_domain_com_wsgi.py`` put the following code::
+
+    from birdseye.server import app as application
+
+To combine with an existing web app, add this code at the end of the WSGI file::
+
+    import birdseye.server
+    from werkzeug.wsgi import DispatcherMiddleware
+
+    application = DispatcherMiddleware(application, {
+        '/birdseye': birdseye.server.app
+    })
+
+Here ``application`` should already be defined higher up as the WSGI object for your original web app. Then your existing web app should be unaffected, except that you can also go to ``your.domain.com/birdseye`` to view the birdseye UI. You can also choose another prefix instead of ``'/birdseye'``.
+
+Either way, you should also ensure that your web app is secure, as birdseye will expose your code and data. Under the Security section of your web app configuration, enable Force HTTPS and Password protection, choose a username and password, then reload the web app.
