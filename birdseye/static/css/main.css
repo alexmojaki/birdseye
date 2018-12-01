@@ -61,7 +61,6 @@
     height: 10px;
     width: 100%;
     cursor: ns-resize;
-    background-image: url("/static/img/handle.png");
     background-repeat: no-repeat;
     background-position: center;
 }

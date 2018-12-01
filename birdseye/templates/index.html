@@ -19,8 +19,8 @@ def foo():</pre>
             <p>Read more documentation
                 <a href="https://birdseye.readthedocs.io/en/latest/quickstart.html">here</a>.
             </p>
-            <script src="/static/js/libs/highlight.pack.js"></script>
-            <link rel="stylesheet" href="/static/css/hljs.min.css">
+            <script src="{{ url_for('static', filename='js/libs/highlight.pack.js') }}"></script>
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/hljs.min.css') }}">
             <script>
                 hljs.highlightBlock(document.getElementById("example-code"));
             </script>

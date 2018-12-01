@@ -335,7 +335,7 @@ class TreeTracerBase(object):
             if isinstance(node, ast.ClassDef):
                 frame = frame.f_back
 
-        if frame.f_code.co_name == '<lambda>':
+        if frame.f_code.co_name in ('<lambda>', '<genexpr>'):
             return None
 
         self.secondary_to_main_frames[original_frame] = frame

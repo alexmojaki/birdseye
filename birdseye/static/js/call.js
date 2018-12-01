@@ -91,7 +91,7 @@ $(function () {
         } else if (type_index === -2) {
             icon = 'glyphicon glyphicon-ok';
         } else {
-            icon = '/static/img/type_icons/';
+            icon = static_url + 'img/type_icons/';
             if (is_special) {
                 if ('str NoneType complex float int list tuple dict set'.indexOf(type_name) > -1) {
                     icon += type_name;
@@ -317,7 +317,7 @@ $(function () {
 
                     var inner_calls = value[2].inner_calls || [];
                     var place_link = function (inner_call, css) {
-                        var link = $('<a class="inner-call" href="/call/' + inner_call + '">' +
+                        var link = $('<a class="inner-call" href="' + call_url + inner_call + '">' +
                             '<span class="glyphicon glyphicon-share-alt"></span>' +
                             '</a>')
                             .css(css);
