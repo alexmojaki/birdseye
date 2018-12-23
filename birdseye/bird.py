@@ -422,6 +422,7 @@ class BirdsEye(TreeTracerBase):
             filename = inspect.getsourcefile(frame)
             if filename is not None:
                 context -= 1
+        filename = os.path.abspath(filename)
 
         if frame.f_globals.get('__name__') != '__main__':
             if PY3 and self._treetrace_hidden_with_stmt.__name__ not in frame.f_globals:
