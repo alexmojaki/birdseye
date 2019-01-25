@@ -600,7 +600,7 @@ class _StmtContext(object):
             exc_node = node
             frame_info.exc_value = exc_val
 
-            # Call the after_expr hook if the exception was raised by an exception
+            # Call the after_expr hook if the exception was raised by an expression
             expression_stack = frame_info.expression_stack
             if expression_stack:
                 exc_node = expression_stack[-1]
