@@ -270,7 +270,6 @@ def main(argv=sys.argv[1:]):
 
     args = parser.parse_args(argv)
     app.run(
-        debug=True,
         port=args.port,
         host=args.host,
         use_reloader=os.environ.get('BIRDSEYE_RELOADER') == '1',
