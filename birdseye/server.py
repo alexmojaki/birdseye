@@ -248,7 +248,7 @@ def calls_by_body_hash(session, body_hash):
 @app.route('/api/body_hashes_present/', methods=['POST'])
 @db.provide_session
 def body_hashes_present(session):
-    hashes = request.json
+    hashes = request.get_json()
     query = (session.query(Function.body_hash, sqlalchemy.func.count(Call.id))
              .outerjoin(Call)
              .filter(Function.body_hash.in_(hashes))
