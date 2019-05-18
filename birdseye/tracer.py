@@ -45,42 +45,50 @@ class TracedFile(object):
     def __init__(self, tracer, source, filename, flags):
         # type: (TreeTracerBase, str, str, int) -> None
         # Here the source code is parsed, modified, and compiled
-        root = compile(source, filename, 'exec', ast.PyCF_ONLY_AST | flags, dont_inherit=True)  # type: ast.Module
+        self.root = compile(source, filename, 'exec', ast.PyCF_ONLY_AST | flags, dont_inherit=True)  # type: ast.Module
 
         self.nodes = []  # type: List[ast.AST]
 
-        def set_basic_node_attributes():
-            self.nodes = []  # type: List[ast.AST]
-            for node in ast.walk(root):  # type: ast.AST
-                for child in ast.iter_child_nodes(node):
-                    child.parent = node
-                node._tree_index = len(self.nodes)
-                self.nodes.append(node)
+        self.set_basic_node_attributes()
 
-            # Mark __future__ imports and anything before (i.e. module docstrings)
-            # to be ignored by the AST transformer
-            for i, stmt in enumerate(root.body):
-                if is_future_import(stmt):
-                    for s in root.body[:i + 1]:
-                        for node in ast.walk(s):
-                            node._visit_ignore = True
-
-        set_basic_node_attributes()
-
-        new_root = tracer.parse_extra(root, source, filename)
+        new_root = tracer.parse_extra(self.root, source, filename)
         if new_root is not None:
-            root = new_root
+            self.root = new_root
 
-        set_basic_node_attributes()
+        self.set_basic_node_attributes()
+        self.set_enter_call_nodes()
 
-        new_root = deepcopy(root)
+        new_root = deepcopy(self.root)
         new_root = _NodeVisitor().visit(new_root)
 
         self.code = compile(new_root, filename, "exec", dont_inherit=True, flags=flags)  # type: CodeType
-        self.root = root
         self.tracer = tracer
         self.source = source
         self.filename = filename
+
+    def set_basic_node_attributes(self):
+        self.nodes = []  # type: List[ast.AST]
+        for node in ast.walk(self.root):  # type: ast.AST
+            for child in ast.iter_child_nodes(node):
+                child.parent = node
+            node._tree_index = len(self.nodes)
+            self.nodes.append(node)
+
+        # Mark __future__ imports and anything before (i.e. module docstrings)
+        # to be ignored by the AST transformer
+        for i, stmt in enumerate(self.root.body):
+            if is_future_import(stmt):
+                for s in self.root.body[:i + 1]:
+                    for node in ast.walk(s):
+                        node._visit_ignore = True
+
+    def set_enter_call_nodes(self):
+        for node in self.nodes:
+            if isinstance(node, (ast.Module, ast.FunctionDef)):
+                for stmt in node.body:
+                    if not is_future_import(stmt):
+                        stmt._enter_call_node = True
+                        break
 
 
 class FrameInfo(object):
@@ -579,7 +587,7 @@ class _StmtContext(object):
         tracer = self.tracer
         node = self.node
         frame = self.frame
-        if isinstance(node.parent, (ast.FunctionDef, ast.Module)) and node is node.parent.body[0]:
+        if getattr(node, '_enter_call_node', False):
             tracer._enter_call(node, frame)
         frame_info = tracer.stack[frame]
         frame_info.expression_stack = []
