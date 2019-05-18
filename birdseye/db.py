@@ -125,9 +125,9 @@ class Database(object):
             @property
             def result(self):
                 if self.success:
-                    return self.return_value
+                    return str(self.return_value)
                 else:
-                    return self.exception
+                    return str(self.exception)
 
             @property
             def arguments_list(self):

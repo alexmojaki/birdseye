@@ -421,7 +421,7 @@ class TestBirdsEye(unittest.TestCase):
         for name, calls in golden_calls.items():
             data = [dict(
                 arguments=byteify(json.loads(normalise_addresses(call.arguments))),
-                return_value=byteify(normalise_addresses(call.return_value)),
+                return_value=byteify(normalise_addresses(str(call.return_value))),
                 exception=call.exception,
                 traceback=call.traceback,
                 data=normalise_call_data(normalise_addresses(call.data)),
