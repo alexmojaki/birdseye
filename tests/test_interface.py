@@ -149,7 +149,7 @@ class TestInterface(unittest.TestCase):
 
         # Expanding values
         x_node = find_expr('x')
-        tree_node = select(x_node, 'x = list: ', '[1, 3, 5, 7, 9, 11, ...]')
+        tree_node = select(x_node, 'x = list: ', '[1, 3, 5, ..., 25, 27, 29]')
         tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in tree_nodes(tree_node)],
