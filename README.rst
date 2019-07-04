@@ -13,6 +13,7 @@ For example:
 
 You can use birdseye no matter how you run or edit your code. Just `pip install birdseye`, add the `@eye` decorator
 as seen above, run your function however you like, and view the results in your browser.
+It's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
 
 Rather than stepping through lines, move back and forth through loop
 iterations and see how the values of selected expressions change:
@@ -48,5 +49,3 @@ ordered by time, letting you see what happens at a glance:
 .. inclusion-end-marker
 
 **Read more documentation** `here <http://birdseye.readthedocs.io>`_
-
-birdseye can be used no matter how you write or run your code, requiring only a browser for the interface. But it's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
