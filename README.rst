@@ -11,6 +11,9 @@ For example:
 .. figure:: https://i.imgur.com/rtZEhHb.gif
    :alt: Hovering over expressions
 
+You can use birdseye no matter how you run or edit your code. Just `pip install birdseye`, add the `@eye` decorator
+as seen above, run your function however you like, and view the results in your browser.
+
 Rather than stepping through lines, move back and forth through loop
 iterations and see how the values of selected expressions change:
 
