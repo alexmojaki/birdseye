@@ -11,7 +11,7 @@ For example:
 .. figure:: https://i.imgur.com/rtZEhHb.gif
    :alt: Hovering over expressions
 
-You can use birdseye no matter how you run or edit your code. Just `pip install birdseye`, add the `@eye` decorator
+You can use birdseye no matter how you run or edit your code. Just ``pip install birdseye``, add the ``@eye`` decorator
 as seen above, run your function however you like, and view the results in your browser.
 It's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
 
