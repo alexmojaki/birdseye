@@ -3,6 +3,11 @@ Integrations with other tools
 
 birdseye can be used no matter how you write or run your code, requiring only a browser for the interface. But it's also integrated with some common tools for a smoother experience.
 
+snoop
+-----
+
+`snoop <https://github.com/alexmojaki/snoop>`_ is another fairly similar debugging library by the same author. Typically you decorate a function with ``@snoop`` and it will log the execution and local variables in the function. You can also use the ``@spy`` decorator which is a combination of ``@snoop`` and ``@eye`` from birdseye so that you get the best of both worlds with no extra effort.
+
 PyCharm plugin
 --------------
 
