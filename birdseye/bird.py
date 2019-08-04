@@ -1010,7 +1010,7 @@ class NodeValue(object):
             for i, (formatted_name, label) in enumerate(zip(val.columns.format(sparsify=False),
                                                             val.columns)):
                 if i in indices:
-                    add_child(formatted_name, val[label])
+                    add_child(formatted_name, val.iloc[:, i])
 
             return result
 
