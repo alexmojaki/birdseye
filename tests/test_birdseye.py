@@ -438,7 +438,8 @@ class TestBirdsEye(unittest.TestCase):
             if 1:  # change to 0 to write new data instead of reading and testing
                 self.assertEqual(data, byteify(file_to_json(path)))
             else:
-                json_to_file(data, path)
+                with open(path, 'w') as f:
+                    json.dump(data, f, indent=2, sort_keys=True)
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:
