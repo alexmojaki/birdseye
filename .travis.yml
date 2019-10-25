@@ -6,7 +6,10 @@ python:
   - 3.5
   - 3.6
   - 3.7
-install: pip install Flask gunicorn psycopg2 mysql-connector-python selenium
+  - 3.8
+install:
+  - pip install .[tests]
+  - pip install gunicorn psycopg2 mysql-connector-python
 script:
   - ./misc/travis_test.sh
 env:
