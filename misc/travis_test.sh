@@ -27,7 +27,7 @@ gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e
 
-python setup.py test
+pytest
 result=$?
 kill $(ps aux | grep birdseye.server:app | grep -v grep | awk '{print $2}')
 exit ${result}

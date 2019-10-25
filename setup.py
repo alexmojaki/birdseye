@@ -40,6 +40,7 @@ tests_require = [
     'bs4',
     'selenium',
     'requests',
+    'pytest',
 ]
 
 setup(name=package,
