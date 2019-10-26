@@ -1,5 +1,5 @@
 dist: xenial
-sudo: false
+sudo: required
 language: python
 python:
   - 2.7
@@ -13,17 +13,28 @@ python:
 install:
   - pip install .[tests]
   - pip install gunicorn psycopg2 mysql-connector-python
+before_script:
+  - sh -e /etc/init.d/xvfb start
 script:
   - ./misc/travis_test.sh
 env:
   - DB=sqlite
   - DB=mysql
   - DB=postgres
+  global:
+    - DISPLAY=':99.0'
 services:
   - mysql
   - postgresql
 notifications:
   email: false
 
+# Based on https://gist.github.com/chitoku-k/67068aa62aa3f077f5307ca9a822ce74
 addons:
-  chrome: stable
+  apt:
+    update: true
+    sources:
+      - google-chrome
+    packages:
+      - dpkg
+      - google-chrome-stable
