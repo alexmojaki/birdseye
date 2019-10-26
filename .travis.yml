@@ -13,6 +13,7 @@ python:
 install:
   - pip install .[tests]
   - pip install gunicorn psycopg2 mysql-connector-python
+  - npm install chromedriver
 
 script:
   - ./misc/travis_test.sh
