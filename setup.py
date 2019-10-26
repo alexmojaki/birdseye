@@ -36,6 +36,13 @@ if version_info[0] == 2:
     install_requires += ['backports.functools_lru_cache',
                          'typing']
 
+tests_require = [
+    'bs4',
+    'selenium',
+    'requests',
+    'pytest',
+]
+
 setup(name=package,
       version=__version__,
       description='Graphical Python debugger which lets you easily view '
@@ -58,11 +65,10 @@ setup(name=package,
       license='MIT',
       packages=[package],
       install_requires=install_requires,
-      tests_require=[
-          'bs4',
-          'selenium',
-          'requests',
-      ],
+      tests_require=tests_require,
+      extras_require={
+          'tests': tests_require,
+      },
       test_suite='tests',
       entry_points={
           'console_scripts': ['birdseye=birdseye.server:main'],

@@ -23,7 +23,7 @@ from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Calla
 from types import FrameType, TracebackType, CodeType, FunctionType
 
 from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
-    is_future_import
+    is_future_import, PYPY
 
 
 class TracedFile(object):
@@ -326,7 +326,7 @@ class TreeTracerBase(object):
 
     def _main_frame(self, node):
         # type: (ast.AST) -> Optional[FrameType]
-        frame = sys._getframe(2)
+        frame = sys._getframe(2 + PYPY)
         result = self.secondary_to_main_frames.get(frame)
         if result:
             return result

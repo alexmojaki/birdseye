@@ -1981,7 +1981,7 @@
           {}
         ],
         "242": [
-          "<generator object main.<locals>.<genexpr> at 0xABC>",
+          "<generator object main.<loca...nexpr> at 0xABC>",
           "generator",
           {}
         ],
@@ -2823,33 +2823,33 @@
         ],
         "317": {
           "0": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of []>",
+            "method",
             {}
           ],
           "1": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of [[]]>",
+            "method",
             {}
           ],
           "2": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of [[], [1, 2]]>",
+            "method",
             {}
           ],
           "3": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [94, 95, 96, ..., 279, 280, 281], [95, 96, 97, ..., 282, 283, 284], [96, 97, 98, ..., 285, 286, 287]]>",
+            "method",
             {}
           ],
           "4": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [95, 96, 97, ..., 282, 283, 284], [96, 97, 98, ..., 285, 286, 287], [97, 98, 99, ..., 288, 289, 290]]>",
+            "method",
             {}
           ],
           "5": [
-            "<built-in method append of list object at 0xABC>",
-            "builtin_function_or_method",
+            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [96, 97, 98, ..., 285, 286, 287], [97, 98, 99, ..., 288, 289, 290], [98, 99, 100, ..., 291, 292, 293]]>",
+            "method",
             {}
           ]
         },
@@ -3208,7 +3208,7 @@
           [
             "__dict__",
             [
-              "<attribute '__dict__' of 'MyClass' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -3266,7 +3266,7 @@
           [
             "__weakref__",
             [
-              "<attribute '__weakref__' of 'MyClass' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -3295,7 +3295,7 @@
           [
             "__dict__",
             [
-              "<attribute '__dict__' of 'MyClass' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -3353,7 +3353,7 @@
           [
             "__weakref__",
             [
-              "<attribute '__weakref__' of 'MyClass' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -5139,131 +5139,131 @@
         "412": {
           "1": {
             "0": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of []>",
+              "method",
               {}
             ],
             "1": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [1]>",
+              "method",
               {}
             ]
           },
           "2": {
             "0": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of []>",
+              "method",
               {}
             ],
             "1": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [2]>",
+              "method",
               {}
             ],
             "2": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [2, 3]>",
+              "method",
               {}
             ],
             "3": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [2, 3, 4]>",
+              "method",
               {}
             ]
           },
           "3": {
             "0": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of []>",
+              "method",
               {}
             ],
             "1": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [97]>",
+              "method",
               {}
             ],
             "2": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [97, 98]>",
+              "method",
               {}
             ],
             "3": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [97, 98, 99, ..., 285, 286, 287]>",
+              "method",
               {}
             ],
             "4": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [97, 98, 99, ..., 286, 287, 288]>",
+              "method",
               {}
             ],
             "5": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [97, 98, 99, ..., 287, 288, 289]>",
+              "method",
               {}
             ]
           },
           "4": {
             "0": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of []>",
+              "method",
               {}
             ],
             "1": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [98]>",
+              "method",
               {}
             ],
             "2": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [98, 99]>",
+              "method",
               {}
             ],
             "3": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [98, 99, 100, ..., 288, 289, 290]>",
+              "method",
               {}
             ],
             "4": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [98, 99, 100, ..., 289, 290, 291]>",
+              "method",
               {}
             ],
             "5": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [98, 99, 100, ..., 290, 291, 292]>",
+              "method",
               {}
             ]
           },
           "5": {
             "0": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of []>",
+              "method",
               {}
             ],
             "1": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [99]>",
+              "method",
               {}
             ],
             "2": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [99, 100]>",
+              "method",
               {}
             ],
             "3": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [99, 100, 101, ..., 291, 292, 293]>",
+              "method",
               {}
             ],
             "4": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [99, 100, 101, ..., 292, 293, 294]>",
+              "method",
               {}
             ],
             "5": [
-              "<built-in method append of list object at 0xABC>",
-              "builtin_function_or_method",
+              "<bound method list.append of [99, 100, 101, ..., 293, 294, 295]>",
+              "method",
               {}
             ]
           }
@@ -7497,7 +7497,7 @@
           [
             "slot1",
             [
-              "<member 'slot1' of 'SlotClass' objects>",
+              "<member_descriptor object at 0xABC>",
               "member_descriptor",
               {}
             ]
@@ -10165,7 +10165,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -10177,13 +10176,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method_descriptor",
+        "method",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -12277,7 +12276,6 @@
         "MyClass",
         "NoneType",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12286,6 +12284,7 @@
         "getset_descriptor",
         "int",
         "list",
+        "method",
         "range",
         "set",
         "str",
@@ -12345,7 +12344,6 @@
         "MyClass",
         "NoneType",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12355,6 +12353,7 @@
         "getset_descriptor",
         "int",
         "list",
+        "method",
         "range",
         "set",
         "str",
@@ -12419,7 +12418,6 @@
         "MyClass",
         "NoneType",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12429,6 +12427,7 @@
         "getset_descriptor",
         "int",
         "list",
+        "method",
         "range",
         "set",
         "str",
@@ -12499,7 +12498,6 @@
         "NoneType",
         "SlotClass",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12510,6 +12508,7 @@
         "int",
         "list",
         "member_descriptor",
+        "method",
         "range",
         "set",
         "str",
@@ -12816,7 +12815,6 @@
         "NoneType",
         "SlotClass",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12827,6 +12825,7 @@
         "int",
         "list",
         "member_descriptor",
+        "method",
         "range",
         "set",
         "str",
@@ -12994,7 +12993,6 @@
         "NoneType",
         "SlotClass",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13005,6 +13003,7 @@
         "int",
         "list",
         "member_descriptor",
+        "method",
         "range",
         "set",
         "str",
@@ -13118,58 +13117,50 @@
           [
             "__doc__",
             [
-              "'islice(iterab...s an iterator.'",
+              "'Make an itera...rd line).\\n    '",
               "str",
               {
-                "len": 454
+                "len": 721
               }
-            ]
-          ],
-          [
-            "__getattribute__",
-            [
-              "<slot wrapper '__getattribut...f 'itertools.islice' objects>",
-              "wrapper_descriptor",
-              {}
             ]
           ],
           [
             "__iter__",
             [
-              "<slot wrapper '__iter__' of 'itertools.islice' objects>",
-              "wrapper_descriptor",
+              "<function islice.__iter__ at 0xABC>",
+              "function",
               {}
             ]
           ],
           [
             "__new__",
             [
-              "<built-in method __new__ of type object at 0xABC>",
-              "builtin_function_or_method",
+              "<staticmethod object at 0xABC>",
+              "staticmethod",
               {}
             ]
           ],
           [
             "__next__",
             [
-              "<slot wrapper '__next__' of 'itertools.islice' objects>",
-              "wrapper_descriptor",
+              "<function islice.__next__ at 0xABC>",
+              "function",
               {}
             ]
           ],
           [
             "__reduce__",
             [
-              "<method '__reduce__' of 'itertools.islice' objects>",
-              "method_descriptor",
+              "<function islice.__reduce__ at 0xABC>",
+              "function",
               {}
             ]
           ],
           [
             "__setstate__",
             [
-              "<method '__setstate__' of 'itertools.islice' objects>",
-              "method_descriptor",
+              "<function islice.__setstate__ at 0xABC>",
+              "function",
               {}
             ]
           ]
@@ -13247,7 +13238,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13259,13 +13249,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method_descriptor",
+        "method",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -13511,7 +13501,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13523,13 +13512,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method_descriptor",
+        "method",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -13721,7 +13710,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13733,13 +13721,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method_descriptor",
+        "method",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,

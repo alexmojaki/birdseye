@@ -46,7 +46,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -60,13 +59,12 @@
         "m.<locals>.A",
         "member_descriptor",
         "method",
-        "method_descriptor",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -225,17 +223,17 @@
         ],
         "105": {
           "0": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<setc...ambda> at 0xABC>",
             "function",
             {}
           ],
           "1": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<setc...ambda> at 0xABC>",
             "function",
             {}
           ],
           "2": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<setc...ambda> at 0xABC>",
             "function",
             {}
           ]
@@ -253,7 +251,7 @@
           {}
         ],
         "113": [
-          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+          "<test_scripts.traced.m.<loca...object at 0xABC>",
           "m.<locals>.A",
           {}
         ],
@@ -320,7 +318,7 @@
               [
                 "__dict__",
                 [
-                  "<attribute '__dict__' of 'B' objects>",
+                  "<getset_descriptor object at 0xABC>",
                   "getset_descriptor",
                   {}
                 ]
@@ -346,7 +344,7 @@
               [
                 "__weakref__",
                 [
-                  "<attribute '__weakref__' of 'B' objects>",
+                  "<getset_descriptor object at 0xABC>",
                   "getset_descriptor",
                   {}
                 ]
@@ -356,7 +354,7 @@
           [
             "__dict__",
             [
-              "<attribute '__dict__' of 'A' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -382,7 +380,7 @@
           [
             "__weakref__",
             [
-              "<attribute '__weakref__' of 'A' objects>",
+              "<getset_descriptor object at 0xABC>",
               "getset_descriptor",
               {}
             ]
@@ -599,7 +597,7 @@
           ]
         ],
         "38": [
-          "'{8, 9, 7}'",
+          "'{7, 8, 9}'",
           "str",
           {
             "len": 9
@@ -611,7 +609,7 @@
           {}
         ],
         "46": [
-          "<bound method m.<locals>.A.bar of <test_scripts.traced.m.<locals>.A object at 0xABC>>",
+          "<bound method m.<locals>.A.bar of <test_scripts.traced.m.<loca...object at 0xABC>>",
           "method",
           {}
         ],
@@ -656,7 +654,7 @@
           {}
         ],
         "60": [
-          "{8, 9, 7}",
+          "{7, 8, 9}",
           "set",
           {
             "len": 3
@@ -664,7 +662,7 @@
           [
             "<0>",
             [
-              "8",
+              "7",
               "int",
               {}
             ]
@@ -672,7 +670,7 @@
           [
             "<1>",
             [
-              "9",
+              "8",
               "int",
               {}
             ]
@@ -680,14 +678,14 @@
           [
             "<2>",
             [
-              "7",
+              "9",
               "int",
               {}
             ]
           ]
         ],
         "69": [
-          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+          "<test_scripts.traced.m.<loca...object at 0xABC>",
           "m.<locals>.A",
           {
             "inner_calls": [
@@ -801,7 +799,7 @@
           {}
         ],
         "93": [
-          "<bound method m.<locals>.A.foo of <test_scripts.traced.m.<locals>.A object at 0xABC>>",
+          "<bound method m.<locals>.A.foo of <test_scripts.traced.m.<loca...object at 0xABC>>",
           "method",
           {}
         ],
@@ -894,7 +892,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -908,13 +905,12 @@
         "m.<locals>.A",
         "member_descriptor",
         "method",
-        "method_descriptor",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -1643,7 +1639,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -1655,13 +1650,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method_descriptor",
+        "method",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -1708,7 +1703,7 @@
     "arguments": [
       [
         "self",
-        "<test_scripts.traced.m.<locals>.A object at 0xABC>"
+        "<test_scripts.traced.m.<loca...object at 0xABC>"
       ]
     ],
     "data": {
@@ -1752,7 +1747,7 @@
           }
         ],
         "65": [
-          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+          "<test_scripts.traced.m.<loca...object at 0xABC>",
           "m.<locals>.A",
           {}
         ],
@@ -1769,7 +1764,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -1783,13 +1777,12 @@
         "m.<locals>.A",
         "member_descriptor",
         "method",
-        "method_descriptor",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,
@@ -1880,14 +1873,14 @@
       "lineno": 24,
       "name": "foo"
     },
-    "return_value": "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+    "return_value": "<test_scripts.traced.m.<loca...object at 0xABC>",
     "traceback": null
   },
   {
     "arguments": [
       [
         "self",
-        "<test_scripts.traced.m.<locals>.A object at 0xABC>"
+        "<test_scripts.traced.m.<loca...object at 0xABC>"
       ]
     ],
     "data": {
@@ -1911,7 +1904,6 @@
         "SlotClass",
         "ValueError",
         "bool",
-        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -1925,13 +1917,12 @@
         "m.<locals>.A",
         "member_descriptor",
         "method",
-        "method_descriptor",
         "range",
         "set",
+        "staticmethod",
         "str",
         "tuple",
-        "type",
-        "wrapper_descriptor"
+        "type"
       ]
     },
     "exception": null,

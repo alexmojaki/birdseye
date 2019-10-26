@@ -2,6 +2,8 @@
 
 set -eux
 
+sudo cp node_modules/chromedriver/lib/chromedriver/chromedriver /usr/local/bin/chromedriver
+
 pip install -e .
 
 export DB=${DB:-sqlite}
@@ -27,7 +29,7 @@ gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e
 
-python setup.py test
+pytest -vv
 result=$?
 kill $(ps aux | grep birdseye.server:app | grep -v grep | awk '{print $2}')
 exit ${result}

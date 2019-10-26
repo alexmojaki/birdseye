@@ -18,12 +18,13 @@ from collections import namedtuple, Set, Mapping
 from copy import copy
 from functools import partial
 from importlib import import_module
+from multiprocessing.dummy import Pool as ThreadPool
 from time import sleep
 from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import json_to_file, file_to_json, string_to_file, only
+from littleutils import file_to_json, string_to_file, only
 
 import tests
 from tests.utils import SharedCounter
@@ -31,7 +32,7 @@ from tests.utils import SharedCounter
 str(tests)
 from birdseye import eye
 from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
-from birdseye.utils import PY2, PY3
+from birdseye.utils import PY2, PY3, PYPY
 
 Session = eye.db.Session
 Call = eye.db.Call
@@ -42,6 +43,7 @@ def bar():
     pass
 
 
+# noinspection PyStatementEffect
 @eye()
 def foo():
     x = 1
@@ -148,6 +150,7 @@ def byteify(x):
     if PY3:
         return x
 
+    # noinspection PyUnresolvedReferences
     if isinstance(x, dict):
         return dict((byteify(key), byteify(value)) for key, value in x.items())
     elif isinstance(x, list):
@@ -326,7 +329,7 @@ class TestBirdsEye(unittest.TestCase):
         for j in [3, 4]:
             i + j
         for k in [5]:
-            k            
+            k
                 '''.strip(): s,
                 '''
         for j in [3, 4]:
@@ -334,7 +337,7 @@ class TestBirdsEye(unittest.TestCase):
                 '''.strip(): {'0': s, '1': s},
                 '''
         for k in [5]:
-            k            
+            k
                 '''.strip(): {'0': s, '1': s},
                 'for n in [1, 2]': s,
                 '''
@@ -361,7 +364,7 @@ class TestBirdsEye(unittest.TestCase):
             '''.strip(): [loops['i']],
             '''
         for k in [5]:
-            k            
+            k
             '''.strip(): [loops['i']],
             'n': [loops['n']]
         }
@@ -432,13 +435,14 @@ class TestBirdsEye(unittest.TestCase):
                     data=byteify(json.loads(call.function.data)),
                 ),
             ) for call in calls]
-            version = re.match(r'\d\.\d', sys.version).group()
+            version = PYPY * 'pypy' + sys.version[:3]
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
             if 1:  # change to 0 to write new data instead of reading and testing
                 self.assertEqual(data, byteify(file_to_json(path)))
             else:
-                json_to_file(data, path)
+                with open(path, 'w') as f:
+                    json.dump(data, f, indent=2, sort_keys=True)
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:
@@ -665,13 +669,9 @@ def f((x, y), z):
                 pass
 
     def test_concurrency(self):
-        from multiprocessing.dummy import Pool as ThreadPool
-        from multiprocessing import Pool as ProcessPool
-
-        for Pool in [ThreadPool, ProcessPool]:
-            ids = get_call_ids(lambda: Pool(5).map(sleepy, range(25)))
-            results = [int(get_call_stuff(i).call.result) for i in ids]
-            self.assertEqual(sorted(results), list(range(0, 50, 2)))
+        ids = get_call_ids(lambda: ThreadPool(5).map(sleepy, range(25)))
+        results = [int(get_call_stuff(i).call.result) for i in ids]
+        self.assertEqual(sorted(results), list(range(0, 50, 2)))
 
     def test_middle_iterations(self):
         @eye
