@@ -2,7 +2,7 @@
 
 set -eux
 
-cp node_modules/chromedriver/lib/chromedriver/chromedriver /usr/local/bin/chromedriver
+sudo cp node_modules/chromedriver/lib/chromedriver/chromedriver /usr/local/bin/chromedriver
 
 pip install -e .
 
