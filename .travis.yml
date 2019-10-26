@@ -13,21 +13,20 @@ python:
 install:
   - pip install .[tests]
   - pip install gunicorn psycopg2 mysql-connector-python
-before_script:
-  - sh -e /etc/init.d/xvfb start
+
 script:
   - ./misc/travis_test.sh
+
 env:
-  global:
-    - DISPLAY=':99.0'
-  jobs:
-    - DB=sqlite
-    - DB=mysql
-    - DB=postgres
+  - DB=sqlite
+  - DB=mysql
+  - DB=postgres
 
 services:
   - mysql
   - postgresql
+  - xvfb
+
 notifications:
   email: false
 
