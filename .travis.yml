@@ -24,3 +24,6 @@ services:
   - postgresql
 notifications:
   email: false
+
+addons:
+  chrome: stable

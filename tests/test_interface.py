@@ -46,6 +46,7 @@ class TestInterface(unittest.TestCase):
     def setUp(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.set_window_size(1400, 1000)
         self.driver.implicitly_wait(2)
