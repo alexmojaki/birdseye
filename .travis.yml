@@ -18,11 +18,13 @@ before_script:
 script:
   - ./misc/travis_test.sh
 env:
-  - DB=sqlite
-  - DB=mysql
-  - DB=postgres
   global:
     - DISPLAY=':99.0'
+  jobs:
+    - DB=sqlite
+    - DB=mysql
+    - DB=postgres
+
 services:
   - mysql
   - postgresql
