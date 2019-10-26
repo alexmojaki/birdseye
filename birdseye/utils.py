@@ -2,6 +2,7 @@ from __future__ import print_function, division, absolute_import
 
 import ast
 import json
+import sys
 
 from future import standard_library
 
@@ -34,6 +35,7 @@ from littleutils import strip_required_prefix
 
 PY2 = version_info.major == 2
 PY3 = not PY2
+PYPY = 'pypy' in sys.version.lower()
 T = TypeVar('T')
 RT = TypeVar('RT')
 IPYTHON_FILE_PATH = 'IPython notebook or shell'

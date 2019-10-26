@@ -4,7 +4,7 @@ from future import standard_library
 
 standard_library.install_aliases()
 from future.utils import iteritems
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union, cast
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union
 from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
 import typing
 
@@ -1124,15 +1124,19 @@ def is_interesting_expression(node):
                   not any(is_interesting_expression(n) for n in ast.iter_child_nodes(node)))))
 
 
+# noinspection PyUnresolvedReferences
+builtins_dict = __builtins__
+if not isinstance(builtins_dict, dict):
+    builtins_dict = builtins_dict.__dict__
+
+
 def is_obvious_builtin(node, value):
     # type: (ast.expr, Any) -> bool
     """
     Return True if this node looks like a builtin and it really is
     (i.e. hasn't been shadowed).
     """
-    # noinspection PyUnresolvedReferences
-    builtins = cast(dict, __builtins__)
     return ((isinstance(node, ast.Name) and
-             node.id in builtins and
-             builtins[node.id] is value) or
+             node.id in builtins_dict and
+             builtins_dict[node.id] is value) or
             isinstance(node, getattr(ast, 'NameConstant', ())))

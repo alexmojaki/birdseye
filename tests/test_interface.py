@@ -10,6 +10,7 @@ from time import sleep
 import requests
 from littleutils import only
 from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.options import Options
 from birdseye import eye
 import unittest
 from threading import Thread
@@ -43,7 +44,9 @@ class TestInterface(unittest.TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.driver = webdriver.PhantomJS(service_args=['--webdriver-loglevel=DEBUG'])
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.set_window_size(1400, 1000)
         self.driver.implicitly_wait(2)
         if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
@@ -141,10 +144,10 @@ class TestInterface(unittest.TestCase):
         assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'exception_node')
         step(1, 1)
         self.assertEqual(tree_nodes()[-1].text, 'assert j : fine')
-        assert_classes(stmt, 'stmt', 'selected', 'box', 'hovering', 'has_value', 'value_none')
+        assert_classes(stmt, 'stmt', 'selected', 'box', 'has_value', 'value_none')
         step(1, 1)
         step(0, -1)
-        self.assertTrue({'stmt', 'stmt_uncovered', 'selected', 'box', 'hovering'} <= classes(stmt))
+        self.assertTrue({'stmt', 'stmt_uncovered', 'selected', 'box'} <= classes(stmt))
         step(1, -1)
 
         # Expanding values
