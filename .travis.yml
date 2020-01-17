@@ -31,10 +31,4 @@ notifications:
 
 # Based on https://gist.github.com/chitoku-k/67068aa62aa3f077f5307ca9a822ce74
 addons:
-  apt:
-    update: true
-    sources:
-      - google-chrome
-    packages:
-      - dpkg
-      - google-chrome-stable
+  chrome: stable
