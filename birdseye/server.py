@@ -266,7 +266,7 @@ def main(argv=sys.argv[1:]):
 
     parser = argparse.ArgumentParser(description="Bird's Eye: A graphical Python debugger")
     parser.add_argument('-p', '--port', help='HTTP port, default is 7777', default=7777, type=int)
-    parser.add_argument('--host', help="HTTP host, default is 'localhost'", default='localhost')
+    parser.add_argument('--host', help="HTTP host, default is '127.0.0.1'", default=None)
 
     args = parser.parse_args(argv)
     app.run(
