@@ -40,13 +40,13 @@ from birdseye import __version__
 
 try:
     from numpy import ndarray
-except ImportError:
+except Exception:
     class ndarray(object):
         pass
 
 try:
     from pandas import DataFrame, Series
-except ImportError:
+except Exception:
     class DataFrame(object):
         pass
 
@@ -56,7 +56,7 @@ except ImportError:
 
 try:
     from django.db.models import QuerySet
-except ImportError:
+except Exception:
     class QuerySet(object):
         pass
 
