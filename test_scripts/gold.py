@@ -30,8 +30,7 @@ def complex_args(pos1, pos2, key1=3, key2=4, *args, **kwargs):
 
 @eye
 def gen():
-    for i in range(6):
-        yield i
+    yield from range(6)
 
 
 @eye
@@ -81,7 +80,7 @@ def main():
 
     c = MyClass() + MyClass()
     c.list = [[x + y for x in range(100)] for y in range(100)]
-    dummy(n for n in range(4))
+    dummy(iter(range(4)))
     dummy({n for n in range(4)})
     dummy({n: n for n in range(1)})
     with c:

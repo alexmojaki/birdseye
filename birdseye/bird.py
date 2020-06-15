@@ -892,7 +892,7 @@ class TypeRegistry(object):
 
     def names(self):
         # type: () -> List[str]
-        rev = dict((v, k) for k, v in self.data.items())
+        rev = {v: k for k, v in self.data.items()}
         return [safe_qualname(rev[i]) for i in range(len(rev))]
 
 
@@ -1075,8 +1075,7 @@ class NodeValue(object):
 
 def _safe_iter(val, f=lambda x: x):
     try:
-        for x in f(val):
-            yield x
+        yield from f(val)
     except:
         pass
 

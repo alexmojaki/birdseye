@@ -314,10 +314,7 @@ class TreeTracerBase(object):
             @wraps(actual_func)
             def wrapper(*args, **kwargs):
                 trace_call = kwargs.pop('trace_call', False)
-                if trace_call:
-                    f = traced
-                else:
-                    f = actual_func
+                f = traced if trace_call else actual_func
                 return f(*args, **kwargs)
 
             return wrapper
@@ -494,9 +491,11 @@ class _NodeVisitor(ast.NodeTransformer):
     def generic_visit(self, node):
         # type: (ast.AST) -> ast.AST
         if not getattr(node, '_visit_ignore', False):
-            if (isinstance(node, ast.expr) and
-                    not (hasattr(node, "ctx") and not isinstance(node.ctx, ast.Load)) and
-                    not isinstance(node, getattr(ast, 'Starred', ()))):
+            if (
+                isinstance(node, ast.expr)
+                and (not hasattr(node, "ctx") or isinstance(node.ctx, ast.Load))
+                and not isinstance(node, getattr(ast, 'Starred', ()))
+            ):
                 return self.visit_expr(node)
             if isinstance(node, ast.stmt):
                 return self.visit_stmt(node)

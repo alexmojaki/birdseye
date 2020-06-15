@@ -60,8 +60,11 @@ class BirdsEyeFinder(object):
 
     def find_spec(self, fullname, path, target=None):
         spec = self._find_plain_spec(fullname, path, target)
-        if spec is None or not (hasattr(spec.loader, 'get_source') and
-                                callable(spec.loader.get_source)):  # noqa: E128
+        if (
+            spec is None
+            or not hasattr(spec.loader, 'get_source')
+            or not callable(spec.loader.get_source)
+        ):  # noqa: E128
             if fullname != 'org':
                 # stdlib pickle.py at line 94 contains a ``from
                 # org.python.core for Jython which is always failing,
@@ -79,7 +82,7 @@ class BirdsEyeFinder(object):
             logging.exception('Loader for %s raised an error', fullname)
             return
 
-        if not source or 'birdseye' not in source:
+        if not (source and 'birdseye' in source):
             return
 
         deep, trace_stmt = should_trace(source)

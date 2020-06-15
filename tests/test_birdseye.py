@@ -62,9 +62,7 @@ def foo():
             i + j
         for k in [5]:
             k
-    z = 0
-    while z < 2:
-        z += 1
+    for z in range(1, 3):
         z ** z
     bar()
     {'list': [n for n in [1, 2]]}
@@ -152,7 +150,7 @@ def byteify(x):
 
     # noinspection PyUnresolvedReferences
     if isinstance(x, dict):
-        return dict((byteify(key), byteify(value)) for key, value in x.items())
+        return {byteify(key): byteify(value) for key, value in x.items()}
     elif isinstance(x, list):
         return [byteify(element) for element in x]
     elif isinstance(x, unicode):
@@ -173,7 +171,7 @@ def normalise_call_data(call_data):
 
     def fix(x):
         if isinstance(x, dict):
-            return dict((key, fix(value)) for key, value in x.items())
+            return {key: fix(value) for key, value in x.items()}
         elif isinstance(x, list):
             result = [x[0]]
             type_index = x[1]

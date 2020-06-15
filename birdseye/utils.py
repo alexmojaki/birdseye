@@ -41,10 +41,7 @@ RT = TypeVar('RT')
 IPYTHON_FILE_PATH = 'IPython notebook or shell'
 FILE_SENTINEL_NAME = '$$__FILE__$$'
 
-if PY2:
-    Text = unicode
-else:
-    Text = str
+Text = unicode if PY2 else str
 
 
 def path_leaf(path):
