@@ -1,7 +1,7 @@
 import sys
 from importlib import import_module
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 
 # birdseye has so many dependencies that simply importing them can be quite slow

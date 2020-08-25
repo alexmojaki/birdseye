@@ -41,6 +41,8 @@ tests_require = [
     'selenium',
     'requests',
     'pytest',
+    'numpy',
+    'pandas',
 ]
 
 setup(name=package,
