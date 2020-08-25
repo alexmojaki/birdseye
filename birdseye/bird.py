@@ -1099,7 +1099,10 @@ def _repr_series_one_line(x, helper):
     pieces = []
     maxparts = _repr_series_one_line.maxparts
     for i in _sample_indices(n, maxparts):
-        k = x.index[i:i + 1].format(sparsify=False)[0]
+        try:
+            k = x.index[i:i + 1].format(sparsify=False)[0]
+        except TypeError:
+            k = x.index[i:i + 1].format()[0]
         v = x.iloc[i]
         pieces.append('%s = %s' % (k, cheap_repr(v, newlevel)))
     if n > maxparts + 2:

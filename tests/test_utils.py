@@ -5,6 +5,10 @@ import unittest
 from tempfile import mkstemp
 
 import asttokens
+import numpy as np
+import pandas as pd
+from cheap_repr import cheap_repr
+
 from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, source_without_decorators, PY3, \
     read_source_file
 
@@ -134,6 +138,13 @@ class TestUtils(unittest.TestCase):
                                  n.name == 'define')
         self.assertEqual(define_source,
                          source_without_decorators(tokens, function_def_node)[1])
+
+    def test_cheap_repr(self):
+        arr = np.arange(10000)
+        arr = arr.reshape((100, 100))
+        df = pd.DataFrame(arr)
+        series = df[0]
+        self.assertEqual(cheap_repr(series), "0 = 0; 1 = 100; 2 = 200; ...; 97 = 9700; 98 = 9800; 99 = 9900")
 
 
 if __name__ == '__main__':
