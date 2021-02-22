@@ -41,7 +41,7 @@ tests_require = [
     'selenium',
     'requests',
     'pytest',
-    'numpy',
+    'numpy>=1.16.5',
     'pandas',
 ]
 

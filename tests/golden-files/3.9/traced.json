@@ -1,0 +1,1789 @@
+[
+  {
+    "arguments": [],
+    "data": {
+      "loop_iterations": {},
+      "node_values": {
+        "1": [
+          "",
+          -2,
+          {}
+        ],
+        "13": [
+          "None",
+          "NoneType",
+          {
+            "inner_calls": [
+              "test_id_15"
+            ]
+          }
+        ],
+        "2": [
+          "",
+          -2,
+          {}
+        ],
+        "27": [
+          "<function m at 0xABC>",
+          "function",
+          {}
+        ],
+        "3": [
+          "",
+          -2,
+          {}
+        ],
+        "4": [
+          "",
+          -2,
+          {}
+        ]
+      },
+      "num_special_types": 11,
+      "type_names": [
+        "MyClass",
+        "NoneType",
+        "SlotClass",
+        "ValueError",
+        "bool",
+        "builtin_function_or_method",
+        "complex",
+        "dict",
+        "float",
+        "frozenset",
+        "function",
+        "generator",
+        "getset_descriptor",
+        "int",
+        "islice",
+        "list",
+        "m.<locals>.A",
+        "member_descriptor",
+        "method",
+        "method_descriptor",
+        "range",
+        "set",
+        "slice",
+        "str",
+        "tuple",
+        "type",
+        "wrapper_descriptor"
+      ]
+    },
+    "exception": null,
+    "function": {
+      "data": {
+        "node_loops": {
+          "103": [
+            104
+          ],
+          "105": [
+            82
+          ],
+          "117": [
+            100,
+            118
+          ],
+          "118": [
+            100
+          ],
+          "121": [
+            104
+          ],
+          "123": [
+            104
+          ],
+          "127": [
+            82
+          ],
+          "136": [
+            100,
+            118
+          ],
+          "140": [
+            100
+          ],
+          "150": [
+            82
+          ],
+          "152": [
+            82
+          ],
+          "157": [
+            100
+          ],
+          "158": [
+            100
+          ],
+          "34": [
+            19
+          ],
+          "53": [
+            19
+          ],
+          "72": [
+            19
+          ],
+          "73": [
+            19
+          ],
+          "81": [
+            82
+          ],
+          "95": [
+            19
+          ],
+          "97": [
+            19
+          ],
+          "99": [
+            100
+          ]
+        }
+      },
+      "html_body": "<span data-index=\"1\" class=\"stmt\">import birdseye.trace_module_deep</span>\n\n\n<span data-index=\"2\" class=\"stmt\">def deco(f):\n    <span data-index=\"7\" class=\"stmt\">return <span data-index=\"15\" class=\"\">f</span></span></span>\n\n\n<span data-index=\"3\" class=\"stmt\">def m():\n    <span data-index=\"9\" class=\"stmt\">qwe = 9</span>\n    <span data-index=\"10\" class=\"stmt\"><span data-index=\"18\" class=\"\"><span data-index=\"30\" class=\"\">str</span>(<span data-index=\"31\" class=\"\">qwe</span>)</span></span>\n\n<span data-index=\"11\" class=\"stmt\">    class A:\n<span data-index=\"19\" class=\"loop stmt\">        for i in <span data-index=\"33\" class=\"\"><span data-index=\"51\" class=\"\">range</span>(3)</span>:\n            <span data-index=\"34\" class=\"stmt\"><span data-index=\"53\" class=\"\"><span data-index=\"72\" class=\"\">str</span>(<span data-index=\"73\" class=\"\"><span data-index=\"95\" class=\"\">i</span> * <span data-index=\"97\" class=\"\">i</span></span>)</span></span></span>\n\n<span data-index=\"20\" class=\"stmt\">        class B:\n            <span data-index=\"35\" class=\"stmt\"><span data-index=\"54\" class=\"\"><span data-index=\"74\" class=\"\">str</span>(<span data-index=\"75\" class=\"\">[<span data-index=\"99\" class=\"\">[<span data-index=\"117\" class=\"\"><span data-index=\"136\" class=\"\">i</span> * 2</span> <span data-index=\"118\" class=\"loop\">for i in <span data-index=\"140\" class=\"\"><span data-index=\"157\" class=\"\">range</span>(<span data-index=\"158\" class=\"\">j</span>)</span></span>]</span>\n                 <span data-index=\"100\" class=\"loop\">for j in <span data-index=\"120\" class=\"\"><span data-index=\"142\" class=\"\">range</span>(3)</span></span>]</span>)</span></span></span>\n\n        <span data-index=\"21\" class=\"stmt\"><span data-index=\"36\" class=\"\">(<span data-index=\"55\" class=\"\">lambda *_: 9</span>)(None)</span></span>\n        <span data-index=\"22\" class=\"stmt\"><span data-index=\"37\" class=\"\">(<span data-index=\"57\" class=\"\">lambda x: <span data-index=\"79\" class=\"\">[<span data-index=\"103\" class=\"\"><span data-index=\"121\" class=\"\">i</span> * <span data-index=\"123\" class=\"\">x</span></span> <span data-index=\"104\" class=\"loop\">for i in <span data-index=\"125\" class=\"\"><span data-index=\"147\" class=\"\">range</span>(3)</span></span>]</span></span>)(8)</span></span>\n        <span data-index=\"23\" class=\"stmt\"><span data-index=\"38\" class=\"\"><span data-index=\"59\" class=\"\">str</span>(<span data-index=\"60\" class=\"\">{<span data-index=\"81\" class=\"\">(<span data-index=\"105\" class=\"\">lambda x: <span data-index=\"127\" class=\"\"><span data-index=\"150\" class=\"\">i</span> + <span data-index=\"152\" class=\"\">x</span></span></span>)(7)</span> <span data-index=\"82\" class=\"loop\">for i in <span data-index=\"108\" class=\"\"><span data-index=\"129\" class=\"\">range</span>(3)</span></span>}</span>)</span></span>\n\n<span data-index=\"24\" class=\"stmt\">        @<span data-index=\"43\" class=\"\">deco</span>\n        def foo(self):\n            <span data-index=\"40\" class=\"stmt\">x = <span data-index=\"63\" class=\"\">9 * 0</span></span>\n            <span data-index=\"41\" class=\"stmt\"><span data-index=\"64\" class=\"\"><span data-index=\"87\" class=\"\">str</span>(<span data-index=\"88\" class=\"\"><span data-index=\"110\" class=\"\">1 + 2</span> + <span data-index=\"112\" class=\"\">x</span></span>)</span></span>\n            <span data-index=\"42\" class=\"stmt\">return <span data-index=\"65\" class=\"\">self</span></span></span>\n\n<span data-index=\"25\" class=\"stmt\">        def bar(self):\n            <span data-index=\"45\" class=\"stmt\">return <span data-index=\"68\" class=\"\">1 + 3</span></span></span></span>\n\n    <span data-index=\"12\" class=\"stmt\"><span data-index=\"26\" class=\"\"><span data-index=\"46\" class=\"\"><span data-index=\"69\" class=\"\"><span data-index=\"93\" class=\"\"><span data-index=\"113\" class=\"\"><span data-index=\"135\" class=\"\">A</span>()</span>.foo</span>()</span>.bar</span>()</span></span></span>\n\n\n<span data-index=\"4\" class=\"stmt\"><span data-index=\"13\" class=\"\"><span data-index=\"27\" class=\"\">m</span>()</span></span>",
+      "lineno": 1,
+      "name": "$$__FILE__$$"
+    },
+    "return_value": "None",
+    "traceback": null
+  },
+  {
+    "arguments": [],
+    "data": {
+      "loop_iterations": {
+        "100": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {
+              "118": [
+                {
+                  "index": 0,
+                  "loops": {}
+                }
+              ]
+            }
+          },
+          {
+            "index": 2,
+            "loops": {
+              "118": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                }
+              ]
+            }
+          }
+        ],
+        "19": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {}
+          },
+          {
+            "index": 2,
+            "loops": {}
+          }
+        ],
+        "82": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {}
+          },
+          {
+            "index": 2,
+            "loops": {}
+          }
+        ]
+      },
+      "node_values": {
+        "10": [
+          "",
+          -2,
+          {}
+        ],
+        "100": [
+          "",
+          -2,
+          {}
+        ],
+        "105": {
+          "0": [
+            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "function",
+            {}
+          ],
+          "1": [
+            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "function",
+            {}
+          ],
+          "2": [
+            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "function",
+            {}
+          ]
+        },
+        "108": [
+          "range(0, 3)",
+          "range",
+          {
+            "len": 3
+          }
+        ],
+        "11": [
+          "",
+          -2,
+          {}
+        ],
+        "113": [
+          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+          "m.<locals>.A",
+          {}
+        ],
+        "117": {
+          "1": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ]
+          },
+          "2": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ],
+            "1": [
+              "2",
+              "int",
+              {}
+            ]
+          }
+        },
+        "118": {
+          "0": [
+            "",
+            -2,
+            {}
+          ],
+          "1": [
+            "",
+            -2,
+            {}
+          ],
+          "2": [
+            "",
+            -2,
+            {}
+          ]
+        },
+        "12": [
+          "",
+          -2,
+          {}
+        ],
+        "120": [
+          "range(0, 3)",
+          "range",
+          {
+            "len": 3
+          }
+        ],
+        "135": [
+          "<class 'test_scripts.traced.m.<locals>.A'>",
+          "type",
+          {},
+          [
+            "B",
+            [
+              "<class 'test_scripts.traced.m.<locals>.A.B'>",
+              "type",
+              {},
+              [
+                "__dict__",
+                [
+                  "<attribute '__dict__' of 'B' objects>",
+                  "getset_descriptor",
+                  {}
+                ]
+              ],
+              [
+                "__doc__",
+                [
+                  "None",
+                  "NoneType",
+                  {}
+                ]
+              ],
+              [
+                "__module__",
+                [
+                  "'test_scripts.traced'",
+                  "str",
+                  {
+                    "len": 19
+                  }
+                ]
+              ],
+              [
+                "__weakref__",
+                [
+                  "<attribute '__weakref__' of 'B' objects>",
+                  "getset_descriptor",
+                  {}
+                ]
+              ]
+            ]
+          ],
+          [
+            "__dict__",
+            [
+              "<attribute '__dict__' of 'A' objects>",
+              "getset_descriptor",
+              {}
+            ]
+          ],
+          [
+            "__doc__",
+            [
+              "None",
+              "NoneType",
+              {}
+            ]
+          ],
+          [
+            "__module__",
+            [
+              "'test_scripts.traced'",
+              "str",
+              {
+                "len": 19
+              }
+            ]
+          ],
+          [
+            "__weakref__",
+            [
+              "<attribute '__weakref__' of 'A' objects>",
+              "getset_descriptor",
+              {}
+            ]
+          ],
+          [
+            "bar",
+            [
+              "<function m.<locals>.A.bar at 0xABC>",
+              "function",
+              {}
+            ]
+          ],
+          [
+            "foo",
+            [
+              "<function m.<locals>.A.foo at 0xABC>",
+              "function",
+              {}
+            ]
+          ],
+          [
+            "i",
+            [
+              "2",
+              "int",
+              {}
+            ]
+          ]
+        ],
+        "136": {
+          "1": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ]
+          },
+          "2": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ],
+            "1": [
+              "1",
+              "int",
+              {}
+            ]
+          }
+        },
+        "140": {
+          "0": [
+            "range(0, 0)",
+            "range",
+            {
+              "len": 0
+            }
+          ],
+          "1": [
+            "range(0, 1)",
+            "range",
+            {
+              "len": 1
+            }
+          ],
+          "2": [
+            "range(0, 2)",
+            "range",
+            {
+              "len": 2
+            }
+          ]
+        },
+        "158": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ]
+        },
+        "18": [
+          "'9'",
+          "str",
+          {
+            "len": 1
+          }
+        ],
+        "19": [
+          "",
+          -2,
+          {}
+        ],
+        "20": [
+          "",
+          -2,
+          {}
+        ],
+        "21": [
+          "",
+          -2,
+          {}
+        ],
+        "22": [
+          "",
+          -2,
+          {}
+        ],
+        "23": [
+          "",
+          -2,
+          {}
+        ],
+        "24": [
+          "",
+          -2,
+          {
+            "inner_calls": [
+              "test_id_16"
+            ]
+          }
+        ],
+        "25": [
+          "",
+          -2,
+          {}
+        ],
+        "26": [
+          "4",
+          "int",
+          {
+            "inner_calls": [
+              "test_id_17"
+            ]
+          }
+        ],
+        "31": [
+          "9",
+          "int",
+          {}
+        ],
+        "33": [
+          "range(0, 3)",
+          "range",
+          {
+            "len": 3
+          }
+        ],
+        "34": {
+          "0": [
+            "",
+            -2,
+            {}
+          ],
+          "1": [
+            "",
+            -2,
+            {}
+          ],
+          "2": [
+            "",
+            -2,
+            {}
+          ]
+        },
+        "35": [
+          "",
+          -2,
+          {}
+        ],
+        "36": [
+          "9",
+          "int",
+          {}
+        ],
+        "37": [
+          "[0, 8, 16]",
+          "list",
+          {
+            "len": 3
+          },
+          [
+            "0",
+            [
+              "0",
+              "int",
+              {}
+            ]
+          ],
+          [
+            "1",
+            [
+              "8",
+              "int",
+              {}
+            ]
+          ],
+          [
+            "2",
+            [
+              "16",
+              "int",
+              {}
+            ]
+          ]
+        ],
+        "38": [
+          "'{8, 9, 7}'",
+          "str",
+          {
+            "len": 9
+          }
+        ],
+        "43": [
+          "<function deco at 0xABC>",
+          "function",
+          {}
+        ],
+        "46": [
+          "<bound method m.<locals>.A.bar of <test_scripts.traced.m.<locals>.A object at 0xABC>>",
+          "method",
+          {}
+        ],
+        "53": {
+          "0": [
+            "'0'",
+            "str",
+            {
+              "len": 1
+            }
+          ],
+          "1": [
+            "'1'",
+            "str",
+            {
+              "len": 1
+            }
+          ],
+          "2": [
+            "'4'",
+            "str",
+            {
+              "len": 1
+            }
+          ]
+        },
+        "54": [
+          "'[[], [0], [0, 2]]'",
+          "str",
+          {
+            "len": 17
+          }
+        ],
+        "55": [
+          "<function m.<locals>.A.<lambda> at 0xABC>",
+          "function",
+          {}
+        ],
+        "57": [
+          "<function m.<locals>.A.<lambda> at 0xABC>",
+          "function",
+          {}
+        ],
+        "60": [
+          "{8, 9, 7}",
+          "set",
+          {
+            "len": 3
+          },
+          [
+            "<0>",
+            [
+              "8",
+              "int",
+              {}
+            ]
+          ],
+          [
+            "<1>",
+            [
+              "9",
+              "int",
+              {}
+            ]
+          ],
+          [
+            "<2>",
+            [
+              "7",
+              "int",
+              {}
+            ]
+          ]
+        ],
+        "69": [
+          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
+          "m.<locals>.A",
+          {}
+        ],
+        "73": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "4",
+            "int",
+            {}
+          ]
+        },
+        "75": [
+          "[[], [0], [0, 2]]",
+          "list",
+          {
+            "len": 3
+          },
+          [
+            "0",
+            [
+              "[]",
+              "list",
+              {
+                "len": 0
+              }
+            ]
+          ],
+          [
+            "1",
+            [
+              "[0]",
+              "list",
+              {
+                "len": 1
+              },
+              [
+                "0",
+                [
+                  "0",
+                  "int",
+                  {}
+                ]
+              ]
+            ]
+          ],
+          [
+            "2",
+            [
+              "[0, 2]",
+              "list",
+              {
+                "len": 2
+              },
+              [
+                "0",
+                [
+                  "0",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "1",
+                [
+                  "2",
+                  "int",
+                  {}
+                ]
+              ]
+            ]
+          ]
+        ],
+        "81": {
+          "0": [
+            "7",
+            "int",
+            {}
+          ],
+          "1": [
+            "8",
+            "int",
+            {}
+          ],
+          "2": [
+            "9",
+            "int",
+            {}
+          ]
+        },
+        "82": [
+          "",
+          -2,
+          {}
+        ],
+        "9": [
+          "",
+          -2,
+          {}
+        ],
+        "93": [
+          "<bound method m.<locals>.A.foo of <test_scripts.traced.m.<locals>.A object at 0xABC>>",
+          "method",
+          {}
+        ],
+        "95": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ]
+        },
+        "97": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ]
+        },
+        "99": {
+          "0": [
+            "[]",
+            "list",
+            {
+              "len": 0
+            }
+          ],
+          "1": [
+            "[0]",
+            "list",
+            {
+              "len": 1
+            },
+            [
+              "0",
+              [
+                "0",
+                "int",
+                {}
+              ]
+            ]
+          ],
+          "2": [
+            "[0, 2]",
+            "list",
+            {
+              "len": 2
+            },
+            [
+              "0",
+              [
+                "0",
+                "int",
+                {}
+              ]
+            ],
+            [
+              "1",
+              [
+                "2",
+                "int",
+                {}
+              ]
+            ]
+          ]
+        }
+      },
+      "num_special_types": 11,
+      "type_names": [
+        "MyClass",
+        "NoneType",
+        "SlotClass",
+        "ValueError",
+        "bool",
+        "builtin_function_or_method",
+        "complex",
+        "dict",
+        "float",
+        "frozenset",
+        "function",
+        "generator",
+        "getset_descriptor",
+        "int",
+        "islice",
+        "list",
+        "m.<locals>.A",
+        "member_descriptor",
+        "method",
+        "method_descriptor",
+        "range",
+        "set",
+        "slice",
+        "str",
+        "tuple",
+        "type",
+        "wrapper_descriptor"
+      ]
+    },
+    "exception": null,
+    "function": {
+      "data": {
+        "loop_ranges": [
+          {
+            "end": 61,
+            "start": 60,
+            "tree_index": 19
+          },
+          {
+            "end": 314,
+            "start": 313,
+            "tree_index": 82
+          },
+          {
+            "end": 181,
+            "start": 180,
+            "tree_index": 100
+          },
+          {
+            "end": 257,
+            "start": 256,
+            "tree_index": 104
+          },
+          {
+            "end": 145,
+            "start": 144,
+            "tree_index": 118
+          }
+        ],
+        "node_loops": {
+          "103": [
+            104
+          ],
+          "105": [
+            82
+          ],
+          "117": [
+            100,
+            118
+          ],
+          "118": [
+            100
+          ],
+          "121": [
+            104
+          ],
+          "123": [
+            104
+          ],
+          "127": [
+            82
+          ],
+          "136": [
+            100,
+            118
+          ],
+          "140": [
+            100
+          ],
+          "150": [
+            82
+          ],
+          "152": [
+            82
+          ],
+          "157": [
+            100
+          ],
+          "158": [
+            100
+          ],
+          "34": [
+            19
+          ],
+          "53": [
+            19
+          ],
+          "72": [
+            19
+          ],
+          "73": [
+            19
+          ],
+          "81": [
+            82
+          ],
+          "95": [
+            19
+          ],
+          "97": [
+            19
+          ],
+          "99": [
+            100
+          ]
+        },
+        "node_ranges": [
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 1,
+            "end": 509,
+            "start": 0,
+            "tree_index": 3
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 2,
+            "end": 20,
+            "start": 13,
+            "tree_index": 9
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 2,
+            "end": 33,
+            "start": 25,
+            "tree_index": 10
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 2,
+            "end": 488,
+            "start": 35,
+            "tree_index": 11
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 2,
+            "end": 509,
+            "start": 494,
+            "tree_index": 12
+          },
+          {
+            "classes": [],
+            "depth": 3,
+            "end": 33,
+            "start": 25,
+            "tree_index": 18
+          },
+          {
+            "classes": [
+              "loop",
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 97,
+            "start": 48,
+            "tree_index": 19
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 195,
+            "start": 99,
+            "tree_index": 20
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 225,
+            "start": 205,
+            "tree_index": 21
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 274,
+            "start": 234,
+            "tree_index": 22
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 328,
+            "start": 283,
+            "tree_index": 23
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 439,
+            "start": 330,
+            "tree_index": 24
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 3,
+            "end": 488,
+            "start": 441,
+            "tree_index": 25
+          },
+          {
+            "classes": [],
+            "depth": 3,
+            "end": 509,
+            "start": 494,
+            "tree_index": 26
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 28,
+            "start": 25,
+            "tree_index": 30
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 32,
+            "start": 29,
+            "tree_index": 31
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 73,
+            "start": 65,
+            "tree_index": 33
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 97,
+            "start": 87,
+            "tree_index": 34
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 195,
+            "start": 128,
+            "tree_index": 35
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 225,
+            "start": 205,
+            "tree_index": 36
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 274,
+            "start": 234,
+            "tree_index": 37
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 328,
+            "start": 283,
+            "tree_index": 38
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 388,
+            "start": 379,
+            "tree_index": 40
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 415,
+            "start": 401,
+            "tree_index": 41
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 439,
+            "start": 428,
+            "tree_index": 42
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 343,
+            "start": 339,
+            "tree_index": 43
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 488,
+            "start": 476,
+            "tree_index": 45
+          },
+          {
+            "classes": [],
+            "depth": 4,
+            "end": 507,
+            "start": 494,
+            "tree_index": 46
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 70,
+            "start": 65,
+            "tree_index": 51
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 97,
+            "start": 87,
+            "tree_index": 53
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 195,
+            "start": 128,
+            "tree_index": 54
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 218,
+            "start": 206,
+            "tree_index": 55
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 270,
+            "start": 235,
+            "tree_index": 57
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 286,
+            "start": 283,
+            "tree_index": 59
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 327,
+            "start": 287,
+            "tree_index": 60
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 388,
+            "start": 383,
+            "tree_index": 63
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 415,
+            "start": 401,
+            "tree_index": 64
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 439,
+            "start": 435,
+            "tree_index": 65
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 488,
+            "start": 483,
+            "tree_index": 68
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 503,
+            "start": 494,
+            "tree_index": 69
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 90,
+            "start": 87,
+            "tree_index": 72
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 96,
+            "start": 91,
+            "tree_index": 73
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 131,
+            "start": 128,
+            "tree_index": 74
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 194,
+            "start": 132,
+            "tree_index": 75
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 270,
+            "start": 245,
+            "tree_index": 79
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 308,
+            "start": 288,
+            "tree_index": 81
+          },
+          {
+            "classes": [
+              "loop"
+            ],
+            "depth": 6,
+            "end": 326,
+            "start": 309,
+            "tree_index": 82
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 404,
+            "start": 401,
+            "tree_index": 87
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 414,
+            "start": 405,
+            "tree_index": 88
+          },
+          {
+            "classes": [],
+            "depth": 6,
+            "end": 501,
+            "start": 494,
+            "tree_index": 93
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 92,
+            "start": 91,
+            "tree_index": 95
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 96,
+            "start": 95,
+            "tree_index": 97
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 158,
+            "start": 133,
+            "tree_index": 99
+          },
+          {
+            "classes": [
+              "loop"
+            ],
+            "depth": 7,
+            "end": 193,
+            "start": 176,
+            "tree_index": 100
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 251,
+            "start": 246,
+            "tree_index": 103
+          },
+          {
+            "classes": [
+              "loop"
+            ],
+            "depth": 7,
+            "end": 269,
+            "start": 252,
+            "tree_index": 104
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 304,
+            "start": 289,
+            "tree_index": 105
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 326,
+            "start": 318,
+            "tree_index": 108
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 410,
+            "start": 405,
+            "tree_index": 110
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 414,
+            "start": 413,
+            "tree_index": 112
+          },
+          {
+            "classes": [],
+            "depth": 7,
+            "end": 497,
+            "start": 494,
+            "tree_index": 113
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 139,
+            "start": 134,
+            "tree_index": 117
+          },
+          {
+            "classes": [
+              "loop"
+            ],
+            "depth": 8,
+            "end": 157,
+            "start": 140,
+            "tree_index": 118
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 193,
+            "start": 185,
+            "tree_index": 120
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 247,
+            "start": 246,
+            "tree_index": 121
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 251,
+            "start": 250,
+            "tree_index": 123
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 269,
+            "start": 261,
+            "tree_index": 125
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 304,
+            "start": 299,
+            "tree_index": 127
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 323,
+            "start": 318,
+            "tree_index": 129
+          },
+          {
+            "classes": [],
+            "depth": 8,
+            "end": 495,
+            "start": 494,
+            "tree_index": 135
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 135,
+            "start": 134,
+            "tree_index": 136
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 157,
+            "start": 149,
+            "tree_index": 140
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 190,
+            "start": 185,
+            "tree_index": 142
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 266,
+            "start": 261,
+            "tree_index": 147
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 300,
+            "start": 299,
+            "tree_index": 150
+          },
+          {
+            "classes": [],
+            "depth": 9,
+            "end": 304,
+            "start": 303,
+            "tree_index": 152
+          },
+          {
+            "classes": [],
+            "depth": 10,
+            "end": 154,
+            "start": 149,
+            "tree_index": 157
+          },
+          {
+            "classes": [],
+            "depth": 10,
+            "end": 156,
+            "start": 155,
+            "tree_index": 158
+          }
+        ]
+      },
+      "html_body": "<span data-index=\"3\" class=\"stmt\">def m():\n    <span data-index=\"9\" class=\"stmt\">qwe = 9</span>\n    <span data-index=\"10\" class=\"stmt\"><span data-index=\"18\" class=\"\"><span data-index=\"30\" class=\"\">str</span>(<span data-index=\"31\" class=\"\">qwe</span>)</span></span>\n\n<span data-index=\"11\" class=\"stmt\">    class A:\n<span data-index=\"19\" class=\"loop stmt\">        for i in <span data-index=\"33\" class=\"\"><span data-index=\"51\" class=\"\">range</span>(3)</span>:\n            <span data-index=\"34\" class=\"stmt\"><span data-index=\"53\" class=\"\"><span data-index=\"72\" class=\"\">str</span>(<span data-index=\"73\" class=\"\"><span data-index=\"95\" class=\"\">i</span> * <span data-index=\"97\" class=\"\">i</span></span>)</span></span></span>\n\n<span data-index=\"20\" class=\"stmt\">        class B:\n            <span data-index=\"35\" class=\"stmt\"><span data-index=\"54\" class=\"\"><span data-index=\"74\" class=\"\">str</span>(<span data-index=\"75\" class=\"\">[<span data-index=\"99\" class=\"\">[<span data-index=\"117\" class=\"\"><span data-index=\"136\" class=\"\">i</span> * 2</span> <span data-index=\"118\" class=\"loop\">for i in <span data-index=\"140\" class=\"\"><span data-index=\"157\" class=\"\">range</span>(<span data-index=\"158\" class=\"\">j</span>)</span></span>]</span>\n                 <span data-index=\"100\" class=\"loop\">for j in <span data-index=\"120\" class=\"\"><span data-index=\"142\" class=\"\">range</span>(3)</span></span>]</span>)</span></span></span>\n\n        <span data-index=\"21\" class=\"stmt\"><span data-index=\"36\" class=\"\">(<span data-index=\"55\" class=\"\">lambda *_: 9</span>)(None)</span></span>\n        <span data-index=\"22\" class=\"stmt\"><span data-index=\"37\" class=\"\">(<span data-index=\"57\" class=\"\">lambda x: <span data-index=\"79\" class=\"\">[<span data-index=\"103\" class=\"\"><span data-index=\"121\" class=\"\">i</span> * <span data-index=\"123\" class=\"\">x</span></span> <span data-index=\"104\" class=\"loop\">for i in <span data-index=\"125\" class=\"\"><span data-index=\"147\" class=\"\">range</span>(3)</span></span>]</span></span>)(8)</span></span>\n        <span data-index=\"23\" class=\"stmt\"><span data-index=\"38\" class=\"\"><span data-index=\"59\" class=\"\">str</span>(<span data-index=\"60\" class=\"\">{<span data-index=\"81\" class=\"\">(<span data-index=\"105\" class=\"\">lambda x: <span data-index=\"127\" class=\"\"><span data-index=\"150\" class=\"\">i</span> + <span data-index=\"152\" class=\"\">x</span></span></span>)(7)</span> <span data-index=\"82\" class=\"loop\">for i in <span data-index=\"108\" class=\"\"><span data-index=\"129\" class=\"\">range</span>(3)</span></span>}</span>)</span></span>\n\n<span data-index=\"24\" class=\"stmt\">        @<span data-index=\"43\" class=\"\">deco</span>\n        def foo(self):\n            <span data-index=\"40\" class=\"stmt\">x = <span data-index=\"63\" class=\"\">9 * 0</span></span>\n            <span data-index=\"41\" class=\"stmt\"><span data-index=\"64\" class=\"\"><span data-index=\"87\" class=\"\">str</span>(<span data-index=\"88\" class=\"\"><span data-index=\"110\" class=\"\">1 + 2</span> + <span data-index=\"112\" class=\"\">x</span></span>)</span></span>\n            <span data-index=\"42\" class=\"stmt\">return <span data-index=\"65\" class=\"\">self</span></span></span>\n\n<span data-index=\"25\" class=\"stmt\">        def bar(self):\n            <span data-index=\"45\" class=\"stmt\">return <span data-index=\"68\" class=\"\">1 + 3</span></span></span></span>\n\n    <span data-index=\"12\" class=\"stmt\"><span data-index=\"26\" class=\"\"><span data-index=\"46\" class=\"\"><span data-index=\"69\" class=\"\"><span data-index=\"93\" class=\"\"><span data-index=\"113\" class=\"\"><span data-index=\"135\" class=\"\">A</span>()</span>.foo</span>()</span>.bar</span>()</span></span></span>",
+      "lineno": 8,
+      "name": "m"
+    },
+    "return_value": "None",
+    "traceback": null
+  },
+  {
+    "arguments": [
+      [
+        "f",
+        "<function m.<locals>.A.foo at 0xABC>"
+      ]
+    ],
+    "data": {
+      "loop_iterations": {},
+      "node_values": {
+        "15": [
+          "<function m.<locals>.A.foo at 0xABC>",
+          "function",
+          {}
+        ],
+        "7": [
+          "",
+          -2,
+          {}
+        ]
+      },
+      "num_special_types": 11,
+      "type_names": [
+        "MyClass",
+        "NoneType",
+        "SlotClass",
+        "ValueError",
+        "bool",
+        "builtin_function_or_method",
+        "complex",
+        "dict",
+        "float",
+        "frozenset",
+        "function",
+        "generator",
+        "getset_descriptor",
+        "int",
+        "islice",
+        "list",
+        "member_descriptor",
+        "method_descriptor",
+        "range",
+        "set",
+        "slice",
+        "str",
+        "tuple",
+        "type",
+        "wrapper_descriptor"
+      ]
+    },
+    "exception": null,
+    "function": {
+      "data": {
+        "loop_ranges": [],
+        "node_loops": {},
+        "node_ranges": [
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 1,
+            "end": 25,
+            "start": 0,
+            "tree_index": 2
+          },
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 2,
+            "end": 25,
+            "start": 17,
+            "tree_index": 7
+          },
+          {
+            "classes": [],
+            "depth": 3,
+            "end": 25,
+            "start": 24,
+            "tree_index": 15
+          }
+        ]
+      },
+      "html_body": "<span data-index=\"2\" class=\"stmt\">def deco(f):\n    <span data-index=\"7\" class=\"stmt\">return <span data-index=\"15\" class=\"\">f</span></span></span>",
+      "lineno": 4,
+      "name": "deco"
+    },
+    "return_value": "<function m.<locals>.A.foo at 0xABC>",
+    "traceback": null
+  },
+  {
+    "arguments": [
+      [
+        "self",
+        "<test_scripts.traced.m.<locals>.A object at 0xABC>"
+      ]
+    ],
+    "data": {
+      "loop_iterations": {},
+      "node_values": {
+        "45": [
+          "",
+          -2,
+          {}
+        ],
+        "68": [
+          "4",
+          "int",
+          {}
+        ]
+      },
+      "num_special_types": 11,
+      "type_names": [
+        "MyClass",
+        "NoneType",
+        "SlotClass",
+        "ValueError",
+        "bool",
+        "builtin_function_or_method",
+        "complex",
+        "dict",
+        "float",
+        "frozenset",
+        "function",
+        "generator",
+        "getset_descriptor",
+        "int",
+        "islice",
+        "list",
+        "m.<locals>.A",
+        "member_descriptor",
+        "method",
+        "method_descriptor",
+        "range",
+        "set",
+        "slice",
+        "str",
+        "tuple",
+        "type",
+        "wrapper_descriptor"
+      ]
+    },
+    "exception": null,
+    "function": {
+      "data": {
+        "loop_ranges": [],
+        "node_loops": {},
+        "node_ranges": [
+          {
+            "classes": [
+              "stmt"
+            ],
+            "depth": 4,
+            "end": 39,
+            "start": 27,
+            "tree_index": 45
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 39,
+            "start": 34,
+            "tree_index": 68
+          }
+        ]
+      },
+      "html_body": "<span data-index=\"25\" class=\"stmt\">        def bar(self):\n            <span data-index=\"45\" class=\"stmt\">return <span data-index=\"68\" class=\"\">1 + 3</span></span></span>",
+      "lineno": 30,
+      "name": "bar"
+    },
+    "return_value": "4",
+    "traceback": null
+  }
+]
