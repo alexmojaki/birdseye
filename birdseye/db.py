@@ -191,7 +191,15 @@ class Database(object):
                      'Run "python -m birdseye.clear_db" to delete the existing tables.')
 
     def table_exists(self, table):
-        return self.engine.dialect.has_table(self.engine, table.__name__)
+        try:
+            from sqlalchemy import inspect
+
+            return inspect(self.engine).has_table(table.__name__)
+        except (ImportError, AttributeError):
+            try:
+                return self.engine.has_table(table.__name__)
+            except AttributeError:
+                return self.engine.dialect.has_table(self.engine, table.__name__)
 
     def all_file_paths(self):
         # type: () -> List[str]
