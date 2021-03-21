@@ -496,7 +496,7 @@ class _NodeVisitor(ast.NodeTransformer):
         if not getattr(node, '_visit_ignore', False):
             if (isinstance(node, ast.expr) and
                     not (hasattr(node, "ctx") and not isinstance(node.ctx, ast.Load)) and
-                    not isinstance(node, getattr(ast, 'Starred', ()))):
+                    not isinstance(node, (getattr(ast, 'Starred', ()), ast.Slice))):
                 return self.visit_expr(node)
             if isinstance(node, ast.stmt):
                 return self.visit_stmt(node)

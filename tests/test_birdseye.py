@@ -74,6 +74,8 @@ def foo():
     except ValueError:
         pass
 
+    [1, 2, 3][:2]
+
 
 @eye
 def error():
@@ -263,6 +265,12 @@ class TestBirdsEye(unittest.TestCase):
                 'k': {'0': {'0': ['5', 'int', {}]},
                       '1': {'0': ['5', 'int', {}]}},
 
+                '[1, 2, 3][:2]': ['[1, 2]',
+                                  'list',
+                                  {'len': 2},
+                                  ['0', ['1', 'int', {}]],
+                                  ['1', ['2', 'int', {}]]],
+
                 # These are the values of z as in z ** z, not z < 2
                 'z': {'0': ['1', 'int', {}],
                       '1': ['2', 'int', {}]},
@@ -291,6 +299,7 @@ class TestBirdsEye(unittest.TestCase):
             'stmt': {
                 'x = 1': s,
                 'y = 2': s,
+                '[1, 2, 3][:2]': s,
                 '''
     if x + y > 5:
         1 / 0

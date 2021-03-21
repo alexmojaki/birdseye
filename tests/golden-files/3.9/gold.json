@@ -4248,11 +4248,6 @@
             "len": 5
           }
         ],
-        "377": [
-          "slice(None, 2, None)",
-          "slice",
-          {}
-        ],
         "385": [
           "<function dummy at 0xABC>",
           "function",
@@ -10185,7 +10180,6 @@
         "method_descriptor",
         "range",
         "set",
-        "slice",
         "str",
         "tuple",
         "type",
@@ -13275,7 +13269,6 @@
         "method_descriptor",
         "range",
         "set",
-        "slice",
         "str",
         "tuple",
         "type",
@@ -13540,7 +13533,6 @@
         "method_descriptor",
         "range",
         "set",
-        "slice",
         "str",
         "tuple",
         "type",
@@ -13751,7 +13743,6 @@
         "method_descriptor",
         "range",
         "set",
-        "slice",
         "str",
         "tuple",
         "type",
