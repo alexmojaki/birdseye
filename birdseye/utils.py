@@ -9,7 +9,6 @@ from future import standard_library
 standard_library.install_aliases()
 import token
 
-from future.utils import raise_from
 import ntpath
 import os
 import types
@@ -131,18 +130,6 @@ def of_type(type_or_tuple, iterable):
     return (x for x in iterable if isinstance(x, type_or_tuple))
 
 
-def safe_next(it):
-    # type: (Iterator[T]) -> T
-    """
-    next() can raise a StopIteration which can cause strange bugs inside generators.
-    """
-    try:
-        return next(it)
-    except StopIteration as e:
-        raise_from(RuntimeError, e)
-        raise  # isn't reached
-
-
 def one_or_none(expression):
     """Performs a one_or_none on a sqlalchemy expression."""
     if hasattr(expression, 'one_or_none'):
@@ -227,9 +214,7 @@ def read_source_file(filename):
 
 
 def source_without_decorators(tokens, function_node):
-    def_token = safe_next(t for t in tokens.get_tokens(function_node)
-                          if t.string == 'def' and t.type == token.NAME)
-
+    def_token = tokens.find_token(function_node.first_token, token.NAME, 'def')
     startpos = def_token.startpos
     source = tokens.text[startpos:function_node.last_token.endpos].rstrip()
     assert source.startswith('def')
