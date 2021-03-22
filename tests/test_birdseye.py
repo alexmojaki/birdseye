@@ -449,11 +449,11 @@ class TestBirdsEye(unittest.TestCase):
             version = PYPY * 'pypy' + sys.version[:3]
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
-            if 0:  # change to 0 to write new data instead of reading and testing
-                self.assertEqual(data, byteify(file_to_json(path)))
-            else:
+            if os.getenv("FIX_TESTS"):
                 with open(path, 'w') as f:
                     json.dump(data, f, indent=2, sort_keys=True)
+            else:
+                self.assertEqual(data, byteify(file_to_json(path)))
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:
