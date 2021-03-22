@@ -15,7 +15,12 @@ import inspect
 import json
 import os
 import traceback
-from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple, Counter
+try:
+    from collections.abc import Sequence, Set, Mapping
+except ImportError:
+    from collections import Sequence, Set, Mapping
+
+from collections import defaultdict, deque, namedtuple, Counter
 from functools import partial
 from itertools import chain, islice
 from threading import Lock

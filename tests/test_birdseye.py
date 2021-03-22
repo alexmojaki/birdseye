@@ -14,7 +14,14 @@ import re
 import sys
 import unittest
 import weakref
-from collections import namedtuple, Set, Mapping
+
+try:
+    from collections.abc import Set, Mapping
+except ImportError:
+    from collections import Set, Mapping
+
+from collections import namedtuple
+
 from copy import copy
 from functools import partial
 from importlib import import_module
