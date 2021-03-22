@@ -447,7 +447,7 @@ class TestBirdsEye(unittest.TestCase):
             version = PYPY * 'pypy' + sys.version[:3]
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
-            if 1:  # change to 0 to write new data instead of reading and testing
+            if 0:  # change to 0 to write new data instead of reading and testing
                 self.assertEqual(data, byteify(file_to_json(path)))
             else:
                 with open(path, 'w') as f:

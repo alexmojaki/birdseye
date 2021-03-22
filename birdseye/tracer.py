@@ -333,7 +333,17 @@ class TreeTracerBase(object):
 
         original_frame = frame
 
-        while frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>'):
+        # Generator expressions are not attached to the original frame
+        # They may or may not run within that frame
+        # Don't cache a main frame for them or any frame within
+        in_genexpr = False
+
+        while frame.f_code.co_name in ('<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'):
+            if frame.f_code.co_name == '<genexpr>':
+                in_genexpr = True
+                # If not currently called from the frame which defined it...
+                if frame.f_code not in frame.f_back.f_code.co_consts:
+                    return None
             frame = frame.f_back
 
         for node in ancestors(node):
@@ -343,11 +353,12 @@ class TreeTracerBase(object):
             if isinstance(node, ast.ClassDef):
                 frame = frame.f_back
 
-        if frame.f_code.co_name in ('<lambda>', '<genexpr>'):
+        if frame.f_code.co_name == '<lambda>':
             return None
 
-        self.secondary_to_main_frames[original_frame] = frame
-        self.main_to_secondary_frames[frame].append(original_frame)
+        if not in_genexpr:
+            self.secondary_to_main_frames[original_frame] = frame
+            self.main_to_secondary_frames[frame].append(original_frame)
         return frame
 
     def _treetrace_hidden_with_stmt(self, traced_file, _tree_index):

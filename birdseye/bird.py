@@ -179,10 +179,8 @@ class BirdsEye(TreeTracerBase):
         # i.e. is `node` the `y` in `[f(x) for x in y]`, making `node.parent` the `for x in y`
         is_special_comprehension_iter = (
             isinstance(node.parent, ast.comprehension) and
-            node is node.parent.iter and
-
-            # Generators execute in their own time and aren't directly attached to the parent frame
-            not isinstance(node.parent.parent, ast.GeneratorExp))
+            node is node.parent.iter
+        )
 
         if not is_special_comprehension_iter:
             return None
@@ -196,9 +194,17 @@ class BirdsEye(TreeTracerBase):
         # Track each iteration over `y` so that the 'loop' can be stepped through
         loops = node._loops + (node.parent,)  # type: Tuple[Loop, ...]
 
+        is_genexpr = isinstance(node.parent.parent, ast.GeneratorExp)
+
         def comprehension_iter_proxy():
             for item in value:
-                self._add_iteration(loops, frame)
+                # Don't try to add an iteration if this is a generator
+                # which has outlived its main frame
+                # This way of doing things has the weird side effect
+                # of grey values when the main frame is still alive
+                # but the generator is evaluated elsewhere
+                if not (is_genexpr and frame not in self.stack):
+                    self._add_iteration(loops, frame)
                 yield item
 
         # This effectively changes to code to `for x in comprehension_iter_proxy()`
@@ -608,8 +614,7 @@ class BirdsEye(TreeTracerBase):
         for node in traced_file.nodes:
             classes = []
 
-            if (isinstance(node, (ast.While, ast.For, ast.comprehension)) and
-                    not isinstance(node.parent, ast.GeneratorExp)):
+            if isinstance(node, (ast.While, ast.For, ast.comprehension)):
                 classes.append('loop')
             if isinstance(node, ast.stmt):
                 classes.append('stmt')
