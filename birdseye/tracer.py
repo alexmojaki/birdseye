@@ -14,6 +14,7 @@ from copy import deepcopy
 from functools import partial, update_wrapper, wraps
 from itertools import takewhile
 from types import FrameType, TracebackType, CodeType, FunctionType
+from uuid import uuid4
 
 from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
     is_future_import, PYPY
@@ -57,8 +58,17 @@ class TracedFile(object):
         self.set_basic_node_attributes()
         self.set_enter_call_nodes()
 
+        self.trace_methods = {
+            f: "_treetrace_hidden_" + uuid4().hex
+            for f in [
+                TreeTracerBase._treetrace_hidden_with_stmt,
+                TreeTracerBase._treetrace_hidden_before_expr,
+                TreeTracerBase._treetrace_hidden_after_expr,
+            ]
+        }
+
         new_root = deepcopy(self.root)
-        new_root = _NodeVisitor().visit(new_root)
+        new_root = _NodeVisitor(self).visit(new_root)
 
         self.code = compile(new_root, filename, "exec", dont_inherit=True, flags=flags)  # type: CodeType
         self.tracer = tracer
@@ -156,12 +166,10 @@ class TreeTracerBase(object):
 
     def _trace_methods_dict(self, traced_file):
         # type: (TracedFile) -> Dict[str, Callable]
-        return {f.__name__: partial(f, traced_file)
-                for f in [
-                    self._treetrace_hidden_with_stmt,
-                    self._treetrace_hidden_before_expr,
-                    self._treetrace_hidden_after_expr,
-                ]}
+        return {
+            name: partial(f, self, traced_file)
+            for f, name in traced_file.trace_methods.items()
+        }
 
     def trace_function(self, func):
         # type: (FunctionType) -> FunctionType
@@ -468,6 +476,9 @@ class _NodeVisitor(ast.NodeTransformer):
     This does the AST modifications that call the hooks.
     """
 
+    def __init__(self, traced_file):
+        self.traced_file = traced_file
+
     def generic_visit(self, node):
         # type: (ast.AST) -> ast.AST
         if not getattr(node, '_visit_ignore', False):
@@ -493,8 +504,12 @@ class _NodeVisitor(ast.NodeTransformer):
         ast.copy_location(before_marker, node)
 
         after_marker = ast.Call(
-            func=ast.Name(id=TreeTracerBase._treetrace_hidden_after_expr.__name__,
-                          ctx=ast.Load()),
+            func=ast.Name(
+                id=self.traced_file.trace_methods[
+                    TreeTracerBase._treetrace_hidden_after_expr
+                ],
+                ctx=ast.Load(),
+            ),
             args=[
                 before_marker,
                 super(_NodeVisitor, self).generic_visit(node),
@@ -535,8 +550,7 @@ class _NodeVisitor(ast.NodeTransformer):
         ast.fix_missing_locations(wrapped)
         return wrapped
 
-    @staticmethod
-    def _create_simple_marker_call(node, func):
+    def _create_simple_marker_call(self, node, func):
         # type: (ast.AST, Callable) -> ast.Call
         """
         Returns a Call node representing `func(node._tree_index)`
@@ -544,8 +558,7 @@ class _NodeVisitor(ast.NodeTransformer):
         to be retrieved later through the nodes attribute of a TracedFile.
         """
         return ast.Call(
-            func=ast.Name(id=func.__name__,
-                          ctx=ast.Load()),
+            func=ast.Name(id=self.traced_file.trace_methods[func], ctx=ast.Load()),
             args=[ast.Num(node._tree_index)],
             keywords=[],
         )
