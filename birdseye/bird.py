@@ -1,39 +1,58 @@
 import ast
+import hashlib
 import inspect
 import json
 import os
+import sys
 import traceback
-import typing
+from collections import defaultdict, deque, namedtuple, Counter
+from functools import partial
+from itertools import chain, islice
+from threading import Lock
 from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union
+from uuid import uuid4
+
+from asttokens import ASTTokens
+from cached_property import cached_property
+from cheap_repr import cheap_repr, try_register_repr
+from cheap_repr.utils import safe_qualname, exception_string
+from littleutils import group_by_key_func, only
+
+from birdseye import __version__
+from birdseye import tracer
+from birdseye.db import Database, retry_db
+from birdseye.tracer import (
+    TreeTracerBase,
+    TracedFile,
+    EnterCallInfo,
+    ExitCallInfo,
+    FrameInfo,
+    ChangeValue,
+)
+from birdseye.utils import (
+    correct_type,
+    PY3,
+    PY2,
+    one_or_none,
+    of_type,
+    Deque,
+    Text,
+    flatten_list,
+    lru_cache,
+    ProtocolEncoder,
+    IPYTHON_FILE_PATH,
+    source_without_decorators,
+    is_future_import,
+    get_unfrozen_datetime,
+    FILE_SENTINEL_NAME,
+    read_source_file,
+    html_escape,
+)
 
 try:
     from collections.abc import Sequence, Set, Mapping
 except ImportError:
     from collections import Sequence, Set, Mapping
-
-from collections import defaultdict, deque, namedtuple, Counter
-from functools import partial
-from itertools import chain, islice
-from threading import Lock
-from uuid import uuid4
-import hashlib
-import sys
-
-from asttokens import ASTTokens
-from littleutils import group_by_key_func, only
-from outdated import warn_if_outdated
-from cached_property import cached_property
-
-from cheap_repr import cheap_repr, try_register_repr
-from cheap_repr.utils import safe_qualname, exception_string
-from birdseye.db import Database, retry_db
-from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
-from birdseye import tracer
-from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    is_future_import, get_unfrozen_datetime, FILE_SENTINEL_NAME, read_source_file, html_escape
-from birdseye import __version__
 
 try:
     from numpy import ndarray
@@ -57,8 +76,27 @@ except Exception:
     class QuerySet(object):
         pass
 
+try:
+    from outdated import warn_if_outdated
 
-warn_if_outdated('birdseye', __version__)
+    warn_if_outdated("birdseye", __version__)
+except Exception:
+    pass
+
+# noinspection PyUnreachableCode
+if False:
+    from typing import (
+        List,
+        Dict,
+        Any,
+        Optional,
+        Tuple,
+        Iterator,
+        Iterable,
+        Union,
+    )
+    Loop = Union[ast.For, ast.While, ast.comprehension]
+
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
@@ -127,7 +165,7 @@ class BirdsEye(TreeTracerBase):
             self._add_iteration(node._loops, frame)
 
     def _add_iteration(self, loops, frame):
-        # type: (typing.Sequence[Loop], FrameType) -> None
+        # type: (Sequence[Loop], FrameType) -> None
         """
         Given one or more nested loops, add an iteration for the innermost
         loop (the last in the sequence).
@@ -750,12 +788,7 @@ class BirdsEye(TreeTracerBase):
 
 eye = BirdsEye()
 
-HTMLPosition = NamedTuple('HTMLPosition', [
-    ('index', int),
-    ('is_start', bool),
-    ('depth', int),
-    ('html', str),
-])
+HTMLPosition = namedtuple('HTMLPosition', 'index is_start depth html')
 
 
 def _deep_dict():
@@ -808,7 +841,7 @@ class Iteration(object):
         }
 
 
-class IterationList(Iterable[Iteration]):
+class IterationList:
     """
     A list of Iterations, corresponding to a run of a loop.
     If the loop has many iterations, only contains the first and last few

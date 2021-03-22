@@ -1,8 +1,6 @@
 import unittest
-from birdseye.db import Database
-import tests
 
-str(tests)
+from birdseye.db import Database
 
 
 class TestDatabase(unittest.TestCase):

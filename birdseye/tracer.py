@@ -14,10 +14,15 @@ from copy import deepcopy
 from functools import partial, update_wrapper, wraps
 from itertools import takewhile
 from types import FrameType, TracebackType, CodeType, FunctionType
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 
 from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
     is_future_import, PYPY
+
+# noinspection PyUnreachableCode
+if False:
+    from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union
+
+    Loop = Union[ast.For, ast.While, ast.comprehension]
 
 
 class TracedFile(object):
@@ -119,44 +124,11 @@ class FrameInfo(object):
 
 
 # Argument of TreeTracerBase.enter_call
-EnterCallInfo = NamedTuple('EnterCallInfo', [
-
-    # Node  from where the call was made
-    ('call_node', Optional[Union[ast.expr, ast.stmt]]),
-
-    # Node where the call begins
-    ('enter_node', ast.AST),
-
-    # Frame from which the call was made
-    ('caller_frame', FrameType),
-
-    # Frame of the call
-    ('current_frame', FrameType)])
+EnterCallInfo = namedtuple('EnterCallInfo', 'call_node enter_node caller_frame current_frame')
 
 # Argument of TreeTracerBase.exit_call
-ExitCallInfo = NamedTuple('ExitCallInfo', [
-
-    # Node  from where the call was made
-    ('call_node', Optional[Union[ast.expr, ast.stmt]]),
-
-    # Node where the call explicitly returned
-    ('return_node', Optional[ast.Return]),
-
-    # Frame from which the call was made
-    ('caller_frame', FrameType),
-
-    # Frame of the call
-    ('current_frame', FrameType),
-
-    # Node where the call explicitly returned
-    ('return_value', Any),
-
-    # Exception raised in the call causing it to end,
-    # will propagate to the caller
-    ('exc_value', Optional[Exception]),
-
-    # Traceback corresponding to exc_value
-    ('exc_tb', Optional[TracebackType])])
+ExitCallInfo = namedtuple('ExitCallInfo', 'call_node return_node caller_frame current_frame '
+                                          'return_value exc_value exc_tb')
 
 # see TreeTracerBase.after_expr
 ChangeValue = namedtuple('ChangeValue', 'value')
@@ -365,7 +337,7 @@ class TreeTracerBase(object):
             <statement>
         """
         node = traced_file.nodes[_tree_index]
-        node = cast(ast.stmt, node)
+        assert isinstance(node, ast.stmt)
         frame = self._main_frame(node)
         return _StmtContext(self, node, frame)
 
@@ -376,7 +348,7 @@ class TreeTracerBase(object):
         evaluated.
         """
         node = traced_file.nodes[_tree_index]
-        node = cast(ast.expr, node)
+        assert isinstance(node, ast.expr)
         frame = self._main_frame(node)
         if frame is None:
             return node
@@ -659,9 +631,6 @@ def ancestors(node):
         except AttributeError:
             break
         yield node
-
-
-Loop = Union[ast.For, ast.While, ast.comprehension]
 
 
 def loops(node):

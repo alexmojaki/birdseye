@@ -6,7 +6,11 @@ import sys
 import token
 import types
 from sys import version_info
-from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable
+from littleutils import strip_required_prefix
+
+# noinspection PyUnreachableCode
+if False:
+    from typing import Union, List, Any, Iterator, Tuple, Iterable
 
 try:
     from typing import Type
@@ -23,13 +27,10 @@ try:
 except ImportError:
     from backports.functools_lru_cache import lru_cache
 
-from littleutils import strip_required_prefix
 
 PY2 = version_info.major == 2
 PY3 = not PY2
 PYPY = 'pypy' in sys.version.lower()
-T = TypeVar('T')
-RT = TypeVar('RT')
 IPYTHON_FILE_PATH = 'IPython notebook or shell'
 FILE_SENTINEL_NAME = '$$__FILE__$$'
 

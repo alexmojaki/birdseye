@@ -3,7 +3,6 @@ import json
 import os
 import sys
 from contextlib import contextmanager
-from typing import List
 
 from humanize import naturaltime
 from littleutils import select_attrs, retry
@@ -17,6 +16,11 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
+
+# noinspection PyUnreachableCode
+if False:
+    from typing import List
+
 
 RESERVED_WORDS.add('function')
 

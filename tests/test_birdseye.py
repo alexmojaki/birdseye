@@ -14,14 +14,7 @@ import re
 import sys
 import unittest
 import weakref
-
-try:
-    from collections.abc import Set, Mapping
-except ImportError:
-    from collections import Set, Mapping
-
 from collections import namedtuple
-
 from copy import copy
 from functools import partial
 from importlib import import_module
@@ -33,16 +26,18 @@ from bs4 import BeautifulSoup
 from cheap_repr import register_repr
 from littleutils import file_to_json, string_to_file, only
 
-import tests
-from tests.utils import SharedCounter
-
-str(tests)
 from birdseye import eye
 from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3, PYPY
+from tests.utils import SharedCounter
 
 Session = eye.db.Session
 Call = eye.db.Call
+
+try:
+    from collections.abc import Set, Mapping
+except ImportError:
+    from collections import Set, Mapping
 
 
 @eye
