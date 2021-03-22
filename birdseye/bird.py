@@ -1,6 +1,4 @@
 import ast
-# noinspection PyCompatibility
-import html
 import inspect
 import json
 import os
@@ -34,7 +32,7 @@ from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallI
 from birdseye import tracer
 from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
     of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    is_future_import, get_unfrozen_datetime, FILE_SENTINEL_NAME, read_source_file
+    is_future_import, get_unfrozen_datetime, FILE_SENTINEL_NAME, read_source_file, html_escape
 from birdseye import __version__
 
 try:
@@ -699,7 +697,7 @@ class BirdsEye(TreeTracerBase):
         html_parts = []
         start = 0
         for position in positions:
-            html_parts.append(html.escape(traced_file.source[start:position.index]))
+            html_parts.append(html_escape(traced_file.source[start:position.index]))
             html_parts.append(position.html)
             start = position.index
         html_body = ''.join(html_parts)

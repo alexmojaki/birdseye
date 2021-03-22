@@ -242,3 +242,16 @@ def get_unfrozen_datetime():
         from datetime import datetime as real_datetime
 
     return real_datetime.now()
+
+
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    ">": "&gt;",
+    "<": "&lt;",
+}
+
+
+def html_escape(text):
+    return "".join(html_escape_table.get(c, c) for c in text)
