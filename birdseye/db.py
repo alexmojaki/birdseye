@@ -1,27 +1,22 @@
-from __future__ import print_function, division, absolute_import
-
 import functools
-import sys
-
-from future import standard_library
-from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError, ArgumentError
-
-standard_library.install_aliases()
 import json
 import os
-from typing import List
+import sys
 from contextlib import contextmanager
+from typing import List
 
 from humanize import naturaltime
+from littleutils import select_attrs, retry
 from markupsafe import Markup
 from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String, \
     Index
+from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
+from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError, ArgumentError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
-from sqlalchemy.dialects.mysql import LONGTEXT
-from littleutils import select_attrs, retry
+
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
-from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
 
 RESERVED_WORDS.add('function')
 

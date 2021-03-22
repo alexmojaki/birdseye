@@ -1,28 +1,20 @@
-from __future__ import print_function, division, absolute_import
-
+import argparse
 import json
+import os
+import sys
 from collections import OrderedDict
 from functools import partial
 from os.path import basename
 
-from future import standard_library
-from littleutils import DecentJSONEncoder, withattrs, group_by_attr
-
-standard_library.install_aliases()
-
-import argparse
-import os
-import sys
-
+import sqlalchemy
 from flask import Flask, request, jsonify, url_for
 from flask.templating import render_template
 from flask_humanize import Humanize
+from littleutils import DecentJSONEncoder, withattrs, group_by_attr
 from werkzeug.routing import PathConverter
-import sqlalchemy
 
 from birdseye.db import Database
 from birdseye.utils import short_path, IPYTHON_FILE_PATH, fix_abs_path, is_ipython_cell
-
 
 app = Flask('birdseye')
 app.jinja_env.auto_reload = True

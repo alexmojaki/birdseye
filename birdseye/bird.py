@@ -1,13 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
-from future import standard_library
-
-standard_library.install_aliases()
-from future.utils import iteritems
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union
-from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
-import typing
-
 import ast
 # noinspection PyCompatibility
 import html
@@ -15,6 +5,10 @@ import inspect
 import json
 import os
 import traceback
+import typing
+from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union
+
 try:
     from collections.abc import Sequence, Set, Mapping
 except ImportError:
@@ -1081,6 +1075,10 @@ class NodeValue(object):
                 else:
                     add_child(str(s), attr)
         return result
+
+
+def iteritems(obj):
+    return getattr(obj, "iteritems", obj.items)()
 
 
 def _safe_iter(val, f=lambda x: x):

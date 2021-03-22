@@ -1,16 +1,9 @@
-from __future__ import print_function, division, absolute_import
-
 import ast
 import json
-import sys
-
-from future import standard_library
-
-standard_library.install_aliases()
-import token
-
 import ntpath
 import os
+import sys
+import token
 import types
 from sys import version_info
 from typing import TypeVar, Union, List, Any, Iterator, Tuple, Iterable

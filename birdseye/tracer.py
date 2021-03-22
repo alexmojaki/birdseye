@@ -6,12 +6,6 @@ itself would correspond to pdb.
 Most of the work is in TreeTracerBase.
 """
 
-from __future__ import print_function, division, absolute_import
-
-from future import standard_library
-
-standard_library.install_aliases()
-
 import ast
 import inspect
 import sys
@@ -19,8 +13,8 @@ from collections import namedtuple, defaultdict
 from copy import deepcopy
 from functools import partial, update_wrapper, wraps
 from itertools import takewhile
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 from types import FrameType, TracebackType, CodeType, FunctionType
+from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Callable, cast, Union
 
 from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
     is_future_import, PYPY
