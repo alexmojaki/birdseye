@@ -1,42 +1,58 @@
-from __future__ import absolute_import, division, print_function
-
-from future import standard_library
-
-standard_library.install_aliases()
-from future.utils import iteritems
-from typing import List, Dict, Any, Optional, NamedTuple, Tuple, Iterator, Iterable, Union
-from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
-import typing
-
 import ast
-# noinspection PyCompatibility
-import html
+import hashlib
 import inspect
 import json
 import os
+import sys
 import traceback
-from collections import defaultdict, Sequence, Set, Mapping, deque, namedtuple, Counter
+from collections import defaultdict, deque, namedtuple, Counter
 from functools import partial
 from itertools import chain, islice
 from threading import Lock
+from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
 from uuid import uuid4
-import hashlib
-import sys
 
 from asttokens import ASTTokens
-from littleutils import group_by_key_func, only
-from outdated import warn_if_outdated
 from cached_property import cached_property
-
 from cheap_repr import cheap_repr, try_register_repr
 from cheap_repr.utils import safe_qualname, exception_string
-from birdseye.db import Database, retry_db
-from birdseye.tracer import TreeTracerBase, TracedFile, EnterCallInfo, ExitCallInfo, FrameInfo, ChangeValue, Loop
-from birdseye import tracer
-from birdseye.utils import correct_type, PY3, PY2, one_or_none, \
-    of_type, Deque, Text, flatten_list, lru_cache, ProtocolEncoder, IPYTHON_FILE_PATH, source_without_decorators, \
-    is_future_import, get_unfrozen_datetime, FILE_SENTINEL_NAME, read_source_file
+from littleutils import group_by_key_func, only
+
 from birdseye import __version__
+from birdseye import tracer
+from birdseye.db import Database, retry_db
+from birdseye.tracer import (
+    TreeTracerBase,
+    TracedFile,
+    EnterCallInfo,
+    ExitCallInfo,
+    FrameInfo,
+    ChangeValue,
+)
+from birdseye.utils import (
+    correct_type,
+    PY3,
+    PY2,
+    one_or_none,
+    of_type,
+    Deque,
+    Text,
+    flatten_list,
+    lru_cache,
+    ProtocolEncoder,
+    IPYTHON_FILE_PATH,
+    source_without_decorators,
+    is_future_import,
+    get_unfrozen_datetime,
+    FILE_SENTINEL_NAME,
+    read_source_file,
+    html_escape,
+)
+
+try:
+    from collections.abc import Sequence, Set, Mapping
+except ImportError:
+    from collections import Sequence, Set, Mapping
 
 try:
     from numpy import ndarray
@@ -60,8 +76,27 @@ except Exception:
     class QuerySet(object):
         pass
 
+try:
+    from outdated import warn_if_outdated
 
-warn_if_outdated('birdseye', __version__)
+    warn_if_outdated("birdseye", __version__)
+except Exception:
+    pass
+
+# noinspection PyUnreachableCode
+if False:
+    from typing import (
+        List,
+        Dict,
+        Any,
+        Optional,
+        Tuple,
+        Iterator,
+        Iterable,
+        Union,
+    )
+    Loop = Union[ast.For, ast.While, ast.comprehension]
+
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
@@ -130,7 +165,7 @@ class BirdsEye(TreeTracerBase):
             self._add_iteration(node._loops, frame)
 
     def _add_iteration(self, loops, frame):
-        # type: (typing.Sequence[Loop], FrameType) -> None
+        # type: (Sequence[Loop], FrameType) -> None
         """
         Given one or more nested loops, add an iteration for the innermost
         loop (the last in the sequence).
@@ -179,10 +214,8 @@ class BirdsEye(TreeTracerBase):
         # i.e. is `node` the `y` in `[f(x) for x in y]`, making `node.parent` the `for x in y`
         is_special_comprehension_iter = (
             isinstance(node.parent, ast.comprehension) and
-            node is node.parent.iter and
-
-            # Generators execute in their own time and aren't directly attached to the parent frame
-            not isinstance(node.parent.parent, ast.GeneratorExp))
+            node is node.parent.iter
+        )
 
         if not is_special_comprehension_iter:
             return None
@@ -196,9 +229,17 @@ class BirdsEye(TreeTracerBase):
         # Track each iteration over `y` so that the 'loop' can be stepped through
         loops = node._loops + (node.parent,)  # type: Tuple[Loop, ...]
 
+        is_genexpr = isinstance(node.parent.parent, ast.GeneratorExp)
+
         def comprehension_iter_proxy():
             for item in value:
-                self._add_iteration(loops, frame)
+                # Don't try to add an iteration if this is a generator
+                # which has outlived its main frame
+                # This way of doing things has the weird side effect
+                # of grey values when the main frame is still alive
+                # but the generator is evaluated elsewhere
+                if not (is_genexpr and frame not in self.stack):
+                    self._add_iteration(loops, frame)
                 yield item
 
         # This effectively changes to code to `for x in comprehension_iter_proxy()`
@@ -425,7 +466,7 @@ class BirdsEye(TreeTracerBase):
         filename = os.path.abspath(filename)
 
         if frame.f_globals.get('__name__') != '__main__':
-            if PY3 and self._treetrace_hidden_with_stmt.__name__ not in frame.f_globals:
+            if PY3 and "_treetrace_hidden_" not in str(frame.f_globals.keys()):
                 raise RuntimeError(
                     'To trace an imported module, you must import birdseye before '
                     'importing that module.')
@@ -608,8 +649,7 @@ class BirdsEye(TreeTracerBase):
         for node in traced_file.nodes:
             classes = []
 
-            if (isinstance(node, (ast.While, ast.For, ast.comprehension)) and
-                    not isinstance(node.parent, ast.GeneratorExp)):
+            if isinstance(node, (ast.While, ast.For, ast.comprehension)):
                 classes.append('loop')
             if isinstance(node, ast.stmt):
                 classes.append('stmt')
@@ -695,7 +735,7 @@ class BirdsEye(TreeTracerBase):
         html_parts = []
         start = 0
         for position in positions:
-            html_parts.append(html.escape(traced_file.source[start:position.index]))
+            html_parts.append(html_escape(traced_file.source[start:position.index]))
             html_parts.append(position.html)
             start = position.index
         html_body = ''.join(html_parts)
@@ -748,12 +788,7 @@ class BirdsEye(TreeTracerBase):
 
 eye = BirdsEye()
 
-HTMLPosition = NamedTuple('HTMLPosition', [
-    ('index', int),
-    ('is_start', bool),
-    ('depth', int),
-    ('html', str),
-])
+HTMLPosition = namedtuple('HTMLPosition', 'index is_start depth html')
 
 
 def _deep_dict():
@@ -806,7 +841,7 @@ class Iteration(object):
         }
 
 
-class IterationList(Iterable[Iteration]):
+class IterationList:
     """
     A list of Iterations, corresponding to a run of a loop.
     If the loop has many iterations, only contains the first and last few
@@ -1071,6 +1106,10 @@ class NodeValue(object):
                 else:
                     add_child(str(s), attr)
         return result
+
+
+def iteritems(obj):
+    return getattr(obj, "iteritems", obj.items)()
 
 
 def _safe_iter(val, f=lambda x: x):

@@ -81,7 +81,7 @@ def main():
 
     c = MyClass() + MyClass()
     c.list = [[x + y for x in range(100)] for y in range(100)]
-    dummy(n for n in range(4))
+    sum  (n for n in range(4))
     dummy({n for n in range(4)})
     dummy({n: n for n in range(1)})
     with c:

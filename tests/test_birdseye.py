@@ -14,7 +14,7 @@ import re
 import sys
 import unittest
 import weakref
-from collections import namedtuple, Set, Mapping
+from collections import namedtuple
 from copy import copy
 from functools import partial
 from importlib import import_module
@@ -26,16 +26,18 @@ from bs4 import BeautifulSoup
 from cheap_repr import register_repr
 from littleutils import file_to_json, string_to_file, only
 
-import tests
-from tests.utils import SharedCounter
-
-str(tests)
 from birdseye import eye
 from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
 from birdseye.utils import PY2, PY3, PYPY
+from tests.utils import SharedCounter
 
 Session = eye.db.Session
 Call = eye.db.Call
+
+try:
+    from collections.abc import Set, Mapping
+except ImportError:
+    from collections import Set, Mapping
 
 
 @eye
@@ -73,6 +75,8 @@ def foo():
         error()
     except ValueError:
         pass
+
+    [1, 2, 3][:2]
 
 
 @eye
@@ -263,6 +267,12 @@ class TestBirdsEye(unittest.TestCase):
                 'k': {'0': {'0': ['5', 'int', {}]},
                       '1': {'0': ['5', 'int', {}]}},
 
+                '[1, 2, 3][:2]': ['[1, 2]',
+                                  'list',
+                                  {'len': 2},
+                                  ['0', ['1', 'int', {}]],
+                                  ['1', ['2', 'int', {}]]],
+
                 # These are the values of z as in z ** z, not z < 2
                 'z': {'0': ['1', 'int', {}],
                       '1': ['2', 'int', {}]},
@@ -291,6 +301,7 @@ class TestBirdsEye(unittest.TestCase):
             'stmt': {
                 'x = 1': s,
                 'y = 2': s,
+                '[1, 2, 3][:2]': s,
                 '''
     if x + y > 5:
         1 / 0
@@ -438,11 +449,11 @@ class TestBirdsEye(unittest.TestCase):
             version = PYPY * 'pypy' + sys.version[:3]
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
-            if 1:  # change to 0 to write new data instead of reading and testing
-                self.assertEqual(data, byteify(file_to_json(path)))
-            else:
+            if os.getenv("FIX_TESTS"):
                 with open(path, 'w') as f:
                     json.dump(data, f, indent=2, sort_keys=True)
+            else:
+                self.assertEqual(data, byteify(file_to_json(path)))
 
     def test_decorate_class(self):
         with self.assertRaises(TypeError) as e:

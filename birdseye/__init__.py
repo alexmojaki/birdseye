@@ -1,7 +1,11 @@
 import sys
 from importlib import import_module
 
-__version__ = '0.8.4'
+try:
+    from .version import __version__
+except ImportError:  # pragma: no cover
+    # version.py is auto-generated with the git tag when building
+    __version__ = "???"
 
 
 # birdseye has so many dependencies that simply importing them can be quite slow

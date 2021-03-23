@@ -150,8 +150,8 @@ a file and then doing a regex search for ``^[+-]`` to find the
 actual differences.
 
 If you’re satisfied that the code is doing the correct thing and the
-golden files need to be updated, look for the ``if 1:`` in the test
-method and change it to ``if 0:``, then rerun the tests. This will write
+golden files need to be updated, set the environment variable ``FIX_TESTS=1``,
+then rerun the tests. This will write
 to the files instead of comparing to them. Since there are files for
 each version of python, you will need to run the tests on all supported
 interpreters, so tox is recommended.

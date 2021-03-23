@@ -1,22 +1,16 @@
-from future.standard_library import install_aliases
-
-install_aliases()
-
-import tests
-
-str(tests)
-
-from time import sleep
-import requests
-from littleutils import only
-from selenium.webdriver import ActionChains
-from selenium.webdriver.chrome.options import Options
-from birdseye import eye
+import os
 import unittest
 from threading import Thread
-from birdseye.server import app
+from time import sleep
+
+import requests
+from littleutils import only
 from selenium import webdriver
-import os
+from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.options import Options
+
+from birdseye import eye
+from birdseye.server import app
 
 
 @eye

@@ -12,3 +12,5 @@ screen_*.png
 sandbox.py
 test.txt
 _build/
+build/
+version.py
