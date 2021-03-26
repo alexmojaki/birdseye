@@ -26,5 +26,5 @@ export TAG="v${1}"
 git tag "${TAG}"
 git push origin master "${TAG}"
 rm -rf ./build ./dist
-python3 -m pep517.build -b .
-twine upload ./dist/*.whl
+python3 -m pep517.build -bs .
+twine upload ./dist/*.whl dist/*.tar.gz
