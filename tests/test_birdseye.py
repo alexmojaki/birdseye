@@ -87,9 +87,11 @@ def get_call_stuff(source, func_name):
     # <pre> makes it preserve whitespace
     soup = BeautifulSoup("<pre>" + function["html_body"] + "</pre>", "html.parser")
 
+    # Convert numeric keys to string keys in JSON roundtrip
     call_data = json.loads(json.dumps(normalise_call_data(call["data"])))
     func_data = json.loads(json.dumps(function["data"]))
-    return CallStuff(copy(call), soup, call_data, func_data, globs, eye)
+
+    return CallStuff(call, soup, call_data, func_data, globs, eye)
 
 
 def run_traced(source, func_name):
@@ -173,7 +175,6 @@ class TestBirdsEye(unittest.TestCase):
 
         s = ['', -2, {}]
 
-        call_ids = list(stuff.eye.store["calls"])
         expected_values = {
             "expr": {
                 "x": ["1", "int", {}],
@@ -388,8 +389,9 @@ class TestBirdsEye(unittest.TestCase):
 
             data = [
                 dict(
-                    data=normalise_call_data(call["data"]),
-                    function=store["functions"][call["function_id"]],
+                    # Convert numeric keys to string keys in JSON roundtrip
+                    data=json.loads(json.dumps(normalise_call_data(call["data"]))),
+                    function=json.loads(json.dumps(store["functions"][call["function_id"]])),
                 )
                 for call in store["calls"].values()
             ]
