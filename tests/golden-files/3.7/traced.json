@@ -125,7 +125,7 @@
           {}
         ],
         "11": [
-          "<function main.<locals>.A.foo at 0x7feff93e28c0>",
+          "<function main.<locals>.A.foo at 0xABC>",
           "function",
           {}
         ]
@@ -197,7 +197,7 @@
           }
         ],
         "59": [
-          "<A object at 0x7feffa6954d0>",
+          "<A object at 0xABC>",
           "main.<locals>.A",
           {}
         ],
@@ -428,7 +428,7 @@
           -2,
           {
             "inner_calls": [
-              "49dbc409dcd140f69b99f2e0d6c055f5"
+              "6bae27db29f8477ba6eaccd64f5f47c8"
             ]
           }
         ],
@@ -442,7 +442,7 @@
           "int",
           {
             "inner_calls": [
-              "9d5e30e304d549c0a4bfb7cfa82e4f42"
+              "fa55a8255790437e9e97eab9c1493514"
             ]
           }
         ],
@@ -524,12 +524,12 @@
           }
         ],
         "38": [
-          "<function deco at 0x7feff93e2b90>",
+          "<function deco at 0xABC>",
           "function",
           {}
         ],
         "41": [
-          "<bound method main.<locals>.A.bar of <A object at 0x7feffa6954d0>>",
+          "<bound method main.<locals>.A.bar of <A object at 0xABC>>",
           "method",
           {}
         ],
@@ -564,12 +564,12 @@
           }
         ],
         "49": [
-          "<function main.<locals>.A.<lambda> at 0x7feff93e29e0>",
+          "<function main.<locals>.A.<lambda> at 0xABC>",
           "function",
           {}
         ],
         "51": [
-          "<function main.<locals>.A.<lambda> at 0x7feff93e2950>",
+          "<function main.<locals>.A.<lambda> at 0xABC>",
           "function",
           {}
         ],
@@ -605,11 +605,11 @@
           ]
         ],
         "63": [
-          "<A object at 0x7feffa6954d0>",
+          "<A object at 0xABC>",
           "main.<locals>.A",
           {
             "inner_calls": [
-              "63645d1093e140049cada07dd38cb91b"
+              "a95c0b47f6a14e8ebf8c44dda70bf948"
             ]
           }
         ],
@@ -714,7 +714,7 @@
           {}
         ],
         "87": [
-          "<bound method main.<locals>.A.foo of <A object at 0x7feffa6954d0>>",
+          "<bound method main.<locals>.A.foo of <A object at 0xABC>>",
           "method",
           {}
         ],
@@ -806,17 +806,17 @@
         ],
         "99": {
           "0": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0x7feff93e2830>",
+            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "1": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0x7feff93e27a0>",
+            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "2": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0x7feff93e2830>",
+            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
             "function",
             {}
           ]
@@ -829,7 +829,7 @@
           }
         ],
         "107": [
-          "<A object at 0x7feffa6954d0>",
+          "<A object at 0xABC>",
           "main.<locals>.A",
           {}
         ],
@@ -961,7 +961,7 @@
           [
             "bar",
             [
-              "<function main.<locals>.A.bar at 0x7feff93e27a0>",
+              "<function main.<locals>.A.bar at 0xABC>",
               "function",
               {}
             ]
@@ -969,7 +969,7 @@
           [
             "foo",
             [
-              "<function main.<locals>.A.foo at 0x7feff93e28c0>",
+              "<function main.<locals>.A.foo at 0xABC>",
               "function",
               {}
             ]

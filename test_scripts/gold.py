@@ -58,7 +58,6 @@ def main():
         vals.append([])
         for j in range(2 * i):
             vals[-1].append(i + j)
-            dummy(vals)
 
     for i in range(6):
         try:

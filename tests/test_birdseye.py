@@ -117,7 +117,7 @@ def normalise_call_data(data):
         if isinstance(x, dict):
             return dict((key, fix(value)) for key, value in x.items())
         elif isinstance(x, list):
-            result = [x[0]]
+            result = [fix(x[0])]
             type_index = x[1]
             if type_index < 0:
                 assert type_index in (-1, -2)
@@ -170,10 +170,6 @@ class TestBirdsEye(unittest.TestCase):
             if this_node_loops:
                 actual_node_loops[text] = [str(x) for x in this_node_loops]
 
-        def func_value(f):
-            result = [repr(f), 'function', {}]  # type: list
-            return result
-
         s = ['', -2, {}]
 
         call_ids = list(stuff.eye.store["calls"])
@@ -185,8 +181,8 @@ class TestBirdsEye(unittest.TestCase):
                 "x + y > 5": ["False", "bool", {}],
                 "x * y": ["2", "int", {}],
                 "2 / 0": ["ZeroDivisionError: division by zero", -1, {}],
-                "bar": func_value(stuff.globs["bar"]),
-                "error": func_value(stuff.globs["error"]),
+                "bar": ['<function bar at 0xABC>', 'function', {}],
+                "error": ['<function error at 0xABC>', 'function', {}],
                 "bar()": ["None", "NoneType", {"inner_calls": [call_ids[1]]}],
                 "x + x": ["2", "int", {}],
                 "x - y": ["-1", "int", {}],
@@ -403,7 +399,7 @@ class TestBirdsEye(unittest.TestCase):
                 with open(path, 'w') as f:
                     json.dump(data, f, indent=2, sort_keys=True)
             else:
-                self.assertTrue(data, file_to_json(path))
+                assert data == file_to_json(path)
 
     def test_expand_exceptions(self):
         expand = partial(NodeValue.expression, BirdsEye().num_samples)
