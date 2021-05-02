@@ -338,9 +338,7 @@
           "",
           -2,
           {
-            "inner_calls": [
-              "c3ac0832541c494aa3f7d1c865defef6"
-            ]
+            "inner_calls": 1
           }
         ],
         "21": [
@@ -352,9 +350,7 @@
           "4",
           "int",
           {
-            "inner_calls": [
-              "f07d425700244014874ae4a8f8602fcc"
-            ]
+            "inner_calls": 1
           }
         ],
         "26": [

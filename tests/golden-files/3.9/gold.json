@@ -366,9 +366,7 @@
           "1",
           "int",
           {
-            "inner_calls": [
-              "5ed54750e61b4646a1c09260991a97bf"
-            ]
+            "inner_calls": 1
           }
         ],
         "273": [
@@ -448,9 +446,7 @@
           "2",
           "int",
           {
-            "inner_calls": [
-              "3008a4f25921482fb90c4022dc3cc656"
-            ]
+            "inner_calls": 1
           }
         ],
         "273": [
@@ -1517,9 +1513,7 @@
           "",
           -2,
           {
-            "inner_calls": [
-              "f40555dea87543cdbca776d0de4817da"
-            ]
+            "inner_calls": 1
           }
         ],
         "91": [
@@ -1617,27 +1611,21 @@
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "76c39a17147244dba405e12ffa3876b0"
-              ]
+              "inner_calls": 1
             }
           ],
           "1": [
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "7ac072afa4464cbea4886a01873a1056"
-              ]
+              "inner_calls": 1
             }
           ],
           "2": [
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "1ff609fc2c0542579f153f52e09e74db"
-              ]
+              "inner_calls": 1
             }
           ]
         },
@@ -2095,27 +2083,21 @@
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "c3ded1dfb6af4d42b829014129779fad"
-              ]
+              "inner_calls": 1
             }
           ],
           "1": [
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "edc30ea251be44129cf106dcd7201044"
-              ]
+              "inner_calls": 1
             }
           ],
           "2": [
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "dced2a76962d4ccdafa6a131a1c35a79"
-              ]
+              "inner_calls": 1
             }
           ]
         },
@@ -2647,10 +2629,7 @@
           "",
           -2,
           {
-            "inner_calls": [
-              "f1ab440eb4674482b9443b65dabc0cd9",
-              "ade30fdb75334c1396203713a6e995b7"
-            ]
+            "inner_calls": 2
           }
         ],
         "46": [
@@ -2874,9 +2853,7 @@
           "<MyClass object at 0xABC>",
           "MyClass",
           {
-            "inner_calls": [
-              "861bcc3294ed4dcca28e2376273e4375"
-            ]
+            "inner_calls": 1
           }
         ],
         "118": [
@@ -3475,18 +3452,14 @@
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "675f9125069c46b0a97292deefca9b82"
-            ]
+            "inner_calls": 1
           }
         ],
         "121": [
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "393f2265d9bc4bcf8f2c053565c1da35"
-            ]
+            "inner_calls": 1
           }
         ],
         "123": [
@@ -3498,9 +3471,7 @@
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "0cb8f0066a9b40298a542348b3778005"
-            ]
+            "inner_calls": 1
           }
         ],
         "125": [
@@ -3527,9 +3498,7 @@
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "620019978ba64fe995fe1b59710804c9"
-            ]
+            "inner_calls": 1
           }
         ],
         "136": [
@@ -3578,27 +3547,21 @@
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "fb4267d420ac4efaad14f808426de7e9"
-            ]
+            "inner_calls": 1
           }
         ],
         "152": [
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "d480b261b6c3425389c66a1fc23b7a29"
-            ]
+            "inner_calls": 1
           }
         ],
         "190": [
           "6",
           "int",
           {
-            "inner_calls": [
-              "23a3f2d060b84e5ab41144a12304824f"
-            ]
+            "inner_calls": 1
           }
         ],
         "198": {
@@ -4675,9 +4638,7 @@
           "<SlotClass object at 0xABC>",
           "SlotClass",
           {
-            "inner_calls": [
-              "6c39b95a87c24a3a8a0ea4636b2e0b62"
-            ]
+            "inner_calls": 1
           },
           [
             "slot1",
@@ -4692,9 +4653,7 @@
           "[[0, 1, 2, ..., 997, 998, 999], 'hello', {'kwarg1': {'key': 'value'}}]",
           "list",
           {
-            "inner_calls": [
-              "259dd51efef340a8a791e98c6f2e448c"
-            ],
+            "inner_calls": 1,
             "len": 3
           },
           [
@@ -4905,9 +4864,7 @@
           "[1, 2, {'k': 23}]",
           "list",
           {
-            "inner_calls": [
-              "8a82d72fb09345efb88df8fbc6a04812"
-            ],
+            "inner_calls": 1,
             "len": 3
           },
           [
@@ -5002,9 +4959,7 @@
           "None",
           "NoneType",
           {
-            "inner_calls": [
-              "4dab1c71cb8d4ed89a3f1ea8db88d43b"
-            ]
+            "inner_calls": 1
           }
         ],
         "258": [
@@ -5248,18 +5203,14 @@
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "dfc7ceffefc849ad8306f149357c242c"
-              ]
+              "inner_calls": 1
             }
           ],
           "3": [
             "None",
             "NoneType",
             {
-              "inner_calls": [
-                "2d591bbf09c84c6cbe841e224f1a494f"
-              ]
+              "inner_calls": 1
             }
           ]
         },
@@ -6086,9 +6037,7 @@
           "<SlotClass object at 0xABC>",
           "SlotClass",
           {
-            "inner_calls": [
-              "5ff3916aa473405ebd160a7efbc46dd2"
-            ]
+            "inner_calls": 1
           },
           [
             "slot1",

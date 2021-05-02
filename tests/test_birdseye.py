@@ -117,19 +117,20 @@ def normalise_call_data(data):
         if isinstance(x, dict):
             return dict((key, fix(value)) for key, value in x.items())
         elif isinstance(x, list):
-            result = [fix(x[0])]
-            type_index = x[1]
+            value, type_index, meta, *children = x
+            x[0] = fix(value)
+
             if type_index < 0:
                 assert type_index in (-1, -2)
-                result.append(type_index)
             else:
-                result.append(types[type_index])
-            result.append(x[2])
+                x[1] = types[type_index]
 
-            for y in x[3:]:
+            if "inner_calls" in meta:
+                meta["inner_calls"] = len(meta["inner_calls"])
+
+            for y in children:
                 y[1] = fix(y[1])
-                result.append(y)
-            return result
+            return x
         elif isinstance(x, str):
             return re.sub(r"at 0x\w+>", "at 0xABC>", x)
         else:
@@ -183,7 +184,7 @@ class TestBirdsEye(unittest.TestCase):
                 "2 / 0": ["ZeroDivisionError: division by zero", -1, {}],
                 "bar": ['<function bar at 0xABC>', 'function', {}],
                 "error": ['<function error at 0xABC>', 'function', {}],
-                "bar()": ["None", "NoneType", {"inner_calls": [call_ids[1]]}],
+                "bar()": ["None", "NoneType", {"inner_calls": 1}],
                 "x + x": ["2", "int", {}],
                 "x - y": ["-1", "int", {}],
                 "i": {
@@ -229,7 +230,7 @@ class TestBirdsEye(unittest.TestCase):
                        {'len': 2},
                        ['0', ['1', 'int', {}]],
                        ['1', ['2', 'int', {}]]]]],
-                'error()': ['ValueError', -1, {'inner_calls': [call_ids[2]]}],
+                'error()': ['ValueError', -1, {'inner_calls': 1}],
             },
             'stmt': {
                 'x = 1': s,

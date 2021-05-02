@@ -427,9 +427,7 @@
           "",
           -2,
           {
-            "inner_calls": [
-              "6bae27db29f8477ba6eaccd64f5f47c8"
-            ]
+            "inner_calls": 1
           }
         ],
         "21": [
@@ -441,9 +439,7 @@
           "4",
           "int",
           {
-            "inner_calls": [
-              "fa55a8255790437e9e97eab9c1493514"
-            ]
+            "inner_calls": 1
           }
         ],
         "26": [
@@ -608,9 +604,7 @@
           "<A object at 0xABC>",
           "main.<locals>.A",
           {
-            "inner_calls": [
-              "a95c0b47f6a14e8ebf8c44dda70bf948"
-            ]
+            "inner_calls": 1
           }
         ],
         "67": {
