@@ -1,11 +1,8 @@
 from itertools import islice
 
-from birdseye import eye
-
 G = 9
 
 
-@eye
 def factorial(n):
     if n <= 1:
         return 1
@@ -23,44 +20,36 @@ class SlotClass(object):
         self.slot1 = 3
 
 
-@eye
 def complex_args(pos1, pos2, key1=3, key2=4, *args, **kwargs):
     return [pos1, pos2, kwargs]
 
 
-@eye
 def gen():
     for i in range(6):
         yield i
 
 
-@eye
 def use_gen_1(g):
     for x in islice(g, 3):
         dummy(x)
 
 
-@eye
 def use_gen_2(g):
     for y in g:
         dummy(y)
 
 
 class MyClass(object):
-    @eye
     def __add__(self, other):
         return other
 
-    @eye
     def __enter__(self):
         pass
 
-    @eye
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
 
-@eye
 def main():
     assert factorial(3) == 6
 
@@ -134,6 +123,3 @@ def main():
     g = gen()
     use_gen_1(g)
     use_gen_2(g)
-
-
-main()
