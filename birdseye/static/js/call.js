@@ -1,10 +1,6 @@
 'use strict';
 
-/* global call_data, func_data */
-
-
-$(function () {
-
+document.addEventListener( 'DOMContentLoaded', async function () {
     _.mixin({
         toggle: function (a, b) {
             return _.contains(a, b) ? _.without(a, b) : _.union(a, [b]);
@@ -14,12 +10,28 @@ $(function () {
         }
     });
 
+    const static_url = "";
+
+    localforage.config({name: "birdseye", storeName: "birdseye"});
+    const call_id = new URLSearchParams(window.location.search).get('call_id');
+    const call = await localforage.getItem("calls/" + call_id);
+    const call_data = call.data;
+    const call_success = call.success;
+    const func = await localforage.getItem("functions/" + call.function_id);
+    const func_data = func.data;
+
     var $code = $('#code');
+    $code[0].innerHTML = func.html_body;
     hljs.highlightBlock($code[0]);
 
     var node_values = call_data.node_values;
     var loop_iterations = call_data.loop_iterations;
     var node_loops = func_data.node_loops;
+
+    if (_.isEmpty(node_loops)) {
+        $('#arrows-holder').hide();
+    }
+
     var _current_iteration = {};
     $code.find('.loop').each(function (_, loop_span) {
         _current_iteration[loop_span.dataset.index] = 0;
@@ -317,7 +329,7 @@ $(function () {
 
                     var inner_calls = value[2].inner_calls || [];
                     var place_link = function (inner_call, css) {
-                        var link = $('<a class="inner-call" href="' + call_url + inner_call + '">' +
+                        var link = $('<a class="inner-call" href="?call_id=' + inner_call + '">' +
                             '<span class="glyphicon glyphicon-share-alt"></span>' +
                             '</a>')
                             .css(css);

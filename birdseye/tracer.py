@@ -7,21 +7,19 @@ Most of the work is in TreeTracerBase.
 """
 
 import ast
-import inspect
 import sys
 from collections import namedtuple, defaultdict
 from copy import deepcopy
-from functools import partial, update_wrapper, wraps
+from functools import partial, lru_cache
 from itertools import takewhile
-from types import FrameType, TracebackType, CodeType, FunctionType
+from types import FrameType, TracebackType, CodeType
 from uuid import uuid4
 
-from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
-    is_future_import, PYPY
+from birdseye.utils import is_future_import
 
 # noinspection PyUnreachableCode
 if False:
-    from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union
+    from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union, Type
 
     Loop = Union[ast.For, ast.While, ast.comprehension]
 
@@ -171,136 +169,9 @@ class TreeTracerBase(object):
             for f, name in traced_file.trace_methods.items()
         }
 
-    def trace_function(self, func):
-        # type: (FunctionType) -> FunctionType
-        """
-        Returns a version of the passed function with the AST modified to
-        trigger the tracing hooks.
-        """
-        if not isinstance(func, FunctionType):
-            raise ValueError('You can only trace user-defined functions. '
-                             'The birdseye decorator must be applied first, '
-                             'at the bottom of the list.')
-
-        try:
-            if inspect.iscoroutinefunction(func) or inspect.isasyncgenfunction(func):
-                raise ValueError('You cannot trace async functions')
-        except AttributeError:
-            pass
-
-        if is_lambda(func):
-            raise ValueError('You cannot trace lambdas')
-
-        filename = inspect.getsourcefile(func)  # type: str
-
-        if is_ipython_cell(filename):
-            # noinspection PyPackageRequirements
-            from IPython import get_ipython
-            import linecache
-
-            flags = get_ipython().compile.flags
-            source = ''.join(linecache.cache[filename][2])
-        else:
-            source = read_source_file(filename)
-            flags = 0
-
-        # We compile the entire file instead of just the function source
-        # because it can contain context which affects the function code,
-        # e.g. enclosing functions and classes or __future__ imports
-        traced_file = self.compile(source, filename, flags)
-
-        if func.__dict__:
-            raise ValueError('The birdseye decorator must be applied first, '
-                             'at the bottom of the list.')
-
-        # Then we have to recursively search through the newly compiled
-        # code to find the code we actually want corresponding to this function
-        code_options = []  # type: List[CodeType]
-
-        def find_code(root_code):
-            # type: (CodeType) -> None
-            for const in root_code.co_consts:  # type: CodeType
-                if not inspect.iscode(const):
-                    continue
-                matches = (const.co_firstlineno == func.__code__.co_firstlineno and
-                           const.co_name == func.__code__.co_name)
-                if matches:
-                    code_options.append(const)
-                find_code(const)
-
-        find_code(traced_file.code)
-
-        if len(code_options) > 1:
-            # Currently lambdas aren't allowed anyway, but should be in the future
-            assert is_lambda(func)
-            raise ValueError("Failed to trace lambda. Convert the function to a def.")
-        new_func_code = code_options[0]  # type: CodeType
-
-        # Give the new function access to the hooks
-        # We have to use the original __globals__ and not a copy
-        # because it's the actual module namespace that may get updated by other code
-        func.__globals__.update(self._trace_methods_dict(traced_file))
-
-        # http://stackoverflow.com/a/13503277/2482744
-        # noinspection PyArgumentList
-        new_func = FunctionType(new_func_code, func.__globals__, func.__name__, func.__defaults__, func.__closure__)
-        update_wrapper(new_func, func)  # type: FunctionType
-        if PY3:
-            new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
-        new_func.traced_file = traced_file
-        return new_func
-
-    def __call__(self, func=None, optional=False):
-        # type: (FunctionType, bool) -> Callable
-        """
-        Decorator which returns a (possibly optionally) traced function.
-        This decorator can be called with or without arguments.
-        Typically it is called without arguments, in which case it returns
-        a traced function.
-        If optional=True, it returns a function similar to the original
-        but with an additional optional parameter trace_call, default False.
-        If trace_call is false, the underlying untraced function is used.
-        If true, the traced version is used.
-        """
-        if inspect.isclass(func):
-            raise TypeError('Decorating classes is no longer supported')
-
-        if func:
-            # The decorator has been called without arguments/parentheses,
-            # e.g.
-            # @eye
-            # def ...
-            return self.trace_function(func)
-
-        # The decorator has been called with arguments/parentheses,
-        # e.g.
-        # @eye(...)
-        # def ...
-        # We must return a decorator
-
-        if not optional:
-            return self.trace_function
-
-        def decorator(actual_func):
-
-            traced = self.trace_function(actual_func)
-
-            @wraps(actual_func)
-            def wrapper(*args, **kwargs):
-                trace_call = kwargs.pop('trace_call', False)
-                if trace_call:
-                    f = traced
-                else:
-                    f = actual_func
-                return f(*args, **kwargs)
-
-            return wrapper
-
-        return decorator
-
     def _main_frame(self, node):
         # type: (ast.AST) -> Optional[FrameType]
-        frame = sys._getframe(2 + PYPY)
+        frame = sys._getframe(2)
         result = self.secondary_to_main_frames.get(frame)
         if result:
             return result
@@ -536,16 +407,10 @@ class _NodeVisitor(ast.NodeTransformer):
             super(_NodeVisitor, self).generic_visit(node),
             TreeTracerBase._treetrace_hidden_with_stmt)
 
-        if PY3:
-            wrapped = ast.With(
-                items=[ast.withitem(context_expr=context_expr)],
-                body=[node],
-            )
-        else:
-            wrapped = ast.With(
-                context_expr=context_expr,
-                body=[node],
-            )
+        wrapped = ast.With(
+            items=[ast.withitem(context_expr=context_expr)],
+            body=[node],
+        )
         ast.copy_location(wrapped, node)
         ast.fix_missing_locations(wrapped)
         return wrapped
