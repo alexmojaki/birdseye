@@ -256,3 +256,13 @@ html_escape_table = {
 
 def html_escape(text):
     return "".join(html_escape_table.get(c, c) for c in text)
+
+
+def format_pandas_index(index):
+    """
+    Supports different versions of pandas
+    """
+    try:
+        return index.format(sparsify=False)
+    except TypeError:
+        return index.format()
