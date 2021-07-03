@@ -47,6 +47,7 @@ from birdseye.utils import (
     FILE_SENTINEL_NAME,
     read_source_file,
     html_escape,
+    format_pandas_index,
 )
 
 try:
@@ -1042,7 +1043,7 @@ class NodeValue(object):
                 meta['col_break'] = max_cols // 2
 
             indices = set(_sample_indices(num_cols, max_cols))
-            for i, (formatted_name, label) in enumerate(zip(val.columns.format(sparsify=False),
+            for i, (formatted_name, label) in enumerate(zip(format_pandas_index(val.columns),
                                                             val.columns)):
                 if i in indices:
                     add_child(formatted_name, val.iloc[:, i])
@@ -1052,7 +1053,7 @@ class NodeValue(object):
         if isinstance(val, Series):
             for i in _sample_indices(length, samples['pandas_rows']):
                 try:
-                    k = val.index[i:i + 1].format(sparsify=False)[0]
+                    k = format_pandas_index(val.index[i:i + 1])[0]
                     v = val.iloc[i]
                 except:
                     pass
@@ -1138,10 +1139,7 @@ def _repr_series_one_line(x, helper):
     pieces = []
     maxparts = _repr_series_one_line.maxparts
     for i in _sample_indices(n, maxparts):
-        try:
-            k = x.index[i:i + 1].format(sparsify=False)[0]
-        except TypeError:
-            k = x.index[i:i + 1].format()[0]
+        k = format_pandas_index(x.index[i:i + 1])[0]
         v = x.iloc[i]
         pieces.append('%s = %s' % (k, cheap_repr(v, newlevel)))
     if n > maxparts + 2:
