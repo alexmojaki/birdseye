@@ -199,11 +199,19 @@ def read_source_file(filename):
     if filename.endswith('.pyc'):
         filename = filename[:-1]
 
-    with open_with_encoding_check(filename) as f:
+    try:
+        with open_with_encoding_check(filename) as f:
+            return ''.join([
+                '\n' if i < 2 and cookie_re.match(line)
+                else line
+                for i, line in enumerate(f)
+            ])
+
+    except FileNotFoundError:
+        import linecache
+
         return ''.join([
-            '\n' if i < 2 and cookie_re.match(line)
-            else line
-            for i, line in enumerate(f)
+            line for line in linecache.cache[filename][2]
         ])
 
 

@@ -146,6 +146,30 @@ class TestUtils(unittest.TestCase):
         series = df[0]
         self.assertEqual(cheap_repr(series), "0 = 0; 1 = 100; 2 = 200; ...; 97 = 9700; 98 = 9800; 99 = 9900")
 
+    def test_read_source_file_as_string(self):
+        import linecache
+        import birdseye
+
+        source = """
+from birdseye import eye
+
+@eye
+def func():
+    return 42
+"""
+        filename = "<some-non-filename-string>"
+        co = compile(source, filename, "exec")
+        linecache.cache[filename] = (
+            len(source),
+            None,
+            [line + '\n' for line in source.splitlines()],
+            filename,
+        )
+        exec(co, {"birdseye": birdseye})
+        rv = read_source_file(filename)
+        self.assertEqual(rv, source)
+        return
+
 
 if __name__ == '__main__':
     unittest.main()
