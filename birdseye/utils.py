@@ -203,7 +203,7 @@ def read_source_file(filename):
     return ''.join([
         '\n' if i < 2 and cookie_re.match(line)
         else line
-        for i, line in linecache.getlines(filename)
+        for line in linecache.getlines(filename)
             ])
 
 
