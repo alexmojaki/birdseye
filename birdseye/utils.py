@@ -1,5 +1,6 @@
 import ast
 import json
+import linecache
 import ntpath
 import os
 import sys
@@ -199,20 +200,11 @@ def read_source_file(filename):
     if filename.endswith('.pyc'):
         filename = filename[:-1]
 
-    try:
-        with open_with_encoding_check(filename) as f:
-            return ''.join([
-                '\n' if i < 2 and cookie_re.match(line)
-                else line
-                for i, line in enumerate(f)
+    return ''.join([
+        '\n' if i < 2 and cookie_re.match(line)
+        else line
+        for i, line in linecache.getlines(filename)
             ])
-
-    except FileNotFoundError:
-        import linecache
-
-        return ''.join([
-            line for line in linecache.cache[filename][2]
-        ])
 
 
 def source_without_decorators(tokens, function_node):
