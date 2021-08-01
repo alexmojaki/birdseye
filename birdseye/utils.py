@@ -1,4 +1,5 @@
 import ast
+import io
 import json
 import linecache
 import ntpath
@@ -7,6 +8,7 @@ import sys
 import token
 import types
 from sys import version_info
+
 from littleutils import strip_required_prefix
 
 # noinspection PyUnreachableCode
@@ -166,45 +168,28 @@ class ProtocolEncoder(json.JSONEncoder):
             return method()
 
 
-try:
-
-    # Python 3
-    from tokenize import open as open_with_encoding_check
-
-except ImportError:
-
-    # Python 2
-    from lib2to3.pgen2.tokenize import detect_encoding
-    import io
-
-
-    def open_with_encoding_check(filename):  # type: ignore
-        """Open a file in read only mode using the encoding detected by
-        detect_encoding().
-        """
-        fp = io.open(filename, 'rb')
-        try:
-            encoding, lines = detect_encoding(fp.readline)
-            fp.seek(0)
-            text = io.TextIOWrapper(fp, encoding, line_buffering=True)
-            text.mode = 'r'
-            return text
-        except:
-            fp.close()
-            raise
-
-
 def read_source_file(filename):
-    from lib2to3.pgen2.tokenize import cookie_re
+    if PY3:
+        from tokenize import detect_encoding, cookie_re
+    else:
+        from lib2to3.pgen2.tokenize import detect_encoding, cookie_re
 
-    if filename.endswith('.pyc'):
-        filename = filename[:-1]
+    lines = linecache.getlines(filename)
+    text = ''.join(lines)
 
+    if not isinstance(text, Text):
+        encoding = detect_encoding(io.BytesIO(text).readline)[0]
+        text = text.decode(encoding)  # noqa
+        lines = [line.decode(encoding) for line in lines]
+
+    # In python 2 it's a syntax error to parse unicode
+    # with an encoding declaration, so we remove it but
+    # leave empty lines in its place to keep line numbers the same
     return ''.join([
         '\n' if i < 2 and cookie_re.match(line)
         else line
-        for i, line in enumerate(linecache.getlines(filename))
-            ])
+        for i, line in enumerate(lines)
+    ])
 
 
 def source_without_decorators(tokens, function_node):

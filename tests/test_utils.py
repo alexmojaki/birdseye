@@ -1,6 +1,7 @@
 # coding=utf8
 
 import ast
+import linecache
 import unittest
 from tempfile import mkstemp
 
@@ -99,6 +100,7 @@ class TestUtils(unittest.TestCase):
         def write(stuff):
             with open(filename, 'wb') as f:
                 f.write(stuff)
+            linecache.cache.pop(filename, None)
 
         def read():
             return read_source_file(filename).strip()
