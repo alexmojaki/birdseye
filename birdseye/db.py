@@ -10,7 +10,6 @@ from markupsafe import Markup
 from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Integer, Text, ForeignKey, DateTime, String, \
     Index
 from sqlalchemy.dialects.mysql import LONGTEXT
-from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
 from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError, ArgumentError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
@@ -22,7 +21,13 @@ if False:
     from typing import List
 
 
-RESERVED_WORDS.add('function')
+try:
+    from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
+except ImportError:
+    pass
+else:
+    RESERVED_WORDS.add('function')
+
 
 DB_VERSION = 1
 
