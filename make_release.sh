@@ -20,8 +20,6 @@ else
     fi
 fi
 
-tox
-
 export TAG="v${1}"
 git tag "${TAG}"
 git push origin master "${TAG}"
