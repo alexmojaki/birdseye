@@ -14,6 +14,11 @@ You can use birdseye no matter how you run or edit your code. Just ``pip install
 as seen above, run your function however you like, and view the results in your browser.
 It's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
 
+You can try it out **instantly** on `futurecoder <https://futurecoder.io/course/#ide>`_: enter your code in the editor on the left and click the ``birdseye`` button to run. No imports or decorators required.
+
+Feature Highlights
+------------------
+
 Rather than stepping through lines, move back and forth through loop
 iterations and see how the values of selected expressions change:
 
