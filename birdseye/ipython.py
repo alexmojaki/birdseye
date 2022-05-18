@@ -10,10 +10,14 @@ from IPython.core.magic import Magics, cell_magic, magics_class
 from jinja2 import Environment, PackageLoader, select_autoescape
 from traitlets import Unicode, Int, Bool
 from werkzeug.local import LocalProxy
-from werkzeug.serving import ThreadingMixIn
 
 from birdseye.bird import PY2, Database
 from birdseye import server, eye
+
+try:
+    from werkzeug.serving import ThreadingMixIn
+except ImportError:
+    from socketserver import ThreadingMixIn
 
 fake_stream = BytesIO if PY2 else StringIO
 
