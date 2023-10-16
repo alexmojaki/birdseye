@@ -23,6 +23,7 @@ Humanize(app)
 
 
 class FileConverter(PathConverter):
+    part_isolating = False
     regex = '.*?'
 
 
