@@ -1131,6 +1131,11 @@ def _sample_indices(length, max_length):
                            length))
 
 
+@try_register_repr('numpy', 'int64')
+def _repr_numpy_int(x, _helper):
+    return repr(int(x))
+
+
 @try_register_repr('pandas', 'Series')
 def _repr_series_one_line(x, helper):
     n = len(x)

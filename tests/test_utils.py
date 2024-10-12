@@ -156,8 +156,7 @@ class TestUtils(unittest.TestCase):
         arr = arr.reshape((100, 100))
         df = pd.DataFrame(arr)
         series = df[0]
-        self.assertEqual(cheap_repr(series),
-                         "0 = np.int64(0); 1 = np.int64(100); 2 = np.int64(200); ...; 97 = np.int64(9700); 98 = np.int64(9800); 99 = np.int64(9900)")
+        self.assertEqual(cheap_repr(series), "0 = 0; 1 = 100; 2 = 200; ...; 97 = 9700; 98 = 9800; 99 = 9900")
 
     def test_read_source_file_as_string(self):
         import linecache
