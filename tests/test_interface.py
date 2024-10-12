@@ -45,8 +45,6 @@ class TestInterface(unittest.TestCase):
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.set_window_size(1600, 1200)
         self.driver.implicitly_wait(2)
-        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
-            Thread(target=lambda: app.run(port=7777)).start()
 
     def test(self):
         try:
@@ -168,8 +166,3 @@ class TestInterface(unittest.TestCase):
         find_expr('bar()').find_element(By.CLASS_NAME, 'inner-call').click()
         self.assertEqual(driver.find_element(By.TAG_NAME, 'h2').text,
                          'Call to function: bar')
-
-    def tearDown(self):
-        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
-            self.assertEqual(requests.post('http://localhost:7777/kill').text,
-                             'Server shutting down...')

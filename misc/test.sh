@@ -24,8 +24,6 @@ else
     exit 1
 fi
 
-export BIRDSEYE_SERVER_RUNNING=true
-
 python -m gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e
