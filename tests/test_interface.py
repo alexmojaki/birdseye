@@ -1,9 +1,6 @@
-import os
 import unittest
-from threading import Thread
 from time import sleep
 
-import requests
 from littleutils import only
 from selenium import webdriver
 from selenium.webdriver import ActionChains
@@ -11,7 +8,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 from birdseye import eye
-from birdseye.server import app
 
 
 @eye
