@@ -1,4 +1,5 @@
 import ast
+import builtins
 import hashlib
 import inspect
 import json
@@ -1154,20 +1155,18 @@ def is_interesting_expression(node):
     return True. Put differently, return False if this is just a literal.
     """
     return (isinstance(node, ast.expr) and
-            not (isinstance(node, (ast.Num, ast.Str, getattr(ast, 'NameConstant', ()))) or
+            not (isinstance(node, ast.Constant) or
                  isinstance(getattr(node, 'ctx', None),
                             (ast.Store, ast.Del)) or
                  (isinstance(node, ast.UnaryOp) and
                   isinstance(node.op, (ast.UAdd, ast.USub)) and
-                  isinstance(node.operand, ast.Num)) or
+                  isinstance(node.operand, ast.Constant) and
+                  isinstance(node.operand.value, (int, float, complex))) or
                  (isinstance(node, (ast.List, ast.Tuple, ast.Dict)) and
                   not any(is_interesting_expression(n) for n in ast.iter_child_nodes(node)))))
 
 
-# noinspection PyUnresolvedReferences
-builtins_dict = __builtins__
-if not isinstance(builtins_dict, dict):
-    builtins_dict = builtins_dict.__dict__
+builtins_dict: dict = builtins.__dict__  # type: ignore
 
 
 def is_obvious_builtin(node, value):
@@ -1179,4 +1178,4 @@ def is_obvious_builtin(node, value):
     return ((isinstance(node, ast.Name) and
              node.id in builtins_dict and
              builtins_dict[node.id] is value) or
-            isinstance(node, getattr(ast, 'NameConstant', ())))
+            isinstance(node, ast.Constant) and node.value is value)
