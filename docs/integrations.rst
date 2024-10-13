@@ -8,78 +8,6 @@ snoop
 
 `snoop <https://github.com/alexmojaki/snoop>`_ is another fairly similar debugging library by the same author. Typically you decorate a function with ``@snoop`` and it will log the execution and local variables in the function. You can also use the ``@spy`` decorator which is a combination of ``@snoop`` and ``@eye`` from birdseye so that you get the best of both worlds with no extra effort.
 
-PyCharm plugin
---------------
-
-- `JetBrains Plugin Repository page`_
-- `GitHub repo <https://github.com/alexmojaki/birdseye-pycharm>`_
-
-This plugin lets you use birdseye right in the code editor, so that you can switch
-between editing and debugging seamlessly:
-
-.. figure:: https://i.imgur.com/xJQzXWe.gif
-   :alt: demo
-
-By default the plugin also runs the birdseye server for you, although
-you can configure it for total freedom.
-
-You can switch between using the plugin and the normal browser UI for
-birdseye without any additional effort; both use the same database and
-server.
-
-Basic usage
-~~~~~~~~~~~
-
-1. As usual, decorate your function with the
-   ``@eye`` decorator and run your function however you want.
-   See :doc:`quickstart` and :doc:`tips` for more.
-2. If your decorated function was called, the birdseye logo will appear
-   on the left by the function definition. Click on it to see a table of
-   calls to this function.
-3. Click on the call that you want to inspect in a new tab. If there is
-   only one call, it will automatically be selected, i.e. this step is
-   done for you.
-4. You can now hover over expressions in your code and see their values.
-5. Click on expressions to expand their values in the call panel. Click
-   on them again to deselect them, or press delete or backspace while
-   they’re selected in the call panel.
-6. Click on the arrows next to loops to step back and forth through
-   iterations. The number by the arrows is the 0-based index of the
-   iteration.
-7. Minimise the birdseye tool window to hide debugging information
-   and stop highlighting expressions when you hover over or click on
-   them.
-
-Further notes
-~~~~~~~~~~~~~
-
-1. Unlike the regular birdseye UI, functions and calls are not based on
-   the names of functions or files. Clicking the eye icon shows a list
-   of calls to a function with that *exact body*. This means that:
-
-   - Which file contains the function doesn’t matter.
-   - Editing the function at all hides the logo, although reverting those
-     changes brings it back.
-   - Running the function after editing it leads to a new list of calls.
-
-   This is so that the debugging can happen right in the editor.
-2. You can edit a function while you’re busy inspecting it, but you will
-   usually no longer be able to see the values of the expressions whose
-   code changes. Other expressions should be unaffected.
-3. Inspecting a call can take a lot of memory, so close call panels when
-   you’re done with them.
-4. birdseye needs a server to connect to. By default the plugin will run
-   the server for you. To configure this, go to the birdseye section of
-   Preferences. Note that the database URL setting corresponds to the
-   :ref:`BIRDSEYE_DB environment variable <db_config>`. The server needs to run at
-   least version 0.5.0 of birdseye.
-
-.. _JetBrains Plugin Repository page: https://plugins.jetbrains.com/plugin/10917-birdseye
-.. _birdseye: https://github.com/alexmojaki/birdseye
-.. _learn how: https://github.com/alexmojaki/birdseye#installation
-
-.. |logo| image:: https://i.imgur.com/i7uaJDO.png
-
 Jupyter/IPython notebooks
 -------------------------
 
@@ -172,3 +100,15 @@ To combine with an existing web app, add this code at the end of the WSGI file::
 Here ``application`` should already be defined higher up as the WSGI object for your original web app. Then your existing web app should be unaffected, except that you can also go to ``your.domain.com/birdseye`` to view the birdseye UI. You can also choose another prefix instead of ``'/birdseye'``.
 
 Either way, you should also ensure that your web app is secure, as birdseye will expose your code and data. Under the Security section of your web app configuration, enable Force HTTPS and Password protection, choose a username and password, then reload the web app.
+
+PyCharm plugin
+--------------
+
+This plugin hasn't worked for a long time and is no longer being maintained.
+
+- `JetBrains Plugin Repository page <https://plugins.jetbrains.com/plugin/10917-birdseye>`_
+- `GitHub repo <https://github.com/alexmojaki/birdseye-pycharm>`_
+
+.. _birdseye: https://github.com/alexmojaki/birdseye
+.. _learn how: https://github.com/alexmojaki/birdseye#installation
+.. |logo| image:: https://i.imgur.com/i7uaJDO.png

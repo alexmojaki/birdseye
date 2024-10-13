@@ -1,8 +1,7 @@
 |logo| birdseye
 ===============
 
-|Build Status| |Supports Python versions 2.7, 3.5, and 3.6| |Join the
-chat at https://gitter.im/python_birdseye/Lobby|
+|Build Status| |Supports Python versions 2.7 and 3.5+|
 
 birdseye is a Python debugger which records the values of expressions in a
 function call and lets you easily view them after the function exits.
@@ -14,6 +13,11 @@ For example:
 You can use birdseye no matter how you run or edit your code. Just ``pip install birdseye``, add the ``@eye`` decorator
 as seen above, run your function however you like, and view the results in your browser.
 It's also `integrated with some common tools <http://birdseye.readthedocs.io/en/latest/integrations.html>`_ for a smoother experience.
+
+You can try it out **instantly** on `futurecoder <https://futurecoder.io/course/#ide>`_: enter your code in the editor on the left and click the ``birdseye`` button to run. No imports or decorators required.
+
+Feature Highlights
+------------------
 
 Rather than stepping through lines, move back and forth through loop
 iterations and see how the values of selected expressions change:
@@ -39,12 +43,10 @@ ordered by time, letting you see what happens at a glance:
    :alt: List of function calls
 
 .. |logo| image:: https://i.imgur.com/i7uaJDO.png
-.. |Build Status| image:: https://travis-ci.org/alexmojaki/birdseye.svg?branch=master
-   :target: https://travis-ci.org/alexmojaki/birdseye
-.. |Supports Python versions 2.7, 3.5, and 3.6| image:: https://img.shields.io/pypi/pyversions/birdseye.svg
+.. |Build Status| image:: https://travis-ci.com/alexmojaki/birdseye.svg?branch=master
+   :target: https://travis-ci.com/alexmojaki/birdseye
+.. |Supports Python versions 2.7 and 3.5+| image:: https://img.shields.io/pypi/pyversions/birdseye.svg
    :target: https://pypi.python.org/pypi/birdseye
-.. |Join the chat at https://gitter.im/python_birdseye/Lobby| image:: https://badges.gitter.im/python_birdseye/Lobby.svg
-   :target: https://gitter.im/python_birdseye/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 .. inclusion-end-marker
 
