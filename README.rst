@@ -1,7 +1,7 @@
 |logo| birdseye
 ===============
 
-|Build Status| |Supports Python versions 2.7 and 3.5+|
+|Supports Python versions 3.8+|
 
 birdseye is a Python debugger which records the values of expressions in a
 function call and lets you easily view them after the function exits.
@@ -43,9 +43,7 @@ ordered by time, letting you see what happens at a glance:
    :alt: List of function calls
 
 .. |logo| image:: https://i.imgur.com/i7uaJDO.png
-.. |Build Status| image:: https://travis-ci.com/alexmojaki/birdseye.svg?branch=master
-   :target: https://travis-ci.com/alexmojaki/birdseye
-.. |Supports Python versions 2.7 and 3.5+| image:: https://img.shields.io/pypi/pyversions/birdseye.svg
+.. |Supports Python versions 3.8+| image:: https://img.shields.io/pypi/pyversions/birdseye.svg
    :target: https://pypi.python.org/pypi/birdseye
 
 .. inclusion-end-marker

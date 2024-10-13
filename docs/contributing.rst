@@ -127,18 +127,13 @@ When a function runs
 Testing
 -------
 
-Run ``python setup.py test`` to install test requirements and run all
+Run ``./misc/test.sh`` to install test requirements and run all
 tests with a single Python interpreter. You will need to have
-`phantomjs`_ installed, e.g. via::
-
-    npm install --global phantomjs
+`chromedriver` installed.
 
 Run `tox`_ (``pip install tox``) to run tests on all supported
-versions of Python: 2.7, 3.5, and 3.6. You must install the interpreters
+versions of Python. You must install the interpreters
 separately yourself.
-
-Pushes to GitHub will trigger a build on Travis to run tests
-automatically. This will run ``misc/travis_test.sh``.
 
 ``test_against_files``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,13 +154,10 @@ interpreters, so tox is recommended.
 Browser screenshots for test failures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``test_interface.py`` runs a test using selenium and phantomjs. If it
+``test_interface.py`` runs a test using selenium and headless Chrome. If it
 fails, it produces a file ``error_screenshot.png`` which is helpful for
-debugging the failure locally. If the test only fails on travis, you can
-use the ``misc/travis_screenshot.py`` script to obtain the screenshot. See
-the module docstring for details.
+debugging the failure locally.
 
-.. _phantomjs: http://phantomjs.org/download.html
 .. _tox: https://tox.readthedocs.io/en/latest/
 
 
