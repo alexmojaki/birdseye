@@ -45,36 +45,6 @@
     "function": {
       "data": {
         "node_loops": {
-          "29": [
-            15
-          ],
-          "47": [
-            15
-          ],
-          "66": [
-            15
-          ],
-          "67": [
-            15
-          ],
-          "75": [
-            76
-          ],
-          "89": [
-            15
-          ],
-          "91": [
-            15
-          ],
-          "93": [
-            94
-          ],
-          "97": [
-            98
-          ],
-          "99": [
-            76
-          ],
           "111": [
             94,
             112
@@ -109,6 +79,36 @@
           ],
           "152": [
             94
+          ],
+          "29": [
+            15
+          ],
+          "47": [
+            15
+          ],
+          "66": [
+            15
+          ],
+          "67": [
+            15
+          ],
+          "75": [
+            76
+          ],
+          "89": [
+            15
+          ],
+          "91": [
+            15
+          ],
+          "93": [
+            94
+          ],
+          "97": [
+            98
+          ],
+          "99": [
+            76
           ]
         }
       },
@@ -119,14 +119,14 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "4": [
-          "",
-          -2,
-          {}
-        ],
         "11": [
           "<function main.<locals>.A.foo at 0xABC>",
           "function",
+          {}
+        ],
+        "4": [
+          "",
+          -2,
           {}
         ]
       },
@@ -163,95 +163,6 @@
         "node_loops": {}
       },
       "html_body": "<span data-index=\"1\" class=\"stmt\">def deco(f):\n    <span data-index=\"4\" class=\"stmt\">return <span data-index=\"11\" class=\"\">f</span></span></span>"
-    }
-  },
-  {
-    "data": {
-      "loop_iterations": {},
-      "node_values": {
-        "35": [
-          "",
-          -2,
-          {}
-        ],
-        "36": [
-          "",
-          -2,
-          {}
-        ],
-        "37": [
-          "",
-          -2,
-          {}
-        ],
-        "57": [
-          "0",
-          "int",
-          {}
-        ],
-        "58": [
-          "'3'",
-          "str",
-          {
-            "len": 1
-          }
-        ],
-        "59": [
-          "<A object at 0xABC>",
-          "main.<locals>.A",
-          {}
-        ],
-        "82": [
-          "3",
-          "int",
-          {}
-        ],
-        "104": [
-          "3",
-          "int",
-          {}
-        ],
-        "106": [
-          "0",
-          "int",
-          {}
-        ]
-      },
-      "num_special_types": 11,
-      "type_names": [
-        "MyClass",
-        "NoneType",
-        "SlotClass",
-        "ValueError",
-        "bool",
-        "builtin_function_or_method",
-        "complex",
-        "dict",
-        "float",
-        "frozenset",
-        "function",
-        "generator",
-        "getset_descriptor",
-        "int",
-        "islice",
-        "list",
-        "main.<locals>.A",
-        "member_descriptor",
-        "method",
-        "method_descriptor",
-        "range",
-        "set",
-        "str",
-        "tuple",
-        "type",
-        "wrapper_descriptor"
-      ]
-    },
-    "function": {
-      "data": {
-        "node_loops": {}
-      },
-      "html_body": "<span data-index=\"20\" class=\"stmt\">        @<span data-index=\"38\" class=\"\">deco</span>\n        def foo(self):\n            <span data-index=\"35\" class=\"stmt\">x = <span data-index=\"57\" class=\"\">9 * 0</span></span>\n            <span data-index=\"36\" class=\"stmt\"><span data-index=\"58\" class=\"\"><span data-index=\"81\" class=\"\">str</span>(<span data-index=\"82\" class=\"\"><span data-index=\"104\" class=\"\">1 + 2</span> + <span data-index=\"106\" class=\"\">x</span></span>)</span></span>\n            <span data-index=\"37\" class=\"stmt\">return <span data-index=\"59\" class=\"\">self</span></span></span>"
     }
   },
   {
@@ -371,26 +282,248 @@
         ]
       },
       "node_values": {
-        "6": [
-          "",
-          -2,
+        "102": [
+          "range(0, 3)",
+          "range",
+          {
+            "len": 3
+          }
+        ],
+        "107": [
+          "<A object at 0xABC>",
+          "main.<locals>.A",
           {}
         ],
-        "7": [
-          "",
-          -2,
-          {}
+        "111": {
+          "1": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ]
+          },
+          "2": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ],
+            "1": [
+              "2",
+              "int",
+              {}
+            ]
+          }
+        },
+        "112": {
+          "0": [
+            "",
+            -2,
+            {}
+          ],
+          "1": [
+            "",
+            -2,
+            {}
+          ],
+          "2": [
+            "",
+            -2,
+            {}
+          ]
+        },
+        "114": [
+          "range(0, 3)",
+          "range",
+          {
+            "len": 3
+          }
         ],
-        "8": [
-          "",
-          -2,
-          {}
+        "129": [
+          "<class 'A'>",
+          "type",
+          {},
+          [
+            "B",
+            [
+              "<class 'B'>",
+              "type",
+              {},
+              [
+                "__dict__",
+                [
+                  "<attribute '__dict__' of 'B' objects>",
+                  "getset_descriptor",
+                  {}
+                ]
+              ],
+              [
+                "__doc__",
+                [
+                  "None",
+                  "NoneType",
+                  {}
+                ]
+              ],
+              [
+                "__firstlineno__",
+                [
+                  "13",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "__module__",
+                [
+                  "'builtins'",
+                  "str",
+                  {
+                    "len": 8
+                  }
+                ]
+              ],
+              [
+                "__static_attributes__",
+                [
+                  "()",
+                  "tuple",
+                  {
+                    "len": 0
+                  }
+                ]
+              ],
+              [
+                "__weakref__",
+                [
+                  "<attribute '__weakref__' of 'B' objects>",
+                  "getset_descriptor",
+                  {}
+                ]
+              ]
+            ]
+          ],
+          [
+            "__dict__",
+            [
+              "<attribute '__dict__' of 'A' objects>",
+              "getset_descriptor",
+              {}
+            ]
+          ],
+          [
+            "__doc__",
+            [
+              "None",
+              "NoneType",
+              {}
+            ]
+          ],
+          [
+            "__firstlineno__",
+            [
+              "9",
+              "int",
+              {}
+            ]
+          ],
+          [
+            "__module__",
+            [
+              "'builtins'",
+              "str",
+              {
+                "len": 8
+              }
+            ]
+          ],
+          [
+            "__static_attributes__",
+            [
+              "()",
+              "tuple",
+              {
+                "len": 0
+              }
+            ]
+          ],
+          [
+            "__weakref__",
+            [
+              "<attribute '__weakref__' of 'A' objects>",
+              "getset_descriptor",
+              {}
+            ]
+          ],
+          [
+            "bar",
+            [
+              "<function main.<locals>.A.bar at 0xABC>",
+              "function",
+              {}
+            ]
+          ],
+          [
+            "foo",
+            [
+              "<function main.<locals>.A.foo at 0xABC>",
+              "function",
+              {}
+            ]
+          ],
+          [
+            "i",
+            [
+              "2",
+              "int",
+              {}
+            ]
+          ]
         ],
-        "9": [
-          "",
-          -2,
-          {}
-        ],
+        "130": {
+          "1": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ]
+          },
+          "2": {
+            "0": [
+              "0",
+              "int",
+              {}
+            ],
+            "1": [
+              "1",
+              "int",
+              {}
+            ]
+          }
+        },
+        "134": {
+          "0": [
+            "range(0, 0)",
+            "range",
+            {
+              "len": 0
+            }
+          ],
+          "1": [
+            "range(0, 1)",
+            "range",
+            {
+              "len": 1
+            }
+          ],
+          "2": [
+            "range(0, 2)",
+            "range",
+            {
+              "len": 2
+            }
+          ]
+        },
         "14": [
           "'9'",
           "str",
@@ -403,6 +536,23 @@
           -2,
           {}
         ],
+        "152": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ]
+        },
         "16": [
           "",
           -2,
@@ -600,12 +750,15 @@
             ]
           ]
         ],
+        "6": [
+          "",
+          -2,
+          {}
+        ],
         "63": [
           "<A object at 0xABC>",
           "main.<locals>.A",
-          {
-            "inner_calls": 1
-          }
+          {}
         ],
         "67": {
           "0": [
@@ -685,6 +838,11 @@
             ]
           ]
         ],
+        "7": [
+          "",
+          -2,
+          {}
+        ],
         "75": {
           "0": [
             "7",
@@ -703,6 +861,11 @@
           ]
         },
         "76": [
+          "",
+          -2,
+          {}
+        ],
+        "8": [
           "",
           -2,
           {}
@@ -729,6 +892,11 @@
             {}
           ]
         },
+        "9": [
+          "",
+          -2,
+          {}
+        ],
         "91": {
           "0": [
             "0",
@@ -800,241 +968,18 @@
         ],
         "99": {
           "0": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function main.<locals>.A.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "1": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function main.<locals>.A.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "2": [
-            "<function main.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function main.<locals>.A.<lambda> at 0xABC>",
             "function",
-            {}
-          ]
-        },
-        "102": [
-          "range(0, 3)",
-          "range",
-          {
-            "len": 3
-          }
-        ],
-        "107": [
-          "<A object at 0xABC>",
-          "main.<locals>.A",
-          {}
-        ],
-        "111": {
-          "1": {
-            "0": [
-              "0",
-              "int",
-              {}
-            ]
-          },
-          "2": {
-            "0": [
-              "0",
-              "int",
-              {}
-            ],
-            "1": [
-              "2",
-              "int",
-              {}
-            ]
-          }
-        },
-        "112": {
-          "0": [
-            "",
-            -2,
-            {}
-          ],
-          "1": [
-            "",
-            -2,
-            {}
-          ],
-          "2": [
-            "",
-            -2,
-            {}
-          ]
-        },
-        "114": [
-          "range(0, 3)",
-          "range",
-          {
-            "len": 3
-          }
-        ],
-        "129": [
-          "<class 'A'>",
-          "type",
-          {},
-          [
-            "B",
-            [
-              "<class 'B'>",
-              "type",
-              {},
-              [
-                "__dict__",
-                [
-                  "<attribute '__dict__' of 'B' objects>",
-                  "getset_descriptor",
-                  {}
-                ]
-              ],
-              [
-                "__doc__",
-                [
-                  "None",
-                  "NoneType",
-                  {}
-                ]
-              ],
-              [
-                "__module__",
-                [
-                  "'builtins'",
-                  "str",
-                  {
-                    "len": 8
-                  }
-                ]
-              ],
-              [
-                "__weakref__",
-                [
-                  "<attribute '__weakref__' of 'B' objects>",
-                  "getset_descriptor",
-                  {}
-                ]
-              ]
-            ]
-          ],
-          [
-            "__dict__",
-            [
-              "<attribute '__dict__' of 'A' objects>",
-              "getset_descriptor",
-              {}
-            ]
-          ],
-          [
-            "__doc__",
-            [
-              "None",
-              "NoneType",
-              {}
-            ]
-          ],
-          [
-            "__module__",
-            [
-              "'builtins'",
-              "str",
-              {
-                "len": 8
-              }
-            ]
-          ],
-          [
-            "__weakref__",
-            [
-              "<attribute '__weakref__' of 'A' objects>",
-              "getset_descriptor",
-              {}
-            ]
-          ],
-          [
-            "bar",
-            [
-              "<function main.<locals>.A.bar at 0xABC>",
-              "function",
-              {}
-            ]
-          ],
-          [
-            "foo",
-            [
-              "<function main.<locals>.A.foo at 0xABC>",
-              "function",
-              {}
-            ]
-          ],
-          [
-            "i",
-            [
-              "2",
-              "int",
-              {}
-            ]
-          ]
-        ],
-        "130": {
-          "1": {
-            "0": [
-              "0",
-              "int",
-              {}
-            ]
-          },
-          "2": {
-            "0": [
-              "0",
-              "int",
-              {}
-            ],
-            "1": [
-              "1",
-              "int",
-              {}
-            ]
-          }
-        },
-        "134": {
-          "0": [
-            "range(0, 0)",
-            "range",
-            {
-              "len": 0
-            }
-          ],
-          "1": [
-            "range(0, 1)",
-            "range",
-            {
-              "len": 1
-            }
-          ],
-          "2": [
-            "range(0, 2)",
-            "range",
-            {
-              "len": 2
-            }
-          ]
-        },
-        "152": {
-          "0": [
-            "0",
-            "int",
-            {}
-          ],
-          "1": [
-            "1",
-            "int",
-            {}
-          ],
-          "2": [
-            "2",
-            "int",
             {}
           ]
         }
@@ -1072,36 +1017,6 @@
     "function": {
       "data": {
         "node_loops": {
-          "29": [
-            15
-          ],
-          "47": [
-            15
-          ],
-          "66": [
-            15
-          ],
-          "67": [
-            15
-          ],
-          "75": [
-            76
-          ],
-          "89": [
-            15
-          ],
-          "91": [
-            15
-          ],
-          "93": [
-            94
-          ],
-          "97": [
-            98
-          ],
-          "99": [
-            76
-          ],
           "111": [
             94,
             112
@@ -1136,6 +1051,36 @@
           ],
           "152": [
             94
+          ],
+          "29": [
+            15
+          ],
+          "47": [
+            15
+          ],
+          "66": [
+            15
+          ],
+          "67": [
+            15
+          ],
+          "75": [
+            76
+          ],
+          "89": [
+            15
+          ],
+          "91": [
+            15
+          ],
+          "93": [
+            94
+          ],
+          "97": [
+            98
+          ],
+          "99": [
+            76
           ]
         }
       },

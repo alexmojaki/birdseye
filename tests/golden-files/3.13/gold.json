@@ -8,12 +8,47 @@
           -2,
           {}
         ],
+        "10": [
+          "",
+          -2,
+          {}
+        ],
+        "11": [
+          "",
+          -2,
+          {}
+        ],
         "2": [
           "",
           -2,
           {}
         ],
+        "21": [
+          "",
+          -2,
+          {}
+        ],
+        "22": [
+          "",
+          -2,
+          {}
+        ],
         "3": [
+          "",
+          -2,
+          {}
+        ],
+        "32": [
+          "",
+          -2,
+          {}
+        ],
+        "33": [
+          "",
+          -2,
+          {}
+        ],
+        "34": [
           "",
           -2,
           {}
@@ -47,41 +82,6 @@
           "",
           -2,
           {}
-        ],
-        "10": [
-          "",
-          -2,
-          {}
-        ],
-        "11": [
-          "",
-          -2,
-          {}
-        ],
-        "21": [
-          "",
-          -2,
-          {}
-        ],
-        "22": [
-          "",
-          -2,
-          {}
-        ],
-        "32": [
-          "",
-          -2,
-          {}
-        ],
-        "33": [
-          "",
-          -2,
-          {}
-        ],
-        "34": [
-          "",
-          -2,
-          {}
         ]
       },
       "num_special_types": 11,
@@ -102,15 +102,6 @@
     "function": {
       "data": {
         "node_loops": {
-          "88": [
-            26
-          ],
-          "92": [
-            28
-          ],
-          "96": [
-            30
-          ],
           "109": [
             38
           ],
@@ -247,43 +238,57 @@
           "398": [
             216
           ],
-          "450": [
+          "449": [
             38,
             110
           ],
-          "452": [
+          "451": [
             38,
             110
           ],
-          "454": [
+          "453": [
             38,
             110
           ],
-          "456": [
+          "455": [
             39
           ],
-          "462": [
+          "461": [
             216
           ],
-          "497": [
+          "496": [
             38,
             110
           ],
-          "504": [
+          "503": [
             39
           ],
           "516": [
             39
+          ],
+          "88": [
+            26
+          ],
+          "92": [
+            28
+          ],
+          "96": [
+            30
           ]
         }
       },
-      "html_body": "<span data-index=\"1\" class=\"stmt\">from itertools import islice</span>\n\n<span data-index=\"2\" class=\"stmt\">G = 9</span>\n\n\n<span data-index=\"3\" class=\"stmt\">def factorial(n):\n<span data-index=\"16\" class=\"stmt\">    if <span data-index=\"68\" class=\"\"><span data-index=\"153\" class=\"\">n</span> &lt;= 1</span>:\n        <span data-index=\"69\" class=\"stmt\">return 1</span></span>\n    <span data-index=\"17\" class=\"stmt\">return <span data-index=\"70\" class=\"\"><span data-index=\"157\" class=\"\">n</span> * <span data-index=\"159\" class=\"\"><span data-index=\"273\" class=\"\">factorial</span>(<span data-index=\"274\" class=\"\"><span data-index=\"369\" class=\"\">n</span> - 1</span>)</span></span></span></span>\n\n\n<span data-index=\"4\" class=\"stmt\">def dummy(*args):\n    <span data-index=\"19\" class=\"stmt\">pass</span></span>\n\n\n<span data-index=\"5\" class=\"stmt\">class SlotClass(<span data-index=\"20\" class=\"\">object</span>):\n    <span data-index=\"21\" class=\"stmt\">__slots__ = (&#x27;slot1&#x27;,)</span>\n\n<span data-index=\"22\" class=\"stmt\">    def __init__(self):\n        <span data-index=\"76\" class=\"stmt\"><span data-index=\"275\" class=\"\">self</span>.slot1 = 3</span></span></span>\n\n\n<span data-index=\"6\" class=\"stmt\">def complex_args(pos1, pos2, key1=3, key2=4, *args, **kwargs):\n    <span data-index=\"24\" class=\"stmt\">return <span data-index=\"85\" class=\"\">[<span data-index=\"166\" class=\"\">pos1</span>, <span data-index=\"167\" class=\"\">pos2</span>, <span data-index=\"168\" class=\"\">kwargs</span>]</span></span></span>\n\n\n<span data-index=\"7\" class=\"stmt\">def gen():\n<span data-index=\"26\" class=\"loop stmt\">    for i in <span data-index=\"87\" class=\"\"><span data-index=\"171\" class=\"\">range</span>(6)</span>:\n        <span data-index=\"88\" class=\"stmt\"><span data-index=\"173\" class=\"\">yield <span data-index=\"281\" class=\"\">i</span></span></span></span></span>\n\n\n<span data-index=\"8\" class=\"stmt\">def use_gen_1(g):\n<span data-index=\"28\" class=\"loop stmt\">    for x in <span data-index=\"91\" class=\"\"><span data-index=\"175\" class=\"\">islice</span>(<span data-index=\"176\" class=\"\">g</span>, 3)</span>:\n        <span data-index=\"92\" class=\"stmt\"><span data-index=\"178\" class=\"\"><span data-index=\"284\" class=\"\">dummy</span>(<span data-index=\"285\" class=\"\">x</span>)</span></span></span></span>\n\n\n<span data-index=\"9\" class=\"stmt\">def use_gen_2(g):\n<span data-index=\"30\" class=\"loop stmt\">    for y in <span data-index=\"95\" class=\"\">g</span>:\n        <span data-index=\"96\" class=\"stmt\"><span data-index=\"181\" class=\"\"><span data-index=\"286\" class=\"\">dummy</span>(<span data-index=\"287\" class=\"\">y</span>)</span></span></span></span>\n\n\n<span data-index=\"10\" class=\"stmt\">class MyClass(<span data-index=\"31\" class=\"\">object</span>):\n<span data-index=\"32\" class=\"stmt\">    def __add__(self, other):\n        <span data-index=\"99\" class=\"stmt\">return <span data-index=\"184\" class=\"\">other</span></span></span>\n\n<span data-index=\"33\" class=\"stmt\">    def __enter__(self):\n        <span data-index=\"101\" class=\"stmt\">pass</span></span>\n\n<span data-index=\"34\" class=\"stmt\">    def __exit__(self, exc_type, exc_val, exc_tb):\n        <span data-index=\"103\" class=\"stmt\">pass</span></span></span>\n\n\n<span data-index=\"11\" class=\"stmt\">def main():\n    <span data-index=\"36\" class=\"stmt\">assert <span data-index=\"104\" class=\"\"><span data-index=\"190\" class=\"\"><span data-index=\"289\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"37\" class=\"stmt\">vals = []</span>\n<span data-index=\"38\" class=\"loop stmt\">    for i in <span data-index=\"108\" class=\"\"><span data-index=\"196\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"109\" class=\"stmt\"><span data-index=\"198\" class=\"\"><span data-index=\"292\" class=\"\"><span data-index=\"379\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"110\" class=\"loop stmt\">        for j in <span data-index=\"200\" class=\"\"><span data-index=\"295\" class=\"\">range</span>(<span data-index=\"296\" class=\"\">2 * <span data-index=\"385\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"201\" class=\"stmt\"><span data-index=\"297\" class=\"\"><span data-index=\"386\" class=\"\"><span data-index=\"450\" class=\"\"><span data-index=\"497\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"387\" class=\"\"><span data-index=\"452\" class=\"\">i</span> + <span data-index=\"454\" class=\"\">j</span></span>)</span></span></span></span>\n\n<span data-index=\"39\" class=\"loop stmt\">    for i in <span data-index=\"112\" class=\"\"><span data-index=\"203\" class=\"\">range</span>(6)</span>:\n<span data-index=\"113\" class=\"stmt\">        try:\n            <span data-index=\"205\" class=\"stmt\"><span data-index=\"299\" class=\"\"><span data-index=\"388\" class=\"\">dummy</span>(<span data-index=\"389\" class=\"\"><span data-index=\"456\" class=\"\">1 / (<span data-index=\"504\" class=\"\"><span data-index=\"516\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"300\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"301\" class=\"stmt\">continue</span></span>\n<span data-index=\"114\" class=\"stmt\">        if <span data-index=\"207\" class=\"\"><span data-index=\"302\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"208\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"40\" class=\"stmt\">c = <span data-index=\"116\" class=\"\"><span data-index=\"210\" class=\"\"><span data-index=\"305\" class=\"\">MyClass</span>()</span> + <span data-index=\"212\" class=\"\"><span data-index=\"306\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"41\" class=\"stmt\"><span data-index=\"213\" class=\"\">c</span>.list = <span data-index=\"118\" class=\"\">[<span data-index=\"215\" class=\"\">[<span data-index=\"308\" class=\"\"><span data-index=\"394\" class=\"\">x</span> + <span data-index=\"396\" class=\"\">y</span></span> <span data-index=\"309\" class=\"loop\">for x in <span data-index=\"398\" class=\"\"><span data-index=\"462\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"216\" class=\"loop\">for y in <span data-index=\"311\" class=\"\"><span data-index=\"400\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"42\" class=\"stmt\"><span data-index=\"119\" class=\"\"><span data-index=\"217\" class=\"\">sum</span>  (<span data-index=\"218\" class=\"\"><span data-index=\"313\" class=\"\">n</span> <span data-index=\"314\" class=\"loop\">for n in <span data-index=\"404\" class=\"\"><span data-index=\"466\" class=\"\">range</span>(4)</span></span></span>)</span></span>\n    <span data-index=\"43\" class=\"stmt\"><span data-index=\"120\" class=\"\"><span data-index=\"219\" class=\"\">dummy</span>(<span data-index=\"220\" class=\"\">{<span data-index=\"316\" class=\"\">n</span> <span data-index=\"317\" class=\"loop\">for n in <span data-index=\"407\" class=\"\"><span data-index=\"469\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"44\" class=\"stmt\"><span data-index=\"121\" class=\"\"><span data-index=\"221\" class=\"\">dummy</span>(<span data-index=\"222\" class=\"\">{<span data-index=\"319\" class=\"\">n</span>: <span data-index=\"320\" class=\"\">n</span> <span data-index=\"321\" class=\"loop\">for n in <span data-index=\"411\" class=\"\"><span data-index=\"472\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"45\" class=\"stmt\">    with <span data-index=\"223\" class=\"\">c</span>:\n        <span data-index=\"123\" class=\"stmt\">pass</span></span>\n    <span data-index=\"46\" class=\"stmt\"><span data-index=\"124\" class=\"\"><span data-index=\"224\" class=\"\">dummy</span>(<span data-index=\"225\" class=\"\"><span data-index=\"324\" class=\"\">c</span> + <span data-index=\"326\" class=\"\"><span data-index=\"413\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"47\" class=\"stmt\">assert <span data-index=\"125\" class=\"\"><span data-index=\"226\" class=\"\"><span data-index=\"327\" class=\"\">complex_args</span>(\n        <span data-index=\"328\" class=\"\"><span data-index=\"415\" class=\"\">list</span>(<span data-index=\"416\" class=\"\"><span data-index=\"476\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"228\" class=\"\">[<span data-index=\"332\" class=\"\"><span data-index=\"419\" class=\"\">list</span>(<span data-index=\"420\" class=\"\"><span data-index=\"481\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"334\" class=\"\"><span data-index=\"421\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">assert <span data-index=\"126\" class=\"\"><span data-index=\"229\" class=\"\"><span data-index=\"336\" class=\"\">complex_args</span>(<span data-index=\"337\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"49\" class=\"stmt\">assert <span data-index=\"127\" class=\"\"><span data-index=\"232\" class=\"\"><span data-index=\"343\" class=\"\">eval</span>(<span data-index=\"344\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"50\" class=\"stmt\">x = 1</span>\n    <span data-index=\"51\" class=\"stmt\">x += 5</span>\n    <span data-index=\"52\" class=\"stmt\">assert <span data-index=\"133\" class=\"\"><span data-index=\"237\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"53\" class=\"stmt\">del x</span>\n\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"135\" class=\"\"><span data-index=\"241\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"136\" class=\"\"><span data-index=\"245\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"137\" class=\"\"><span data-index=\"248\" class=\"\">(1, 2, 3)[:2]</span> == (1, 2)</span></span>\n\n<span data-index=\"57\" class=\"stmt\">    try:\n        <span data-index=\"138\" class=\"stmt\">raise <span data-index=\"251\" class=\"\"><span data-index=\"356\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"252\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"253\" class=\"stmt\">pass</span>\n    except <span data-index=\"254\" class=\"\">TypeError</span>:\n        <span data-index=\"255\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"256\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"142\" class=\"stmt\"><span data-index=\"257\" class=\"\"><span data-index=\"359\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"58\" class=\"loop stmt\">    while True:\n        <span data-index=\"144\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"59\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"258\" class=\"\">(<span data-index=\"360\" class=\"\">lambda x: <span data-index=\"446\" class=\"\"><span data-index=\"494\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"60\" class=\"stmt\">global G</span>\n    <span data-index=\"61\" class=\"stmt\">G = 4</span>\n    <span data-index=\"62\" class=\"stmt\">assert <span data-index=\"148\" class=\"\"><span data-index=\"262\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">g = <span data-index=\"150\" class=\"\"><span data-index=\"266\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"64\" class=\"stmt\"><span data-index=\"151\" class=\"\"><span data-index=\"267\" class=\"\">use_gen_1</span>(<span data-index=\"268\" class=\"\">g</span>)</span></span>\n    <span data-index=\"65\" class=\"stmt\"><span data-index=\"152\" class=\"\"><span data-index=\"269\" class=\"\">use_gen_2</span>(<span data-index=\"270\" class=\"\">g</span>)</span></span></span>"
+      "html_body": "<span data-index=\"1\" class=\"stmt\">from itertools import islice</span>\n\n<span data-index=\"2\" class=\"stmt\">G = 9</span>\n\n\n<span data-index=\"3\" class=\"stmt\">def factorial(n):\n<span data-index=\"16\" class=\"stmt\">    if <span data-index=\"68\" class=\"\"><span data-index=\"153\" class=\"\">n</span> &lt;= 1</span>:\n        <span data-index=\"69\" class=\"stmt\">return 1</span></span>\n    <span data-index=\"17\" class=\"stmt\">return <span data-index=\"70\" class=\"\"><span data-index=\"157\" class=\"\">n</span> * <span data-index=\"159\" class=\"\"><span data-index=\"273\" class=\"\">factorial</span>(<span data-index=\"274\" class=\"\"><span data-index=\"369\" class=\"\">n</span> - 1</span>)</span></span></span></span>\n\n\n<span data-index=\"4\" class=\"stmt\">def dummy(*args):\n    <span data-index=\"19\" class=\"stmt\">pass</span></span>\n\n\n<span data-index=\"5\" class=\"stmt\">class SlotClass(<span data-index=\"20\" class=\"\">object</span>):\n    <span data-index=\"21\" class=\"stmt\">__slots__ = (&#x27;slot1&#x27;,)</span>\n\n<span data-index=\"22\" class=\"stmt\">    def __init__(self):\n        <span data-index=\"76\" class=\"stmt\"><span data-index=\"275\" class=\"\">self</span>.slot1 = 3</span></span></span>\n\n\n<span data-index=\"6\" class=\"stmt\">def complex_args(pos1, pos2, key1=3, key2=4, *args, **kwargs):\n    <span data-index=\"24\" class=\"stmt\">return <span data-index=\"85\" class=\"\">[<span data-index=\"166\" class=\"\">pos1</span>, <span data-index=\"167\" class=\"\">pos2</span>, <span data-index=\"168\" class=\"\">kwargs</span>]</span></span></span>\n\n\n<span data-index=\"7\" class=\"stmt\">def gen():\n<span data-index=\"26\" class=\"loop stmt\">    for i in <span data-index=\"87\" class=\"\"><span data-index=\"171\" class=\"\">range</span>(6)</span>:\n        <span data-index=\"88\" class=\"stmt\"><span data-index=\"173\" class=\"\">yield <span data-index=\"281\" class=\"\">i</span></span></span></span></span>\n\n\n<span data-index=\"8\" class=\"stmt\">def use_gen_1(g):\n<span data-index=\"28\" class=\"loop stmt\">    for x in <span data-index=\"91\" class=\"\"><span data-index=\"175\" class=\"\">islice</span>(<span data-index=\"176\" class=\"\">g</span>, 3)</span>:\n        <span data-index=\"92\" class=\"stmt\"><span data-index=\"178\" class=\"\"><span data-index=\"284\" class=\"\">dummy</span>(<span data-index=\"285\" class=\"\">x</span>)</span></span></span></span>\n\n\n<span data-index=\"9\" class=\"stmt\">def use_gen_2(g):\n<span data-index=\"30\" class=\"loop stmt\">    for y in <span data-index=\"95\" class=\"\">g</span>:\n        <span data-index=\"96\" class=\"stmt\"><span data-index=\"181\" class=\"\"><span data-index=\"286\" class=\"\">dummy</span>(<span data-index=\"287\" class=\"\">y</span>)</span></span></span></span>\n\n\n<span data-index=\"10\" class=\"stmt\">class MyClass(<span data-index=\"31\" class=\"\">object</span>):\n<span data-index=\"32\" class=\"stmt\">    def __add__(self, other):\n        <span data-index=\"99\" class=\"stmt\">return <span data-index=\"184\" class=\"\">other</span></span></span>\n\n<span data-index=\"33\" class=\"stmt\">    def __enter__(self):\n        <span data-index=\"101\" class=\"stmt\">pass</span></span>\n\n<span data-index=\"34\" class=\"stmt\">    def __exit__(self, exc_type, exc_val, exc_tb):\n        <span data-index=\"103\" class=\"stmt\">pass</span></span></span>\n\n\n<span data-index=\"11\" class=\"stmt\">def main():\n    <span data-index=\"36\" class=\"stmt\">assert <span data-index=\"104\" class=\"\"><span data-index=\"190\" class=\"\"><span data-index=\"289\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"37\" class=\"stmt\">vals = []</span>\n<span data-index=\"38\" class=\"loop stmt\">    for i in <span data-index=\"108\" class=\"\"><span data-index=\"196\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"109\" class=\"stmt\"><span data-index=\"198\" class=\"\"><span data-index=\"292\" class=\"\"><span data-index=\"379\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"110\" class=\"loop stmt\">        for j in <span data-index=\"200\" class=\"\"><span data-index=\"295\" class=\"\">range</span>(<span data-index=\"296\" class=\"\">2 * <span data-index=\"385\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"201\" class=\"stmt\"><span data-index=\"297\" class=\"\"><span data-index=\"386\" class=\"\"><span data-index=\"449\" class=\"\"><span data-index=\"496\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"387\" class=\"\"><span data-index=\"451\" class=\"\">i</span> + <span data-index=\"453\" class=\"\">j</span></span>)</span></span></span></span>\n\n<span data-index=\"39\" class=\"loop stmt\">    for i in <span data-index=\"112\" class=\"\"><span data-index=\"203\" class=\"\">range</span>(6)</span>:\n<span data-index=\"113\" class=\"stmt\">        try:\n            <span data-index=\"205\" class=\"stmt\"><span data-index=\"299\" class=\"\"><span data-index=\"388\" class=\"\">dummy</span>(<span data-index=\"389\" class=\"\"><span data-index=\"455\" class=\"\">1 / (<span data-index=\"503\" class=\"\"><span data-index=\"516\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"300\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"301\" class=\"stmt\">continue</span></span>\n<span data-index=\"114\" class=\"stmt\">        if <span data-index=\"207\" class=\"\"><span data-index=\"302\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"208\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"40\" class=\"stmt\">c = <span data-index=\"116\" class=\"\"><span data-index=\"210\" class=\"\"><span data-index=\"305\" class=\"\">MyClass</span>()</span> + <span data-index=\"212\" class=\"\"><span data-index=\"306\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"41\" class=\"stmt\"><span data-index=\"213\" class=\"\">c</span>.list = <span data-index=\"118\" class=\"\">[<span data-index=\"215\" class=\"\">[<span data-index=\"308\" class=\"\"><span data-index=\"394\" class=\"\">x</span> + <span data-index=\"396\" class=\"\">y</span></span> <span data-index=\"309\" class=\"loop\">for x in <span data-index=\"398\" class=\"\"><span data-index=\"461\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"216\" class=\"loop\">for y in <span data-index=\"311\" class=\"\"><span data-index=\"400\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"42\" class=\"stmt\"><span data-index=\"119\" class=\"\"><span data-index=\"217\" class=\"\">sum</span>  <span data-index=\"218\" class=\"\">(<span data-index=\"313\" class=\"\">n</span> <span data-index=\"314\" class=\"loop\">for n in <span data-index=\"404\" class=\"\"><span data-index=\"465\" class=\"\">range</span>(4)</span></span>)</span></span></span>\n    <span data-index=\"43\" class=\"stmt\"><span data-index=\"120\" class=\"\"><span data-index=\"219\" class=\"\">dummy</span>(<span data-index=\"220\" class=\"\">{<span data-index=\"316\" class=\"\">n</span> <span data-index=\"317\" class=\"loop\">for n in <span data-index=\"407\" class=\"\"><span data-index=\"468\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"44\" class=\"stmt\"><span data-index=\"121\" class=\"\"><span data-index=\"221\" class=\"\">dummy</span>(<span data-index=\"222\" class=\"\">{<span data-index=\"319\" class=\"\">n</span>: <span data-index=\"320\" class=\"\">n</span> <span data-index=\"321\" class=\"loop\">for n in <span data-index=\"411\" class=\"\"><span data-index=\"471\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"45\" class=\"stmt\">    with <span data-index=\"223\" class=\"\">c</span>:\n        <span data-index=\"123\" class=\"stmt\">pass</span></span>\n    <span data-index=\"46\" class=\"stmt\"><span data-index=\"124\" class=\"\"><span data-index=\"224\" class=\"\">dummy</span>(<span data-index=\"225\" class=\"\"><span data-index=\"324\" class=\"\">c</span> + <span data-index=\"326\" class=\"\"><span data-index=\"413\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"47\" class=\"stmt\">assert <span data-index=\"125\" class=\"\"><span data-index=\"226\" class=\"\"><span data-index=\"327\" class=\"\">complex_args</span>(\n        <span data-index=\"328\" class=\"\"><span data-index=\"415\" class=\"\">list</span>(<span data-index=\"416\" class=\"\"><span data-index=\"475\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"228\" class=\"\">[<span data-index=\"332\" class=\"\"><span data-index=\"419\" class=\"\">list</span>(<span data-index=\"420\" class=\"\"><span data-index=\"480\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"334\" class=\"\"><span data-index=\"421\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">assert <span data-index=\"126\" class=\"\"><span data-index=\"229\" class=\"\"><span data-index=\"336\" class=\"\">complex_args</span>(<span data-index=\"337\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"49\" class=\"stmt\">assert <span data-index=\"127\" class=\"\"><span data-index=\"232\" class=\"\"><span data-index=\"343\" class=\"\">eval</span>(<span data-index=\"344\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"50\" class=\"stmt\">x = 1</span>\n    <span data-index=\"51\" class=\"stmt\">x += 5</span>\n    <span data-index=\"52\" class=\"stmt\">assert <span data-index=\"133\" class=\"\"><span data-index=\"237\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"53\" class=\"stmt\">del x</span>\n\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"135\" class=\"\"><span data-index=\"241\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"136\" class=\"\"><span data-index=\"245\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"137\" class=\"\"><span data-index=\"248\" class=\"\">(1, 2, 3)[<span data-index=\"351\" class=\"\">:2</span>]</span> == (1, 2)</span></span>\n\n<span data-index=\"57\" class=\"stmt\">    try:\n        <span data-index=\"138\" class=\"stmt\">raise <span data-index=\"251\" class=\"\"><span data-index=\"356\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"252\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"253\" class=\"stmt\">pass</span>\n    except <span data-index=\"254\" class=\"\">TypeError</span>:\n        <span data-index=\"255\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"256\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"142\" class=\"stmt\"><span data-index=\"257\" class=\"\"><span data-index=\"359\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"58\" class=\"loop stmt\">    while True:\n        <span data-index=\"144\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"59\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"258\" class=\"\">(<span data-index=\"360\" class=\"\">lambda x: <span data-index=\"445\" class=\"\"><span data-index=\"493\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"60\" class=\"stmt\">global G</span>\n    <span data-index=\"61\" class=\"stmt\">G = 4</span>\n    <span data-index=\"62\" class=\"stmt\">assert <span data-index=\"148\" class=\"\"><span data-index=\"262\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">g = <span data-index=\"150\" class=\"\"><span data-index=\"266\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"64\" class=\"stmt\"><span data-index=\"151\" class=\"\"><span data-index=\"267\" class=\"\">use_gen_1</span>(<span data-index=\"268\" class=\"\">g</span>)</span></span>\n    <span data-index=\"65\" class=\"stmt\"><span data-index=\"152\" class=\"\"><span data-index=\"269\" class=\"\">use_gen_2</span>(<span data-index=\"270\" class=\"\">g</span>)</span></span></span>"
     }
   },
   {
     "data": {
       "loop_iterations": {},
       "node_values": {
+        "153": [
+          "1",
+          "int",
+          {}
+        ],
         "16": [
           "",
           -2,
@@ -298,11 +303,6 @@
           "",
           -2,
           {}
-        ],
-        "153": [
-          "1",
-          "int",
-          {}
         ]
       },
       "num_special_types": 11,
@@ -332,26 +332,6 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "16": [
-          "",
-          -2,
-          {}
-        ],
-        "17": [
-          "",
-          -2,
-          {}
-        ],
-        "68": [
-          "False",
-          "bool",
-          {}
-        ],
-        "70": [
-          "2",
-          "int",
-          {}
-        ],
         "153": [
           "2",
           "int",
@@ -369,6 +349,16 @@
             "inner_calls": 1
           }
         ],
+        "16": [
+          "",
+          -2,
+          {}
+        ],
+        "17": [
+          "",
+          -2,
+          {}
+        ],
         "273": [
           "<function factorial at 0xABC>",
           "function",
@@ -380,6 +370,16 @@
           {}
         ],
         "369": [
+          "2",
+          "int",
+          {}
+        ],
+        "68": [
+          "False",
+          "bool",
+          {}
+        ],
+        "70": [
           "2",
           "int",
           {}
@@ -412,6 +412,23 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
+        "153": [
+          "3",
+          "int",
+          {}
+        ],
+        "157": [
+          "3",
+          "int",
+          {}
+        ],
+        "159": [
+          "2",
+          "int",
+          {
+            "inner_calls": 1
+          }
+        ],
         "16": [
           "",
           -2,
@@ -420,6 +437,21 @@
         "17": [
           "",
           -2,
+          {}
+        ],
+        "273": [
+          "<function factorial at 0xABC>",
+          "function",
+          {}
+        ],
+        "274": [
+          "2",
+          "int",
+          {}
+        ],
+        "369": [
+          "3",
+          "int",
           {}
         ],
         "68": [
@@ -431,38 +463,6 @@
           "6",
           "int",
           {}
-        ],
-        "153": [
-          "3",
-          "int",
-          {}
-        ],
-        "157": [
-          "3",
-          "int",
-          {}
-        ],
-        "159": [
-          "2",
-          "int",
-          {
-            "inner_calls": 1
-          }
-        ],
-        "273": [
-          "<function factorial at 0xABC>",
-          "function",
-          {}
-        ],
-        "274": [
-          "2",
-          "int",
-          {}
-        ],
-        "369": [
-          "3",
-          "int",
-          {}
         ]
       },
       "num_special_types": 11,
@@ -562,14 +562,14 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "99": [
-          "",
-          -2,
-          {}
-        ],
         "184": [
           "<MyClass object at 0xABC>",
           "MyClass",
+          {}
+        ],
+        "99": [
+          "",
+          -2,
           {}
         ]
       },
@@ -761,14 +761,14 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "76": [
-          "",
-          -2,
-          {}
-        ],
         "275": [
           "<SlotClass object at 0xABC>",
           "SlotClass",
+          {}
+        ],
+        "76": [
+          "",
+          -2,
           {}
         ]
       },
@@ -807,11 +807,6 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "99": [
-          "",
-          -2,
-          {}
-        ],
         "184": [
           "<SlotClass object at 0xABC>",
           "SlotClass",
@@ -824,6 +819,11 @@
               {}
             ]
           ]
+        ],
+        "99": [
+          "",
+          -2,
+          {}
         ]
       },
       "num_special_types": 11,
@@ -902,116 +902,6 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
-        "24": [
-          "",
-          -2,
-          {}
-        ],
-        "85": [
-          "[[0, 1, 2, ..., 997, 998, 999], 'hello', {'kwarg1': {'key': 'value'}}]",
-          "list",
-          {
-            "len": 3
-          },
-          [
-            "0",
-            [
-              "[0, 1, 2, ..., 997, 998, 999]",
-              "list",
-              {
-                "len": 1000
-              },
-              [
-                "0",
-                [
-                  "0",
-                  "int",
-                  {}
-                ]
-              ],
-              [
-                "1",
-                [
-                  "1",
-                  "int",
-                  {}
-                ]
-              ],
-              [
-                "2",
-                [
-                  "2",
-                  "int",
-                  {}
-                ]
-              ],
-              [
-                "997",
-                [
-                  "997",
-                  "int",
-                  {}
-                ]
-              ],
-              [
-                "998",
-                [
-                  "998",
-                  "int",
-                  {}
-                ]
-              ],
-              [
-                "999",
-                [
-                  "999",
-                  "int",
-                  {}
-                ]
-              ]
-            ]
-          ],
-          [
-            "1",
-            [
-              "'hello'",
-              "str",
-              {
-                "len": 5
-              }
-            ]
-          ],
-          [
-            "2",
-            [
-              "{'kwarg1': {'key': 'value'}}",
-              "dict",
-              {
-                "len": 1
-              },
-              [
-                "'kwarg1'",
-                [
-                  "{'key': 'value'}",
-                  "dict",
-                  {
-                    "len": 1
-                  },
-                  [
-                    "'key'",
-                    [
-                      "'value'",
-                      "str",
-                      {
-                        "len": 5
-                      }
-                    ]
-                  ]
-                ]
-              ]
-            ]
-          ]
-        ],
         "166": [
           "[0, 1, 2, ..., 997, 998, 999]",
           "list",
@@ -1132,6 +1022,116 @@
               ]
             ]
           ]
+        ],
+        "24": [
+          "",
+          -2,
+          {}
+        ],
+        "85": [
+          "[[0, 1, 2, ..., 997, 998, 999], 'hello', {'kwarg1': {'key': 'value'}}]",
+          "list",
+          {
+            "len": 3
+          },
+          [
+            "0",
+            [
+              "[0, 1, 2, ..., 997, 998, 999]",
+              "list",
+              {
+                "len": 1000
+              },
+              [
+                "0",
+                [
+                  "0",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "1",
+                [
+                  "1",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "2",
+                [
+                  "2",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "997",
+                [
+                  "997",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "998",
+                [
+                  "998",
+                  "int",
+                  {}
+                ]
+              ],
+              [
+                "999",
+                [
+                  "999",
+                  "int",
+                  {}
+                ]
+              ]
+            ]
+          ],
+          [
+            "1",
+            [
+              "'hello'",
+              "str",
+              {
+                "len": 5
+              }
+            ]
+          ],
+          [
+            "2",
+            [
+              "{'kwarg1': {'key': 'value'}}",
+              "dict",
+              {
+                "len": 1
+              },
+              [
+                "'kwarg1'",
+                [
+                  "{'key': 'value'}",
+                  "dict",
+                  {
+                    "len": 1
+                  },
+                  [
+                    "'key'",
+                    [
+                      "'value'",
+                      "str",
+                      {
+                        "len": 5
+                      }
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
         ]
       },
       "num_special_types": 11,
@@ -1169,6 +1169,31 @@
     "data": {
       "loop_iterations": {},
       "node_values": {
+        "166": [
+          "1",
+          "int",
+          {}
+        ],
+        "167": [
+          "2",
+          "int",
+          {}
+        ],
+        "168": [
+          "{'k': 23}",
+          "dict",
+          {
+            "len": 1
+          },
+          [
+            "'k'",
+            [
+              "23",
+              "int",
+              {}
+            ]
+          ]
+        ],
         "24": [
           "",
           -2,
@@ -1212,31 +1237,6 @@
                   {}
                 ]
               ]
-            ]
-          ]
-        ],
-        "166": [
-          "1",
-          "int",
-          {}
-        ],
-        "167": [
-          "2",
-          "int",
-          {}
-        ],
-        "168": [
-          "{'k': 23}",
-          "dict",
-          {
-            "len": 1
-          },
-          [
-            "'k'",
-            [
-              "23",
-              "int",
-              {}
             ]
           ]
         ]
@@ -1509,35 +1509,6 @@
         ]
       },
       "node_values": {
-        "28": [
-          "",
-          -2,
-          {
-            "inner_calls": 1
-          }
-        ],
-        "91": [
-          "<itertools.islice object at 0xABC>",
-          "islice",
-          {}
-        ],
-        "92": {
-          "0": [
-            "",
-            -2,
-            {}
-          ],
-          "1": [
-            "",
-            -2,
-            {}
-          ],
-          "2": [
-            "",
-            -2,
-            {}
-          ]
-        },
         "175": [
           "<class 'itertools.islice'>",
           "type",
@@ -1548,7 +1519,7 @@
               "'islice(iterab...s an iterator.'",
               "str",
               {
-                "len": 454
+                "len": 453
               }
             ]
           ],
@@ -1566,6 +1537,16 @@
               "<slot wrapper '__iter__' of 'itertools.islice' objects>",
               "wrapper_descriptor",
               {}
+            ]
+          ],
+          [
+            "__module__",
+            [
+              "'itertools'",
+              "str",
+              {
+                "len": 9
+              }
             ]
           ],
           [
@@ -1629,6 +1610,13 @@
             }
           ]
         },
+        "28": [
+          "",
+          -2,
+          {
+            "inner_calls": 1
+          }
+        ],
         "284": {
           "0": [
             "<function dummy at 0xABC>",
@@ -1660,6 +1648,28 @@
           "2": [
             "2",
             "int",
+            {}
+          ]
+        },
+        "91": [
+          "<itertools.islice object at 0xABC>",
+          "islice",
+          {}
+        ],
+        "92": {
+          "0": [
+            "",
+            -2,
+            {}
+          ],
+          "1": [
+            "",
+            -2,
+            {}
+          ],
+          "2": [
+            "",
+            -2,
             {}
           ]
         }
@@ -1695,9 +1705,6 @@
     "function": {
       "data": {
         "node_loops": {
-          "92": [
-            28
-          ],
           "178": [
             28
           ],
@@ -1705,6 +1712,9 @@
             28
           ],
           "285": [
+            28
+          ],
+          "92": [
             28
           ]
         }
@@ -1878,11 +1888,75 @@
         ]
       },
       "node_values": {
+        "173": {
+          "0": [
+            "None",
+            "NoneType",
+            {}
+          ],
+          "1": [
+            "None",
+            "NoneType",
+            {}
+          ],
+          "2": [
+            "None",
+            "NoneType",
+            {}
+          ],
+          "3": [
+            "None",
+            "NoneType",
+            {}
+          ],
+          "4": [
+            "None",
+            "NoneType",
+            {}
+          ],
+          "5": [
+            "None",
+            "NoneType",
+            {}
+          ]
+        },
         "26": [
           "",
           -2,
           {}
         ],
+        "281": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ],
+          "3": [
+            "3",
+            "int",
+            {}
+          ],
+          "4": [
+            "4",
+            "int",
+            {}
+          ],
+          "5": [
+            "5",
+            "int",
+            {}
+          ]
+        },
         "87": [
           "range(0, 6)",
           "range",
@@ -1921,70 +1995,6 @@
             -2,
             {}
           ]
-        },
-        "173": {
-          "0": [
-            "None",
-            "NoneType",
-            {}
-          ],
-          "1": [
-            "None",
-            "NoneType",
-            {}
-          ],
-          "2": [
-            "None",
-            "NoneType",
-            {}
-          ],
-          "3": [
-            "None",
-            "NoneType",
-            {}
-          ],
-          "4": [
-            "None",
-            "NoneType",
-            {}
-          ],
-          "5": [
-            "None",
-            "NoneType",
-            {}
-          ]
-        },
-        "281": {
-          "0": [
-            "0",
-            "int",
-            {}
-          ],
-          "1": [
-            "1",
-            "int",
-            {}
-          ],
-          "2": [
-            "2",
-            "int",
-            {}
-          ],
-          "3": [
-            "3",
-            "int",
-            {}
-          ],
-          "4": [
-            "4",
-            "int",
-            {}
-          ],
-          "5": [
-            "5",
-            "int",
-            {}
-          ]
         }
       },
       "num_special_types": 11,
@@ -2018,13 +2028,13 @@
     "function": {
       "data": {
         "node_loops": {
-          "88": [
-            26
-          ],
           "173": [
             26
           ],
           "281": [
+            26
+          ],
+          "88": [
             26
           ]
         }
@@ -2051,33 +2061,6 @@
         ]
       },
       "node_values": {
-        "30": [
-          "",
-          -2,
-          {}
-        ],
-        "95": [
-          "<generator object gen at 0xABC>",
-          "generator",
-          {}
-        ],
-        "96": {
-          "0": [
-            "",
-            -2,
-            {}
-          ],
-          "1": [
-            "",
-            -2,
-            {}
-          ],
-          "2": [
-            "",
-            -2,
-            {}
-          ]
-        },
         "181": {
           "0": [
             "None",
@@ -2134,6 +2117,33 @@
             "int",
             {}
           ]
+        },
+        "30": [
+          "",
+          -2,
+          {}
+        ],
+        "95": [
+          "<generator object gen at 0xABC>",
+          "generator",
+          {}
+        ],
+        "96": {
+          "0": [
+            "",
+            -2,
+            {}
+          ],
+          "1": [
+            "",
+            -2,
+            {}
+          ],
+          "2": [
+            "",
+            -2,
+            {}
+          ]
         }
       },
       "num_special_types": 11,
@@ -2167,9 +2177,6 @@
     "function": {
       "data": {
         "node_loops": {
-          "96": [
-            30
-          ],
           "181": [
             30
           ],
@@ -2177,6 +2184,9 @@
             30
           ],
           "287": [
+            30
+          ],
+          "96": [
             30
           ]
         }
@@ -2187,167 +2197,6 @@
   {
     "data": {
       "loop_iterations": {
-        "38": [
-          {
-            "index": 0,
-            "loops": {}
-          },
-          {
-            "index": 1,
-            "loops": {
-              "110": [
-                {
-                  "index": 0,
-                  "loops": {}
-                },
-                {
-                  "index": 1,
-                  "loops": {}
-                }
-              ]
-            }
-          },
-          {
-            "index": 2,
-            "loops": {
-              "110": [
-                {
-                  "index": 0,
-                  "loops": {}
-                },
-                {
-                  "index": 1,
-                  "loops": {}
-                },
-                {
-                  "index": 2,
-                  "loops": {}
-                },
-                {
-                  "index": 3,
-                  "loops": {}
-                }
-              ]
-            }
-          },
-          {
-            "index": 97,
-            "loops": {
-              "110": [
-                {
-                  "index": 0,
-                  "loops": {}
-                },
-                {
-                  "index": 1,
-                  "loops": {}
-                },
-                {
-                  "index": 2,
-                  "loops": {}
-                },
-                {
-                  "index": 191,
-                  "loops": {}
-                },
-                {
-                  "index": 192,
-                  "loops": {}
-                },
-                {
-                  "index": 193,
-                  "loops": {}
-                }
-              ]
-            }
-          },
-          {
-            "index": 98,
-            "loops": {
-              "110": [
-                {
-                  "index": 0,
-                  "loops": {}
-                },
-                {
-                  "index": 1,
-                  "loops": {}
-                },
-                {
-                  "index": 2,
-                  "loops": {}
-                },
-                {
-                  "index": 193,
-                  "loops": {}
-                },
-                {
-                  "index": 194,
-                  "loops": {}
-                },
-                {
-                  "index": 195,
-                  "loops": {}
-                }
-              ]
-            }
-          },
-          {
-            "index": 99,
-            "loops": {
-              "110": [
-                {
-                  "index": 0,
-                  "loops": {}
-                },
-                {
-                  "index": 1,
-                  "loops": {}
-                },
-                {
-                  "index": 2,
-                  "loops": {}
-                },
-                {
-                  "index": 195,
-                  "loops": {}
-                },
-                {
-                  "index": 196,
-                  "loops": {}
-                },
-                {
-                  "index": 197,
-                  "loops": {}
-                }
-              ]
-            }
-          }
-        ],
-        "39": [
-          {
-            "index": 0,
-            "loops": {}
-          },
-          {
-            "index": 1,
-            "loops": {}
-          },
-          {
-            "index": 2,
-            "loops": {}
-          },
-          {
-            "index": 3,
-            "loops": {}
-          }
-        ],
-        "58": [
-          {
-            "index": 0,
-            "loops": {}
-          }
-        ],
         "216": [
           {
             "index": 0,
@@ -2577,161 +2426,170 @@
             "index": 0,
             "loops": {}
           }
+        ],
+        "38": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {
+              "110": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                }
+              ]
+            }
+          },
+          {
+            "index": 2,
+            "loops": {
+              "110": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                },
+                {
+                  "index": 2,
+                  "loops": {}
+                },
+                {
+                  "index": 3,
+                  "loops": {}
+                }
+              ]
+            }
+          },
+          {
+            "index": 97,
+            "loops": {
+              "110": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                },
+                {
+                  "index": 2,
+                  "loops": {}
+                },
+                {
+                  "index": 191,
+                  "loops": {}
+                },
+                {
+                  "index": 192,
+                  "loops": {}
+                },
+                {
+                  "index": 193,
+                  "loops": {}
+                }
+              ]
+            }
+          },
+          {
+            "index": 98,
+            "loops": {
+              "110": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                },
+                {
+                  "index": 2,
+                  "loops": {}
+                },
+                {
+                  "index": 193,
+                  "loops": {}
+                },
+                {
+                  "index": 194,
+                  "loops": {}
+                },
+                {
+                  "index": 195,
+                  "loops": {}
+                }
+              ]
+            }
+          },
+          {
+            "index": 99,
+            "loops": {
+              "110": [
+                {
+                  "index": 0,
+                  "loops": {}
+                },
+                {
+                  "index": 1,
+                  "loops": {}
+                },
+                {
+                  "index": 2,
+                  "loops": {}
+                },
+                {
+                  "index": 195,
+                  "loops": {}
+                },
+                {
+                  "index": 196,
+                  "loops": {}
+                },
+                {
+                  "index": 197,
+                  "loops": {}
+                }
+              ]
+            }
+          }
+        ],
+        "39": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {}
+          },
+          {
+            "index": 2,
+            "loops": {}
+          },
+          {
+            "index": 3,
+            "loops": {}
+          }
+        ],
+        "58": [
+          {
+            "index": 0,
+            "loops": {}
+          }
         ]
       },
       "node_values": {
-        "36": [
-          "",
-          -2,
-          {}
-        ],
-        "37": [
-          "",
-          -2,
-          {}
-        ],
-        "38": [
-          "",
-          -2,
-          {}
-        ],
-        "39": [
-          "",
-          -2,
-          {}
-        ],
-        "40": [
-          "",
-          -2,
-          {}
-        ],
-        "41": [
-          "",
-          -2,
-          {}
-        ],
-        "42": [
-          "",
-          -2,
-          {}
-        ],
-        "43": [
-          "",
-          -2,
-          {}
-        ],
-        "44": [
-          "",
-          -2,
-          {}
-        ],
-        "45": [
-          "",
-          -2,
-          {
-            "inner_calls": 2
-          }
-        ],
-        "46": [
-          "",
-          -2,
-          {}
-        ],
-        "47": [
-          "",
-          -2,
-          {}
-        ],
-        "48": [
-          "",
-          -2,
-          {}
-        ],
-        "49": [
-          "",
-          -2,
-          {}
-        ],
-        "50": [
-          "",
-          -2,
-          {}
-        ],
-        "51": [
-          "",
-          -2,
-          {}
-        ],
-        "52": [
-          "",
-          -2,
-          {}
-        ],
-        "53": [
-          "",
-          -2,
-          {}
-        ],
-        "54": [
-          "",
-          -2,
-          {}
-        ],
-        "55": [
-          "",
-          -2,
-          {}
-        ],
-        "56": [
-          "",
-          -2,
-          {}
-        ],
-        "57": [
-          "",
-          -2,
-          {}
-        ],
-        "58": [
-          "",
-          -2,
-          {}
-        ],
-        "59": [
-          "",
-          -2,
-          {}
-        ],
-        "60": [
-          "",
-          -2,
-          {}
-        ],
-        "61": [
-          "",
-          -2,
-          {}
-        ],
-        "62": [
-          "",
-          -2,
-          {}
-        ],
-        "63": [
-          "",
-          -2,
-          {}
-        ],
-        "64": [
-          "",
-          -2,
-          {}
-        ],
-        "65": [
-          "",
-          -2,
-          {}
-        ],
         "104": [
           "True",
           "bool",
@@ -5283,12 +5141,30 @@
             ]
           ],
           [
+            "__firstlineno__",
+            [
+              "42",
+              "int",
+              {}
+            ]
+          ],
+          [
             "__module__",
             [
               "'builtins'",
               "str",
               {
                 "len": 8
+              }
+            ]
+          ],
+          [
+            "__static_attributes__",
+            [
+              "()",
+              "tuple",
+              {
+                "len": 0
               }
             ]
           ],
@@ -5346,12 +5222,30 @@
             ]
           ],
           [
+            "__firstlineno__",
+            [
+              "42",
+              "int",
+              {}
+            ]
+          ],
+          [
             "__module__",
             [
               "'builtins'",
               "str",
               {
                 "len": 8
+              }
+            ]
+          ],
+          [
+            "__static_attributes__",
+            [
+              "()",
+              "tuple",
+              {
+                "len": 0
               }
             ]
           ],
@@ -6271,9 +6165,19 @@
           "function",
           {}
         ],
+        "36": [
+          "",
+          -2,
+          {}
+        ],
         "360": [
           "<function main.<locals>.<lambda> at 0xABC>",
           "function",
+          {}
+        ],
+        "37": [
+          "",
+          -2,
           {}
         ],
         "379": {
@@ -7122,6 +7026,11 @@
             ]
           ]
         },
+        "38": [
+          "",
+          -2,
+          {}
+        ],
         "385": {
           "0": [
             "0",
@@ -7452,6 +7361,11 @@
             {}
           ]
         },
+        "39": [
+          "",
+          -2,
+          {}
+        ],
         "394": {
           "0": {
             "0": [
@@ -7884,6 +7798,11 @@
             }
           ]
         },
+        "40": [
+          "",
+          -2,
+          {}
+        ],
         "404": [
           "range(0, 4)",
           "range",
@@ -7897,6 +7816,11 @@
           {
             "len": 4
           }
+        ],
+        "41": [
+          "",
+          -2,
+          {}
         ],
         "411": [
           "range(0, 1)",
@@ -7914,6 +7838,14 @@
             [
               "None",
               "NoneType",
+              {}
+            ]
+          ],
+          [
+            "__firstlineno__",
+            [
+              "16",
+              "int",
               {}
             ]
           ],
@@ -7956,6 +7888,16 @@
             ]
           ],
           [
+            "__static_attributes__",
+            [
+              "()",
+              "tuple",
+              {
+                "len": 0
+              }
+            ]
+          ],
+          [
             "slot1",
             [
               "<member 'slot1' of 'SlotClass' objects>",
@@ -7971,6 +7913,11 @@
             "len": 1000
           }
         ],
+        "42": [
+          "",
+          -2,
+          {}
+        ],
         "420": [
           "range(0, 1000)",
           "range",
@@ -7978,7 +7925,17 @@
             "len": 1000
           }
         ],
-        "450": {
+        "43": [
+          "",
+          -2,
+          {}
+        ],
+        "44": [
+          "",
+          -2,
+          {}
+        ],
+        "449": {
           "1": {
             "0": [
               "[]",
@@ -8718,7 +8675,14 @@
             ]
           }
         },
-        "452": {
+        "45": [
+          "",
+          -2,
+          {
+            "inner_calls": 2
+          }
+        ],
+        "451": {
           "1": {
             "0": [
               "1",
@@ -8850,7 +8814,7 @@
             ]
           }
         },
-        "454": {
+        "453": {
           "1": {
             "0": [
               "0",
@@ -8982,7 +8946,7 @@
             ]
           }
         },
-        "456": {
+        "455": {
           "0": [
             "ZeroDivisionError: division by zero",
             -1,
@@ -9004,7 +8968,27 @@
             {}
           ]
         },
-        "497": {
+        "46": [
+          "",
+          -2,
+          {}
+        ],
+        "47": [
+          "",
+          -2,
+          {}
+        ],
+        "48": [
+          "",
+          -2,
+          {}
+        ],
+        "49": [
+          "",
+          -2,
+          {}
+        ],
+        "496": {
           "1": {
             "0": [
               "[[], []]",
@@ -10424,7 +10408,12 @@
             ]
           }
         },
-        "504": {
+        "50": [
+          "",
+          -2,
+          {}
+        ],
+        "503": {
           "0": [
             "0",
             "int",
@@ -10446,6 +10435,11 @@
             {}
           ]
         },
+        "51": [
+          "",
+          -2,
+          {}
+        ],
         "516": {
           "0": [
             "0",
@@ -10467,7 +10461,77 @@
             "int",
             {}
           ]
-        }
+        },
+        "52": [
+          "",
+          -2,
+          {}
+        ],
+        "53": [
+          "",
+          -2,
+          {}
+        ],
+        "54": [
+          "",
+          -2,
+          {}
+        ],
+        "55": [
+          "",
+          -2,
+          {}
+        ],
+        "56": [
+          "",
+          -2,
+          {}
+        ],
+        "57": [
+          "",
+          -2,
+          {}
+        ],
+        "58": [
+          "",
+          -2,
+          {}
+        ],
+        "59": [
+          "",
+          -2,
+          {}
+        ],
+        "60": [
+          "",
+          -2,
+          {}
+        ],
+        "61": [
+          "",
+          -2,
+          {}
+        ],
+        "62": [
+          "",
+          -2,
+          {}
+        ],
+        "63": [
+          "",
+          -2,
+          {}
+        ],
+        "64": [
+          "",
+          -2,
+          {}
+        ],
+        "65": [
+          "",
+          -2,
+          {}
+        ]
       },
       "num_special_types": 11,
       "type_names": [
@@ -10612,29 +10676,29 @@
           "398": [
             216
           ],
-          "450": [
+          "449": [
             38,
             110
           ],
-          "452": [
+          "451": [
             38,
             110
           ],
-          "454": [
+          "453": [
             38,
             110
           ],
-          "456": [
+          "455": [
             39
           ],
-          "462": [
+          "461": [
             216
           ],
-          "497": [
+          "496": [
             38,
             110
           ],
-          "504": [
+          "503": [
             39
           ],
           "516": [
@@ -10642,7 +10706,7 @@
           ]
         }
       },
-      "html_body": "<span data-index=\"11\" class=\"stmt\">def main():\n    <span data-index=\"36\" class=\"stmt\">assert <span data-index=\"104\" class=\"\"><span data-index=\"190\" class=\"\"><span data-index=\"289\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"37\" class=\"stmt\">vals = []</span>\n<span data-index=\"38\" class=\"loop stmt\">    for i in <span data-index=\"108\" class=\"\"><span data-index=\"196\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"109\" class=\"stmt\"><span data-index=\"198\" class=\"\"><span data-index=\"292\" class=\"\"><span data-index=\"379\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"110\" class=\"loop stmt\">        for j in <span data-index=\"200\" class=\"\"><span data-index=\"295\" class=\"\">range</span>(<span data-index=\"296\" class=\"\">2 * <span data-index=\"385\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"201\" class=\"stmt\"><span data-index=\"297\" class=\"\"><span data-index=\"386\" class=\"\"><span data-index=\"450\" class=\"\"><span data-index=\"497\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"387\" class=\"\"><span data-index=\"452\" class=\"\">i</span> + <span data-index=\"454\" class=\"\">j</span></span>)</span></span></span></span>\n\n<span data-index=\"39\" class=\"loop stmt\">    for i in <span data-index=\"112\" class=\"\"><span data-index=\"203\" class=\"\">range</span>(6)</span>:\n<span data-index=\"113\" class=\"stmt\">        try:\n            <span data-index=\"205\" class=\"stmt\"><span data-index=\"299\" class=\"\"><span data-index=\"388\" class=\"\">dummy</span>(<span data-index=\"389\" class=\"\"><span data-index=\"456\" class=\"\">1 / (<span data-index=\"504\" class=\"\"><span data-index=\"516\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"300\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"301\" class=\"stmt\">continue</span></span>\n<span data-index=\"114\" class=\"stmt\">        if <span data-index=\"207\" class=\"\"><span data-index=\"302\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"208\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"40\" class=\"stmt\">c = <span data-index=\"116\" class=\"\"><span data-index=\"210\" class=\"\"><span data-index=\"305\" class=\"\">MyClass</span>()</span> + <span data-index=\"212\" class=\"\"><span data-index=\"306\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"41\" class=\"stmt\"><span data-index=\"213\" class=\"\">c</span>.list = <span data-index=\"118\" class=\"\">[<span data-index=\"215\" class=\"\">[<span data-index=\"308\" class=\"\"><span data-index=\"394\" class=\"\">x</span> + <span data-index=\"396\" class=\"\">y</span></span> <span data-index=\"309\" class=\"loop\">for x in <span data-index=\"398\" class=\"\"><span data-index=\"462\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"216\" class=\"loop\">for y in <span data-index=\"311\" class=\"\"><span data-index=\"400\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"42\" class=\"stmt\"><span data-index=\"119\" class=\"\"><span data-index=\"217\" class=\"\">sum</span>  (<span data-index=\"218\" class=\"\"><span data-index=\"313\" class=\"\">n</span> <span data-index=\"314\" class=\"loop\">for n in <span data-index=\"404\" class=\"\"><span data-index=\"466\" class=\"\">range</span>(4)</span></span></span>)</span></span>\n    <span data-index=\"43\" class=\"stmt\"><span data-index=\"120\" class=\"\"><span data-index=\"219\" class=\"\">dummy</span>(<span data-index=\"220\" class=\"\">{<span data-index=\"316\" class=\"\">n</span> <span data-index=\"317\" class=\"loop\">for n in <span data-index=\"407\" class=\"\"><span data-index=\"469\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"44\" class=\"stmt\"><span data-index=\"121\" class=\"\"><span data-index=\"221\" class=\"\">dummy</span>(<span data-index=\"222\" class=\"\">{<span data-index=\"319\" class=\"\">n</span>: <span data-index=\"320\" class=\"\">n</span> <span data-index=\"321\" class=\"loop\">for n in <span data-index=\"411\" class=\"\"><span data-index=\"472\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"45\" class=\"stmt\">    with <span data-index=\"223\" class=\"\">c</span>:\n        <span data-index=\"123\" class=\"stmt\">pass</span></span>\n    <span data-index=\"46\" class=\"stmt\"><span data-index=\"124\" class=\"\"><span data-index=\"224\" class=\"\">dummy</span>(<span data-index=\"225\" class=\"\"><span data-index=\"324\" class=\"\">c</span> + <span data-index=\"326\" class=\"\"><span data-index=\"413\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"47\" class=\"stmt\">assert <span data-index=\"125\" class=\"\"><span data-index=\"226\" class=\"\"><span data-index=\"327\" class=\"\">complex_args</span>(\n        <span data-index=\"328\" class=\"\"><span data-index=\"415\" class=\"\">list</span>(<span data-index=\"416\" class=\"\"><span data-index=\"476\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"228\" class=\"\">[<span data-index=\"332\" class=\"\"><span data-index=\"419\" class=\"\">list</span>(<span data-index=\"420\" class=\"\"><span data-index=\"481\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"334\" class=\"\"><span data-index=\"421\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">assert <span data-index=\"126\" class=\"\"><span data-index=\"229\" class=\"\"><span data-index=\"336\" class=\"\">complex_args</span>(<span data-index=\"337\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"49\" class=\"stmt\">assert <span data-index=\"127\" class=\"\"><span data-index=\"232\" class=\"\"><span data-index=\"343\" class=\"\">eval</span>(<span data-index=\"344\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"50\" class=\"stmt\">x = 1</span>\n    <span data-index=\"51\" class=\"stmt\">x += 5</span>\n    <span data-index=\"52\" class=\"stmt\">assert <span data-index=\"133\" class=\"\"><span data-index=\"237\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"53\" class=\"stmt\">del x</span>\n\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"135\" class=\"\"><span data-index=\"241\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"136\" class=\"\"><span data-index=\"245\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"137\" class=\"\"><span data-index=\"248\" class=\"\">(1, 2, 3)[:2]</span> == (1, 2)</span></span>\n\n<span data-index=\"57\" class=\"stmt\">    try:\n        <span data-index=\"138\" class=\"stmt\">raise <span data-index=\"251\" class=\"\"><span data-index=\"356\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"252\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"253\" class=\"stmt\">pass</span>\n    except <span data-index=\"254\" class=\"\">TypeError</span>:\n        <span data-index=\"255\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"256\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"142\" class=\"stmt\"><span data-index=\"257\" class=\"\"><span data-index=\"359\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"58\" class=\"loop stmt\">    while True:\n        <span data-index=\"144\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"59\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"258\" class=\"\">(<span data-index=\"360\" class=\"\">lambda x: <span data-index=\"446\" class=\"\"><span data-index=\"494\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"60\" class=\"stmt\">global G</span>\n    <span data-index=\"61\" class=\"stmt\">G = 4</span>\n    <span data-index=\"62\" class=\"stmt\">assert <span data-index=\"148\" class=\"\"><span data-index=\"262\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">g = <span data-index=\"150\" class=\"\"><span data-index=\"266\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"64\" class=\"stmt\"><span data-index=\"151\" class=\"\"><span data-index=\"267\" class=\"\">use_gen_1</span>(<span data-index=\"268\" class=\"\">g</span>)</span></span>\n    <span data-index=\"65\" class=\"stmt\"><span data-index=\"152\" class=\"\"><span data-index=\"269\" class=\"\">use_gen_2</span>(<span data-index=\"270\" class=\"\">g</span>)</span></span></span>"
+      "html_body": "<span data-index=\"11\" class=\"stmt\">def main():\n    <span data-index=\"36\" class=\"stmt\">assert <span data-index=\"104\" class=\"\"><span data-index=\"190\" class=\"\"><span data-index=\"289\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"37\" class=\"stmt\">vals = []</span>\n<span data-index=\"38\" class=\"loop stmt\">    for i in <span data-index=\"108\" class=\"\"><span data-index=\"196\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"109\" class=\"stmt\"><span data-index=\"198\" class=\"\"><span data-index=\"292\" class=\"\"><span data-index=\"379\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"110\" class=\"loop stmt\">        for j in <span data-index=\"200\" class=\"\"><span data-index=\"295\" class=\"\">range</span>(<span data-index=\"296\" class=\"\">2 * <span data-index=\"385\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"201\" class=\"stmt\"><span data-index=\"297\" class=\"\"><span data-index=\"386\" class=\"\"><span data-index=\"449\" class=\"\"><span data-index=\"496\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"387\" class=\"\"><span data-index=\"451\" class=\"\">i</span> + <span data-index=\"453\" class=\"\">j</span></span>)</span></span></span></span>\n\n<span data-index=\"39\" class=\"loop stmt\">    for i in <span data-index=\"112\" class=\"\"><span data-index=\"203\" class=\"\">range</span>(6)</span>:\n<span data-index=\"113\" class=\"stmt\">        try:\n            <span data-index=\"205\" class=\"stmt\"><span data-index=\"299\" class=\"\"><span data-index=\"388\" class=\"\">dummy</span>(<span data-index=\"389\" class=\"\"><span data-index=\"455\" class=\"\">1 / (<span data-index=\"503\" class=\"\"><span data-index=\"516\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"300\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"301\" class=\"stmt\">continue</span></span>\n<span data-index=\"114\" class=\"stmt\">        if <span data-index=\"207\" class=\"\"><span data-index=\"302\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"208\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"40\" class=\"stmt\">c = <span data-index=\"116\" class=\"\"><span data-index=\"210\" class=\"\"><span data-index=\"305\" class=\"\">MyClass</span>()</span> + <span data-index=\"212\" class=\"\"><span data-index=\"306\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"41\" class=\"stmt\"><span data-index=\"213\" class=\"\">c</span>.list = <span data-index=\"118\" class=\"\">[<span data-index=\"215\" class=\"\">[<span data-index=\"308\" class=\"\"><span data-index=\"394\" class=\"\">x</span> + <span data-index=\"396\" class=\"\">y</span></span> <span data-index=\"309\" class=\"loop\">for x in <span data-index=\"398\" class=\"\"><span data-index=\"461\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"216\" class=\"loop\">for y in <span data-index=\"311\" class=\"\"><span data-index=\"400\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"42\" class=\"stmt\"><span data-index=\"119\" class=\"\"><span data-index=\"217\" class=\"\">sum</span>  <span data-index=\"218\" class=\"\">(<span data-index=\"313\" class=\"\">n</span> <span data-index=\"314\" class=\"loop\">for n in <span data-index=\"404\" class=\"\"><span data-index=\"465\" class=\"\">range</span>(4)</span></span>)</span></span></span>\n    <span data-index=\"43\" class=\"stmt\"><span data-index=\"120\" class=\"\"><span data-index=\"219\" class=\"\">dummy</span>(<span data-index=\"220\" class=\"\">{<span data-index=\"316\" class=\"\">n</span> <span data-index=\"317\" class=\"loop\">for n in <span data-index=\"407\" class=\"\"><span data-index=\"468\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"44\" class=\"stmt\"><span data-index=\"121\" class=\"\"><span data-index=\"221\" class=\"\">dummy</span>(<span data-index=\"222\" class=\"\">{<span data-index=\"319\" class=\"\">n</span>: <span data-index=\"320\" class=\"\">n</span> <span data-index=\"321\" class=\"loop\">for n in <span data-index=\"411\" class=\"\"><span data-index=\"471\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"45\" class=\"stmt\">    with <span data-index=\"223\" class=\"\">c</span>:\n        <span data-index=\"123\" class=\"stmt\">pass</span></span>\n    <span data-index=\"46\" class=\"stmt\"><span data-index=\"124\" class=\"\"><span data-index=\"224\" class=\"\">dummy</span>(<span data-index=\"225\" class=\"\"><span data-index=\"324\" class=\"\">c</span> + <span data-index=\"326\" class=\"\"><span data-index=\"413\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"47\" class=\"stmt\">assert <span data-index=\"125\" class=\"\"><span data-index=\"226\" class=\"\"><span data-index=\"327\" class=\"\">complex_args</span>(\n        <span data-index=\"328\" class=\"\"><span data-index=\"415\" class=\"\">list</span>(<span data-index=\"416\" class=\"\"><span data-index=\"475\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"228\" class=\"\">[<span data-index=\"332\" class=\"\"><span data-index=\"419\" class=\"\">list</span>(<span data-index=\"420\" class=\"\"><span data-index=\"480\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"334\" class=\"\"><span data-index=\"421\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">assert <span data-index=\"126\" class=\"\"><span data-index=\"229\" class=\"\"><span data-index=\"336\" class=\"\">complex_args</span>(<span data-index=\"337\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"49\" class=\"stmt\">assert <span data-index=\"127\" class=\"\"><span data-index=\"232\" class=\"\"><span data-index=\"343\" class=\"\">eval</span>(<span data-index=\"344\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"50\" class=\"stmt\">x = 1</span>\n    <span data-index=\"51\" class=\"stmt\">x += 5</span>\n    <span data-index=\"52\" class=\"stmt\">assert <span data-index=\"133\" class=\"\"><span data-index=\"237\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"53\" class=\"stmt\">del x</span>\n\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"135\" class=\"\"><span data-index=\"241\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"136\" class=\"\"><span data-index=\"245\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"137\" class=\"\"><span data-index=\"248\" class=\"\">(1, 2, 3)[<span data-index=\"351\" class=\"\">:2</span>]</span> == (1, 2)</span></span>\n\n<span data-index=\"57\" class=\"stmt\">    try:\n        <span data-index=\"138\" class=\"stmt\">raise <span data-index=\"251\" class=\"\"><span data-index=\"356\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"252\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"253\" class=\"stmt\">pass</span>\n    except <span data-index=\"254\" class=\"\">TypeError</span>:\n        <span data-index=\"255\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"256\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"142\" class=\"stmt\"><span data-index=\"257\" class=\"\"><span data-index=\"359\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"58\" class=\"loop stmt\">    while True:\n        <span data-index=\"144\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"59\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"258\" class=\"\">(<span data-index=\"360\" class=\"\">lambda x: <span data-index=\"445\" class=\"\"><span data-index=\"493\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"60\" class=\"stmt\">global G</span>\n    <span data-index=\"61\" class=\"stmt\">G = 4</span>\n    <span data-index=\"62\" class=\"stmt\">assert <span data-index=\"148\" class=\"\"><span data-index=\"262\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">g = <span data-index=\"150\" class=\"\"><span data-index=\"266\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"64\" class=\"stmt\"><span data-index=\"151\" class=\"\"><span data-index=\"267\" class=\"\">use_gen_1</span>(<span data-index=\"268\" class=\"\">g</span>)</span></span>\n    <span data-index=\"65\" class=\"stmt\"><span data-index=\"152\" class=\"\"><span data-index=\"269\" class=\"\">use_gen_2</span>(<span data-index=\"270\" class=\"\">g</span>)</span></span></span>"
     }
   }
 ]

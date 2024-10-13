@@ -395,7 +395,7 @@ class TestBirdsEye(unittest.TestCase):
                 )
                 for call in store["calls"].values()
             ]
-            version = sys.version[:3]
+            version = '.'.join(map(str, sys.version_info[:2]))
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
             if os.getenv("FIX_TESTS"):

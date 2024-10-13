@@ -6,6 +6,7 @@ from littleutils import only
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
 from tests.test_birdseye import run_traced
 
@@ -18,7 +19,7 @@ class TestInterface(unittest.TestCase):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(options=chrome_options)
-        self.driver.set_window_size(1400, 1000)
+        self.driver.set_window_size(1600, 1200)
         self.driver.implicitly_wait(2)
 
     def test(self):
@@ -78,8 +79,8 @@ class TestInterface(unittest.TestCase):
         # Test hovering, clicking on expressions, and stepping through loops
 
         vals = {'i': 0, 'j': 0}
-        exprs = driver.find_elements_by_class_name('has_value')
-        expr_value = driver.find_element_by_id('box_value')
+        exprs = driver.find_elements(By.CLASS_NAME, 'has_value')
+        expr_value = driver.find_element(By.ID, 'box_value')
 
         expr_strings = [
             'i * 13 + j * 17',
@@ -94,7 +95,7 @@ class TestInterface(unittest.TestCase):
             return find_by_text(text, exprs)
 
         def tree_nodes(root=driver):
-            return root.find_elements_by_class_name('jstree-node')
+            return root.find_elements(By.CLASS_NAME, 'jstree-node')
 
         def select(node, prefix, value_text):
             self.assertIn('box', classes(node))
@@ -118,7 +119,7 @@ class TestInterface(unittest.TestCase):
 
         def step(loop, increment):
             selector = '.loop-navigator > .btn:%s-child' % ('first' if increment == -1 else 'last')
-            buttons = driver.find_elements_by_css_selector(selector)
+            buttons = driver.find_elements(By.CSS_SELECTOR, selector)
             self.assertEqual(len(buttons), 2)
             buttons[loop].click()
             vals['ij'[loop]] += increment
@@ -131,7 +132,7 @@ class TestInterface(unittest.TestCase):
                             if n.text.startswith(expr + ' ='))
                 self.assertEqual(node.text, '%s = int: %s' % (expr, value))
 
-        stmt = find_by_text('assert j', driver.find_elements_by_class_name('stmt'))
+        stmt = find_by_text('assert j', driver.find_elements(By.CLASS_NAME, 'stmt'))
         assert_classes(stmt, 'stmt', 'stmt_uncovered', 'box')
 
         step(0, 1)
@@ -148,7 +149,7 @@ class TestInterface(unittest.TestCase):
         # Expanding values
         x_node = find_expr('x')
         tree_node = select(x_node, 'x = list: ', '[1, 3, 5, ..., 25, 27, 29]')
-        tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
+        tree_node.find_element(By.CLASS_NAME, 'jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in tree_nodes(tree_node)],
                          ['len() = 15',
@@ -164,7 +165,7 @@ class TestInterface(unittest.TestCase):
                           '14 = int: 29']),
 
         # Click on an inner call
-        find_expr("bar()").find_element_by_class_name("inner-call").click()
+        find_expr('bar()').find_element(By.CLASS_NAME, 'inner-call').click()
         self.assertEqual(
-            driver.find_element_by_id("code").text.strip(), "def bar():\n    pass"
+            driver.find_element(By.ID, "code").text.strip(), "def bar():\n    pass"
         )
