@@ -182,15 +182,6 @@ def ipython_iframe_view(call_id):
                            call_id=call_id)
 
 
-@app.route('/kill', methods=['POST'])
-def kill():
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-    return 'Server shutting down...'
-
-
 @app.route('/api/call/<call_id>')
 @db.provide_session
 def api_call_view(session, call_id):

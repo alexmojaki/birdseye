@@ -248,6 +248,9 @@ def format_pandas_index(index):
     Supports different versions of pandas
     """
     try:
-        return index.format(sparsify=False)
-    except TypeError:
-        return index.format()
+        return index.astype(str)
+    except Exception:
+        try:
+            return index.format(sparsify=False)
+        except TypeError:
+            return index.format()

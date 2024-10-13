@@ -191,6 +191,24 @@
             }
           }
         ],
+        "340": [
+          {
+            "index": 0,
+            "loops": {}
+          },
+          {
+            "index": 1,
+            "loops": {}
+          },
+          {
+            "index": 2,
+            "loops": {}
+          },
+          {
+            "index": 3,
+            "loops": {}
+          }
+        ],
         "343": [
           {
             "index": 0,
@@ -1092,8 +1110,8 @@
           ]
         ],
         "137": [
-          "None",
-          "NoneType",
+          "6",
+          "int",
           {}
         ],
         "138": [
@@ -1975,13 +1993,8 @@
           -2,
           {}
         ],
-        "241": [
-          "<function dummy at 0xABC>",
-          "function",
-          {}
-        ],
         "242": [
-          "<generator object main.<loca...nexpr> at 0xABC>",
+          "<generator object main.<locals>.<genexpr> at 0xABC>",
           "generator",
           {}
         ],
@@ -2823,33 +2836,33 @@
         ],
         "317": {
           "0": [
-            "<bound method list.append of []>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ],
           "1": [
-            "<bound method list.append of [[]]>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ],
           "2": [
-            "<bound method list.append of [[], [1, 2]]>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ],
           "3": [
-            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [94, 95, 96, ..., 279, 280, 281], [95, 96, 97, ..., 282, 283, 284], [96, 97, 98, ..., 285, 286, 287]]>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ],
           "4": [
-            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [95, 96, 97, ..., 282, 283, 284], [96, 97, 98, ..., 285, 286, 287], [97, 98, 99, ..., 288, 289, 290]]>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ],
           "5": [
-            "<bound method list.append of [[], [1, 2], [2, 3, 4, 5], ..., [96, 97, 98, ..., 285, 286, 287], [97, 98, 99, ..., 288, 289, 290], [98, 99, 100, ..., 291, 292, 293]]>",
-            "method",
+            "<built-in method append of list object at 0xABC>",
+            "builtin_function_or_method",
             {}
           ]
         },
@@ -3208,7 +3221,7 @@
           [
             "__dict__",
             [
-              "<getset_descriptor object at 0xABC>",
+              "<attribute '__dict__' of 'MyClass' objects>",
               "getset_descriptor",
               {}
             ]
@@ -3266,7 +3279,7 @@
           [
             "__weakref__",
             [
-              "<getset_descriptor object at 0xABC>",
+              "<attribute '__weakref__' of 'MyClass' objects>",
               "getset_descriptor",
               {}
             ]
@@ -3295,7 +3308,7 @@
           [
             "__dict__",
             [
-              "<getset_descriptor object at 0xABC>",
+              "<attribute '__dict__' of 'MyClass' objects>",
               "getset_descriptor",
               {}
             ]
@@ -3353,7 +3366,7 @@
           [
             "__weakref__",
             [
-              "<getset_descriptor object at 0xABC>",
+              "<attribute '__weakref__' of 'MyClass' objects>",
               "getset_descriptor",
               {}
             ]
@@ -3591,6 +3604,33 @@
           {
             "len": 100
           }
+        ],
+        "339": {
+          "0": [
+            "0",
+            "int",
+            {}
+          ],
+          "1": [
+            "1",
+            "int",
+            {}
+          ],
+          "2": [
+            "2",
+            "int",
+            {}
+          ],
+          "3": [
+            "3",
+            "int",
+            {}
+          ]
+        },
+        "340": [
+          "",
+          -2,
+          {}
         ],
         "342": {
           "0": [
@@ -5139,131 +5179,131 @@
         "412": {
           "1": {
             "0": [
-              "<bound method list.append of []>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "1": [
-              "<bound method list.append of [1]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           },
           "2": {
             "0": [
-              "<bound method list.append of []>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "1": [
-              "<bound method list.append of [2]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "2": [
-              "<bound method list.append of [2, 3]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "3": [
-              "<bound method list.append of [2, 3, 4]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           },
           "3": {
             "0": [
-              "<bound method list.append of []>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "1": [
-              "<bound method list.append of [97]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "2": [
-              "<bound method list.append of [97, 98]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "3": [
-              "<bound method list.append of [97, 98, 99, ..., 285, 286, 287]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "4": [
-              "<bound method list.append of [97, 98, 99, ..., 286, 287, 288]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "5": [
-              "<bound method list.append of [97, 98, 99, ..., 287, 288, 289]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           },
           "4": {
             "0": [
-              "<bound method list.append of []>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "1": [
-              "<bound method list.append of [98]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "2": [
-              "<bound method list.append of [98, 99]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "3": [
-              "<bound method list.append of [98, 99, 100, ..., 288, 289, 290]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "4": [
-              "<bound method list.append of [98, 99, 100, ..., 289, 290, 291]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "5": [
-              "<bound method list.append of [98, 99, 100, ..., 290, 291, 292]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           },
           "5": {
             "0": [
-              "<bound method list.append of []>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "1": [
-              "<bound method list.append of [99]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "2": [
-              "<bound method list.append of [99, 100]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "3": [
-              "<bound method list.append of [99, 100, 101, ..., 291, 292, 293]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "4": [
-              "<bound method list.append of [99, 100, 101, ..., 292, 293, 294]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ],
             "5": [
-              "<bound method list.append of [99, 100, 101, ..., 293, 294, 295]>",
-              "method",
+              "<built-in method append of list object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           }
@@ -7497,7 +7537,7 @@
           [
             "slot1",
             [
-              "<member_descriptor object at 0xABC>",
+              "<member 'slot1' of 'SlotClass' objects>",
               "member_descriptor",
               {}
             ]
@@ -7532,7 +7572,7 @@
           -2,
           {}
         ],
-        "478": {
+        "477": {
           "1": {
             "0": [
               "[]",
@@ -8272,12 +8312,7 @@
             ]
           }
         },
-        "48": [
-          "",
-          -2,
-          {}
-        ],
-        "480": {
+        "479": {
           "1": {
             "0": [
               "1",
@@ -8409,7 +8444,12 @@
             ]
           }
         },
-        "482": {
+        "48": [
+          "",
+          -2,
+          {}
+        ],
+        "481": {
           "1": {
             "0": [
               "0",
@@ -8541,7 +8581,7 @@
             ]
           }
         },
-        "486": {
+        "485": {
           "0": [
             "ZeroDivisionError: division by zero",
             -1,
@@ -8583,7 +8623,7 @@
           -2,
           {}
         ],
-        "527": {
+        "526": {
           "1": {
             "0": [
               "[[], []]",
@@ -10013,7 +10053,7 @@
             ]
           }
         ],
-        "534": {
+        "533": {
           "0": [
             "0",
             "int",
@@ -10165,6 +10205,7 @@
         "SlotClass",
         "ValueError",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -10176,13 +10217,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method",
+        "method_descriptor",
         "range",
         "set",
-        "staticmethod",
         "str",
         "tuple",
-        "type"
+        "type",
+        "wrapper_descriptor"
       ]
     },
     "exception": null,
@@ -10218,6 +10259,11 @@
             "end": 417,
             "start": 416,
             "tree_index": 335
+          },
+          {
+            "end": 471,
+            "start": 470,
+            "tree_index": 340
           },
           {
             "end": 503,
@@ -10359,29 +10405,29 @@
           "426": [
             240
           ],
-          "478": [
+          "477": [
             46,
             128
           ],
-          "480": [
+          "479": [
             46,
             128
           ],
-          "482": [
+          "481": [
             46,
             128
           ],
-          "486": [
+          "485": [
             47
           ],
-          "492": [
+          "491": [
             240
           ],
-          "527": [
+          "526": [
             46,
             128
           ],
-          "534": [
+          "533": [
             47
           ],
           "546": [
@@ -11000,15 +11046,15 @@
           {
             "classes": [],
             "depth": 4,
-            "end": 463,
+            "end": 461,
             "start": 458,
             "tree_index": 241
           },
           {
             "classes": [],
             "depth": 4,
-            "end": 483,
-            "start": 464,
+            "end": 484,
+            "start": 463,
             "tree_index": 242
           },
           {
@@ -11337,6 +11383,15 @@
             "tree_index": 339
           },
           {
+            "classes": [
+              "loop"
+            ],
+            "depth": 5,
+            "end": 483,
+            "start": 466,
+            "tree_index": 340
+          },
+          {
             "classes": [],
             "depth": 5,
             "end": 497,
@@ -11444,6 +11499,13 @@
             "end": 916,
             "start": 898,
             "tree_index": 370
+          },
+          {
+            "classes": [],
+            "depth": 5,
+            "end": 1056,
+            "start": 1054,
+            "tree_index": 377
           },
           {
             "classes": [],
@@ -11618,98 +11680,98 @@
             "depth": 6,
             "end": 1298,
             "start": 1293,
-            "tree_index": 474
+            "tree_index": 473
           },
           {
             "classes": [],
             "depth": 7,
             "end": 156,
             "start": 148,
-            "tree_index": 478
+            "tree_index": 477
           },
           {
             "classes": [],
             "depth": 7,
             "end": 165,
             "start": 164,
-            "tree_index": 480
+            "tree_index": 479
           },
           {
             "classes": [],
             "depth": 7,
             "end": 169,
             "start": 168,
-            "tree_index": 482
+            "tree_index": 481
           },
           {
             "classes": [],
             "depth": 7,
             "end": 261,
             "start": 250,
-            "tree_index": 486
+            "tree_index": 485
           },
           {
             "classes": [],
             "depth": 7,
             "end": 426,
             "start": 421,
-            "tree_index": 492
+            "tree_index": 491
           },
           {
             "classes": [],
             "depth": 7,
             "end": 480,
             "start": 475,
-            "tree_index": 496
+            "tree_index": 495
           },
           {
             "classes": [],
             "depth": 7,
             "end": 512,
             "start": 507,
-            "tree_index": 499
+            "tree_index": 498
           },
           {
             "classes": [],
             "depth": 7,
             "end": 548,
             "start": 543,
-            "tree_index": 502
+            "tree_index": 501
           },
           {
             "classes": [],
             "depth": 7,
             "end": 650,
             "start": 645,
-            "tree_index": 506
+            "tree_index": 505
           },
           {
             "classes": [],
             "depth": 7,
             "end": 744,
             "start": 739,
-            "tree_index": 511
+            "tree_index": 510
           },
           {
             "classes": [],
             "depth": 7,
             "end": 1294,
             "start": 1293,
-            "tree_index": 524
+            "tree_index": 523
           },
           {
             "classes": [],
             "depth": 8,
             "end": 152,
             "start": 148,
-            "tree_index": 527
+            "tree_index": 526
           },
           {
             "classes": [],
             "depth": 8,
             "end": 260,
             "start": 255,
-            "tree_index": 534
+            "tree_index": 533
           },
           {
             "classes": [],
@@ -11720,7 +11782,7 @@
           }
         ]
       },
-      "html_body": "<span data-index=\"12\" class=\"stmt\">@<span data-index=\"74\" class=\"\">eye</span>\ndef main():\n    <span data-index=\"44\" class=\"stmt\">assert <span data-index=\"122\" class=\"\"><span data-index=\"213\" class=\"\"><span data-index=\"314\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"45\" class=\"stmt\">vals = []</span>\n<span data-index=\"46\" class=\"loop stmt\">    for i in <span data-index=\"126\" class=\"\"><span data-index=\"219\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"127\" class=\"stmt\"><span data-index=\"221\" class=\"\"><span data-index=\"317\" class=\"\"><span data-index=\"405\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"128\" class=\"loop stmt\">        for j in <span data-index=\"223\" class=\"\"><span data-index=\"320\" class=\"\">range</span>(<span data-index=\"321\" class=\"\">2 * <span data-index=\"411\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"224\" class=\"stmt\"><span data-index=\"322\" class=\"\"><span data-index=\"412\" class=\"\"><span data-index=\"478\" class=\"\"><span data-index=\"527\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"413\" class=\"\"><span data-index=\"480\" class=\"\">i</span> + <span data-index=\"482\" class=\"\">j</span></span>)</span></span>\n            <span data-index=\"225\" class=\"stmt\"><span data-index=\"323\" class=\"\"><span data-index=\"414\" class=\"\">dummy</span>(<span data-index=\"415\" class=\"\">vals</span>)</span></span></span></span>\n\n<span data-index=\"47\" class=\"loop stmt\">    for i in <span data-index=\"130\" class=\"\"><span data-index=\"227\" class=\"\">range</span>(6)</span>:\n<span data-index=\"131\" class=\"stmt\">        try:\n            <span data-index=\"229\" class=\"stmt\"><span data-index=\"325\" class=\"\"><span data-index=\"416\" class=\"\">dummy</span>(<span data-index=\"417\" class=\"\"><span data-index=\"486\" class=\"\">1 / (<span data-index=\"534\" class=\"\"><span data-index=\"546\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"326\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"327\" class=\"stmt\">continue</span></span>\n<span data-index=\"132\" class=\"stmt\">        if <span data-index=\"231\" class=\"\"><span data-index=\"328\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"232\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">c = <span data-index=\"134\" class=\"\"><span data-index=\"234\" class=\"\"><span data-index=\"331\" class=\"\">MyClass</span>()</span> + <span data-index=\"236\" class=\"\"><span data-index=\"332\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"49\" class=\"stmt\"><span data-index=\"237\" class=\"\">c</span>.list = <span data-index=\"136\" class=\"\">[<span data-index=\"239\" class=\"\">[<span data-index=\"334\" class=\"\"><span data-index=\"422\" class=\"\">x</span> + <span data-index=\"424\" class=\"\">y</span></span> <span data-index=\"335\" class=\"loop\">for x in <span data-index=\"426\" class=\"\"><span data-index=\"492\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"240\" class=\"loop\">for y in <span data-index=\"337\" class=\"\"><span data-index=\"428\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"50\" class=\"stmt\"><span data-index=\"137\" class=\"\"><span data-index=\"241\" class=\"\">dummy</span>(<span data-index=\"242\" class=\"\"><span data-index=\"339\" class=\"\">n</span> for n in <span data-index=\"432\" class=\"\"><span data-index=\"496\" class=\"\">range</span>(4)</span></span>)</span></span>\n    <span data-index=\"51\" class=\"stmt\"><span data-index=\"138\" class=\"\"><span data-index=\"243\" class=\"\">dummy</span>(<span data-index=\"244\" class=\"\">{<span data-index=\"342\" class=\"\">n</span> <span data-index=\"343\" class=\"loop\">for n in <span data-index=\"435\" class=\"\"><span data-index=\"499\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"52\" class=\"stmt\"><span data-index=\"139\" class=\"\"><span data-index=\"245\" class=\"\">dummy</span>(<span data-index=\"246\" class=\"\">{<span data-index=\"345\" class=\"\">n</span>: <span data-index=\"346\" class=\"\">n</span> <span data-index=\"347\" class=\"loop\">for n in <span data-index=\"439\" class=\"\"><span data-index=\"502\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"53\" class=\"stmt\">    with <span data-index=\"247\" class=\"\">c</span>:\n        <span data-index=\"141\" class=\"stmt\">pass</span></span>\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"142\" class=\"\"><span data-index=\"248\" class=\"\">dummy</span>(<span data-index=\"249\" class=\"\"><span data-index=\"350\" class=\"\">c</span> + <span data-index=\"352\" class=\"\"><span data-index=\"441\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"143\" class=\"\"><span data-index=\"250\" class=\"\"><span data-index=\"353\" class=\"\">complex_args</span>(\n        <span data-index=\"354\" class=\"\"><span data-index=\"443\" class=\"\">list</span>(<span data-index=\"444\" class=\"\"><span data-index=\"506\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"252\" class=\"\">[<span data-index=\"358\" class=\"\"><span data-index=\"447\" class=\"\">list</span>(<span data-index=\"448\" class=\"\"><span data-index=\"511\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"360\" class=\"\"><span data-index=\"449\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"144\" class=\"\"><span data-index=\"253\" class=\"\"><span data-index=\"362\" class=\"\">complex_args</span>(<span data-index=\"363\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"57\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"256\" class=\"\"><span data-index=\"369\" class=\"\">eval</span>(<span data-index=\"370\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"58\" class=\"stmt\">x = 1</span>\n    <span data-index=\"59\" class=\"stmt\">x += 5</span>\n    <span data-index=\"60\" class=\"stmt\">assert <span data-index=\"151\" class=\"\"><span data-index=\"261\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"61\" class=\"stmt\">del x</span>\n\n    <span data-index=\"62\" class=\"stmt\"><span data-index=\"153\" class=\"\"><span data-index=\"265\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">assert <span data-index=\"154\" class=\"\"><span data-index=\"269\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"64\" class=\"stmt\">assert <span data-index=\"155\" class=\"\"><span data-index=\"272\" class=\"\">(1, 2, 3)[:2]</span> == (1, 2)</span></span>\n\n<span data-index=\"65\" class=\"stmt\">    try:\n        <span data-index=\"156\" class=\"stmt\">raise <span data-index=\"275\" class=\"\"><span data-index=\"382\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"276\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"277\" class=\"stmt\">pass</span>\n    except <span data-index=\"278\" class=\"\">TypeError</span>:\n        <span data-index=\"279\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"280\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"160\" class=\"stmt\"><span data-index=\"281\" class=\"\"><span data-index=\"385\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"66\" class=\"loop stmt\">    while True:\n        <span data-index=\"162\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"67\" class=\"stmt\">assert <span data-index=\"163\" class=\"\"><span data-index=\"282\" class=\"\">(<span data-index=\"386\" class=\"\">lambda x: <span data-index=\"474\" class=\"\"><span data-index=\"524\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"68\" class=\"stmt\">global G</span>\n    <span data-index=\"69\" class=\"stmt\">G = 4</span>\n    <span data-index=\"70\" class=\"stmt\">assert <span data-index=\"166\" class=\"\"><span data-index=\"286\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"71\" class=\"stmt\">g = <span data-index=\"168\" class=\"\"><span data-index=\"290\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"72\" class=\"stmt\"><span data-index=\"169\" class=\"\"><span data-index=\"291\" class=\"\">use_gen_1</span>(<span data-index=\"292\" class=\"\">g</span>)</span></span>\n    <span data-index=\"73\" class=\"stmt\"><span data-index=\"170\" class=\"\"><span data-index=\"293\" class=\"\">use_gen_2</span>(<span data-index=\"294\" class=\"\">g</span>)</span></span></span>",
+      "html_body": "<span data-index=\"12\" class=\"stmt\">@<span data-index=\"74\" class=\"\">eye</span>\ndef main():\n    <span data-index=\"44\" class=\"stmt\">assert <span data-index=\"122\" class=\"\"><span data-index=\"213\" class=\"\"><span data-index=\"314\" class=\"\">factorial</span>(3)</span> == 6</span></span>\n\n    <span data-index=\"45\" class=\"stmt\">vals = []</span>\n<span data-index=\"46\" class=\"loop stmt\">    for i in <span data-index=\"126\" class=\"\"><span data-index=\"219\" class=\"\">range</span>(100)</span>:\n        <span data-index=\"127\" class=\"stmt\"><span data-index=\"221\" class=\"\"><span data-index=\"317\" class=\"\"><span data-index=\"405\" class=\"\">vals</span>.append</span>([])</span></span>\n<span data-index=\"128\" class=\"loop stmt\">        for j in <span data-index=\"223\" class=\"\"><span data-index=\"320\" class=\"\">range</span>(<span data-index=\"321\" class=\"\">2 * <span data-index=\"411\" class=\"\">i</span></span>)</span>:\n            <span data-index=\"224\" class=\"stmt\"><span data-index=\"322\" class=\"\"><span data-index=\"412\" class=\"\"><span data-index=\"477\" class=\"\"><span data-index=\"526\" class=\"\">vals</span>[-1]</span>.append</span>(<span data-index=\"413\" class=\"\"><span data-index=\"479\" class=\"\">i</span> + <span data-index=\"481\" class=\"\">j</span></span>)</span></span>\n            <span data-index=\"225\" class=\"stmt\"><span data-index=\"323\" class=\"\"><span data-index=\"414\" class=\"\">dummy</span>(<span data-index=\"415\" class=\"\">vals</span>)</span></span></span></span>\n\n<span data-index=\"47\" class=\"loop stmt\">    for i in <span data-index=\"130\" class=\"\"><span data-index=\"227\" class=\"\">range</span>(6)</span>:\n<span data-index=\"131\" class=\"stmt\">        try:\n            <span data-index=\"229\" class=\"stmt\"><span data-index=\"325\" class=\"\"><span data-index=\"416\" class=\"\">dummy</span>(<span data-index=\"417\" class=\"\"><span data-index=\"485\" class=\"\">1 / (<span data-index=\"533\" class=\"\"><span data-index=\"546\" class=\"\">i</span> % 2</span>)</span> + 10</span>)</span></span>\n        except <span data-index=\"326\" class=\"\">ZeroDivisionError</span>:\n            <span data-index=\"327\" class=\"stmt\">continue</span></span>\n<span data-index=\"132\" class=\"stmt\">        if <span data-index=\"231\" class=\"\"><span data-index=\"328\" class=\"\">i</span> == 3</span>:\n            <span data-index=\"232\" class=\"stmt\">break</span></span></span>\n\n    <span data-index=\"48\" class=\"stmt\">c = <span data-index=\"134\" class=\"\"><span data-index=\"234\" class=\"\"><span data-index=\"331\" class=\"\">MyClass</span>()</span> + <span data-index=\"236\" class=\"\"><span data-index=\"332\" class=\"\">MyClass</span>()</span></span></span>\n    <span data-index=\"49\" class=\"stmt\"><span data-index=\"237\" class=\"\">c</span>.list = <span data-index=\"136\" class=\"\">[<span data-index=\"239\" class=\"\">[<span data-index=\"334\" class=\"\"><span data-index=\"422\" class=\"\">x</span> + <span data-index=\"424\" class=\"\">y</span></span> <span data-index=\"335\" class=\"loop\">for x in <span data-index=\"426\" class=\"\"><span data-index=\"491\" class=\"\">range</span>(100)</span></span>]</span> \n <span data-index=\"240\" class=\"loop\">for y in <span data-index=\"337\" class=\"\"><span data-index=\"428\" class=\"\">range</span>(100)</span></span>]</span></span>\n    <span data-index=\"50\" class=\"stmt\"><span data-index=\"137\" class=\"\"><span data-index=\"241\" class=\"\">sum</span>  <span data-index=\"242\" class=\"\">(<span data-index=\"339\" class=\"\">n</span> <span data-index=\"340\" class=\"loop\">for n in <span data-index=\"432\" class=\"\"><span data-index=\"495\" class=\"\">range</span>(4)</span></span>)</span></span></span>\n    <span data-index=\"51\" class=\"stmt\"><span data-index=\"138\" class=\"\"><span data-index=\"243\" class=\"\">dummy</span>(<span data-index=\"244\" class=\"\">{<span data-index=\"342\" class=\"\">n</span> <span data-index=\"343\" class=\"loop\">for n in <span data-index=\"435\" class=\"\"><span data-index=\"498\" class=\"\">range</span>(4)</span></span>}</span>)</span></span>\n    <span data-index=\"52\" class=\"stmt\"><span data-index=\"139\" class=\"\"><span data-index=\"245\" class=\"\">dummy</span>(<span data-index=\"246\" class=\"\">{<span data-index=\"345\" class=\"\">n</span>: <span data-index=\"346\" class=\"\">n</span> <span data-index=\"347\" class=\"loop\">for n in <span data-index=\"439\" class=\"\"><span data-index=\"501\" class=\"\">range</span>(1)</span></span>}</span>)</span></span>\n<span data-index=\"53\" class=\"stmt\">    with <span data-index=\"247\" class=\"\">c</span>:\n        <span data-index=\"141\" class=\"stmt\">pass</span></span>\n    <span data-index=\"54\" class=\"stmt\"><span data-index=\"142\" class=\"\"><span data-index=\"248\" class=\"\">dummy</span>(<span data-index=\"249\" class=\"\"><span data-index=\"350\" class=\"\">c</span> + <span data-index=\"352\" class=\"\"><span data-index=\"441\" class=\"\">SlotClass</span>()</span></span>)</span></span>\n\n    <span data-index=\"55\" class=\"stmt\">assert <span data-index=\"143\" class=\"\"><span data-index=\"250\" class=\"\"><span data-index=\"353\" class=\"\">complex_args</span>(\n        <span data-index=\"354\" class=\"\"><span data-index=\"443\" class=\"\">list</span>(<span data-index=\"444\" class=\"\"><span data-index=\"505\" class=\"\">range</span>(1000)</span>)</span>,\n        &quot;hello&quot;,\n        key2=8,\n        kwarg1={&#x27;key&#x27;: &#x27;value&#x27;}\n    )</span> == <span data-index=\"252\" class=\"\">[<span data-index=\"358\" class=\"\"><span data-index=\"447\" class=\"\">list</span>(<span data-index=\"448\" class=\"\"><span data-index=\"510\" class=\"\">range</span>(1000)</span>)</span>,\n          &#x27;hello&#x27;,\n          <span data-index=\"360\" class=\"\"><span data-index=\"449\" class=\"\">dict</span>(kwarg1={&#x27;key&#x27;: &#x27;value&#x27;})</span>]</span></span></span>\n\n    <span data-index=\"56\" class=\"stmt\">assert <span data-index=\"144\" class=\"\"><span data-index=\"253\" class=\"\"><span data-index=\"362\" class=\"\">complex_args</span>(<span data-index=\"363\" class=\"\">*[1, 2]</span>, **{&#x27;k&#x27;: 23})</span> == [1, 2, {&#x27;k&#x27;: 23}]</span></span>\n\n    <span data-index=\"57\" class=\"stmt\">assert <span data-index=\"145\" class=\"\"><span data-index=\"256\" class=\"\"><span data-index=\"369\" class=\"\">eval</span>(<span data-index=\"370\" class=\"\">&#x27;%s + %s&#x27; % (1, 2)</span>)</span> == 3</span></span>\n\n    <span data-index=\"58\" class=\"stmt\">x = 1</span>\n    <span data-index=\"59\" class=\"stmt\">x += 5</span>\n    <span data-index=\"60\" class=\"stmt\">assert <span data-index=\"151\" class=\"\"><span data-index=\"261\" class=\"\">x</span> == 6</span></span>\n    <span data-index=\"61\" class=\"stmt\">del x</span>\n\n    <span data-index=\"62\" class=\"stmt\"><span data-index=\"153\" class=\"\"><span data-index=\"265\" class=\"\">dummy</span>(True, False, None)</span></span>\n\n    <span data-index=\"63\" class=\"stmt\">assert <span data-index=\"154\" class=\"\"><span data-index=\"269\" class=\"\">[1, 2, 3][1]</span> == 2</span></span>\n    <span data-index=\"64\" class=\"stmt\">assert <span data-index=\"155\" class=\"\"><span data-index=\"272\" class=\"\">(1, 2, 3)[<span data-index=\"377\" class=\"\">:2</span>]</span> == (1, 2)</span></span>\n\n<span data-index=\"65\" class=\"stmt\">    try:\n        <span data-index=\"156\" class=\"stmt\">raise <span data-index=\"275\" class=\"\"><span data-index=\"382\" class=\"\">ValueError</span>()</span></span>\n    except <span data-index=\"276\" class=\"\">AssertionError</span> as e:\n        <span data-index=\"277\" class=\"stmt\">pass</span>\n    except <span data-index=\"278\" class=\"\">TypeError</span>:\n        <span data-index=\"279\" class=\"stmt\">pass</span>\n    except:\n        <span data-index=\"280\" class=\"stmt\">pass</span>\n    finally:\n        <span data-index=\"160\" class=\"stmt\"><span data-index=\"281\" class=\"\"><span data-index=\"385\" class=\"\">dummy</span>()</span></span></span>\n\n<span data-index=\"66\" class=\"loop stmt\">    while True:\n        <span data-index=\"162\" class=\"stmt\">break</span></span>\n\n    <span data-index=\"67\" class=\"stmt\">assert <span data-index=\"163\" class=\"\"><span data-index=\"282\" class=\"\">(<span data-index=\"386\" class=\"\">lambda x: <span data-index=\"473\" class=\"\"><span data-index=\"523\" class=\"\">x</span> * 2</span></span>)(4)</span> == 8</span></span>\n\n    <span data-index=\"68\" class=\"stmt\">global G</span>\n    <span data-index=\"69\" class=\"stmt\">G = 4</span>\n    <span data-index=\"70\" class=\"stmt\">assert <span data-index=\"166\" class=\"\"><span data-index=\"286\" class=\"\">G</span> == 4</span></span>\n\n    <span data-index=\"71\" class=\"stmt\">g = <span data-index=\"168\" class=\"\"><span data-index=\"290\" class=\"\">gen</span>()</span></span>\n    <span data-index=\"72\" class=\"stmt\"><span data-index=\"169\" class=\"\"><span data-index=\"291\" class=\"\">use_gen_1</span>(<span data-index=\"292\" class=\"\">g</span>)</span></span>\n    <span data-index=\"73\" class=\"stmt\"><span data-index=\"170\" class=\"\"><span data-index=\"293\" class=\"\">use_gen_2</span>(<span data-index=\"294\" class=\"\">g</span>)</span></span></span>",
       "lineno": 63,
       "name": "main"
     },
@@ -12276,6 +12338,7 @@
         "MyClass",
         "NoneType",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12284,7 +12347,6 @@
         "getset_descriptor",
         "int",
         "list",
-        "method",
         "range",
         "set",
         "str",
@@ -12344,6 +12406,7 @@
         "MyClass",
         "NoneType",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12353,7 +12416,6 @@
         "getset_descriptor",
         "int",
         "list",
-        "method",
         "range",
         "set",
         "str",
@@ -12418,6 +12480,7 @@
         "MyClass",
         "NoneType",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12427,7 +12490,6 @@
         "getset_descriptor",
         "int",
         "list",
-        "method",
         "range",
         "set",
         "str",
@@ -12498,6 +12560,7 @@
         "NoneType",
         "SlotClass",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12508,7 +12571,6 @@
         "int",
         "list",
         "member_descriptor",
-        "method",
         "range",
         "set",
         "str",
@@ -12815,6 +12877,7 @@
         "NoneType",
         "SlotClass",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -12825,7 +12888,6 @@
         "int",
         "list",
         "member_descriptor",
-        "method",
         "range",
         "set",
         "str",
@@ -12993,6 +13055,7 @@
         "NoneType",
         "SlotClass",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13003,7 +13066,6 @@
         "int",
         "list",
         "member_descriptor",
-        "method",
         "range",
         "set",
         "str",
@@ -13117,50 +13179,68 @@
           [
             "__doc__",
             [
-              "'Make an itera...rd line).\\n    '",
+              "'islice(iterab...s an iterator.'",
               "str",
               {
-                "len": 721
+                "len": 453
               }
+            ]
+          ],
+          [
+            "__getattribute__",
+            [
+              "<slot wrapper '__getattribut...f 'itertools.islice' objects>",
+              "wrapper_descriptor",
+              {}
             ]
           ],
           [
             "__iter__",
             [
-              "<function islice.__iter__ at 0xABC>",
-              "function",
+              "<slot wrapper '__iter__' of 'itertools.islice' objects>",
+              "wrapper_descriptor",
               {}
+            ]
+          ],
+          [
+            "__module__",
+            [
+              "'itertools'",
+              "str",
+              {
+                "len": 9
+              }
             ]
           ],
           [
             "__new__",
             [
-              "<staticmethod object at 0xABC>",
-              "staticmethod",
+              "<built-in method __new__ of type object at 0xABC>",
+              "builtin_function_or_method",
               {}
             ]
           ],
           [
             "__next__",
             [
-              "<function islice.__next__ at 0xABC>",
-              "function",
+              "<slot wrapper '__next__' of 'itertools.islice' objects>",
+              "wrapper_descriptor",
               {}
             ]
           ],
           [
             "__reduce__",
             [
-              "<function islice.__reduce__ at 0xABC>",
-              "function",
+              "<method '__reduce__' of 'itertools.islice' objects>",
+              "method_descriptor",
               {}
             ]
           ],
           [
             "__setstate__",
             [
-              "<function islice.__setstate__ at 0xABC>",
-              "function",
+              "<method '__setstate__' of 'itertools.islice' objects>",
+              "method_descriptor",
               {}
             ]
           ]
@@ -13238,6 +13318,7 @@
         "SlotClass",
         "ValueError",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13249,13 +13330,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method",
+        "method_descriptor",
         "range",
         "set",
-        "staticmethod",
         "str",
         "tuple",
-        "type"
+        "type",
+        "wrapper_descriptor"
       ]
     },
     "exception": null,
@@ -13501,6 +13582,7 @@
         "SlotClass",
         "ValueError",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13512,13 +13594,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method",
+        "method_descriptor",
         "range",
         "set",
-        "staticmethod",
         "str",
         "tuple",
-        "type"
+        "type",
+        "wrapper_descriptor"
       ]
     },
     "exception": null,
@@ -13710,6 +13792,7 @@
         "SlotClass",
         "ValueError",
         "bool",
+        "builtin_function_or_method",
         "complex",
         "dict",
         "float",
@@ -13721,13 +13804,13 @@
         "islice",
         "list",
         "member_descriptor",
-        "method",
+        "method_descriptor",
         "range",
         "set",
-        "staticmethod",
         "str",
         "tuple",
-        "type"
+        "type",
+        "wrapper_descriptor"
       ]
     },
     "exception": null,

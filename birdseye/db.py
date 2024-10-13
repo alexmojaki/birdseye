@@ -3,6 +3,7 @@ import json
 import os
 import sys
 from contextlib import contextmanager
+from typing import List
 
 from humanize import naturaltime
 from littleutils import select_attrs, retry
@@ -11,15 +12,10 @@ from sqlalchemy import Sequence, UniqueConstraint, create_engine, Column, Intege
     Index
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.exc import OperationalError, InterfaceError, InternalError, ProgrammingError, ArgumentError
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, sessionmaker
 
 from birdseye.utils import IPYTHON_FILE_PATH, is_ipython_cell
-
-# noinspection PyUnreachableCode
-if False:
-    from typing import List
-
 
 try:
     from sqlalchemy.dialects.mysql.base import RESERVED_WORDS
@@ -27,6 +23,11 @@ except ImportError:
     pass
 else:
     RESERVED_WORDS.add('function')
+
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 
 
 DB_VERSION = 1

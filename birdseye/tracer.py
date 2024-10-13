@@ -559,7 +559,7 @@ class _NodeVisitor(ast.NodeTransformer):
         """
         return ast.Call(
             func=ast.Name(id=self.traced_file.trace_methods[func], ctx=ast.Load()),
-            args=[ast.Num(node._tree_index)],
+            args=[ast.Constant(node._tree_index)],
             keywords=[],
         )
 

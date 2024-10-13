@@ -2,9 +2,9 @@
 
 set -eux
 
-sudo cp node_modules/chromedriver/lib/chromedriver/chromedriver /usr/local/bin/chromedriver
-
-pip install -e .
+which python
+python --version
+python -m gunicorn --version
 
 export DB=${DB:-sqlite}
 
@@ -24,12 +24,11 @@ else
     exit 1
 fi
 
-export BIRDSEYE_SERVER_RUNNING=true
-gunicorn -b 127.0.0.1:7777 birdseye.server:app &
+python -m gunicorn -b 127.0.0.1:7777 birdseye.server:app &
 
 set +e
 
-pytest -vv
+python -m pytest -vv
 result=$?
 kill $(ps aux | grep birdseye.server:app | grep -v grep | awk '{print $2}')
 exit ${result}

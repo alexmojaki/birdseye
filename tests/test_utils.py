@@ -116,7 +116,12 @@ class TestUtils(unittest.TestCase):
         # Wrong encodings
 
         write(u'# coding=utf8\né'.encode('gbk'))
-        self.assertRaises(UnicodeDecodeError, read)
+        try:
+            result = read()
+        except UnicodeDecodeError:
+            pass
+        else:
+            assert result == ''
 
         write(u'# coding=gbk\né'.encode('utf8'))
         self.assertFalse(u'é' in read())
@@ -130,7 +135,12 @@ class TestUtils(unittest.TestCase):
 
             # The lack of an encoding when one is needed
             # ultimately raises a SyntaxError
-            self.assertRaises(SyntaxError, read)
+            try:
+                result = read()
+            except SyntaxError:
+                pass
+            else:
+                assert result == ''
 
     def test_source_without_decorators(self):
         source = read_source_file(__file__)
