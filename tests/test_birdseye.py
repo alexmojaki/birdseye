@@ -425,7 +425,7 @@ class TestBirdsEye(unittest.TestCase):
                     data=byteify(json.loads(call.function.data)),
                 ),
             ) for call in calls]
-            version = PYPY * 'pypy' + '.'.join(map(str, sys.version_info[:2]))
+            version = ('pypy' if PYPY else '') + '.'.join(map(str, sys.version_info[:2]))
             path = os.path.join(os.path.dirname(__file__), 'golden-files', version, name + '.json')
 
             if os.getenv("FIX_TESTS"):
