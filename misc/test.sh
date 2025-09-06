@@ -2,10 +2,6 @@
 
 set -eux
 
-which python
-python --version
-python -m gunicorn --version
-
 export DB=${DB:-sqlite}
 
 if [ ${DB} = sqlite ]; then
