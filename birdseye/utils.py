@@ -1,46 +1,19 @@
 import ast
-import io
 import json
 import linecache
 import ntpath
 import os
 import sys
 import token
-import types
-from sys import version_info
 
 from littleutils import strip_required_prefix
 
-# noinspection PyUnreachableCode
-if False:
-    from typing import Union, List, Any, Iterator, Tuple, Iterable
-
-try:
-    from typing import Type
-except ImportError:
-    Type = type
-
-try:
-    from typing import Deque
-except ImportError:
-    from collections import deque as Deque
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
+from typing import Union, List, Any, Iterator, Tuple, Iterable
 
 
-PY2 = version_info.major == 2
-PY3 = not PY2
 PYPY = 'pypy' in sys.version.lower()
 IPYTHON_FILE_PATH = 'IPython notebook or shell'
 FILE_SENTINEL_NAME = '$$__FILE__$$'
-
-if PY2:
-    Text = unicode
-else:
-    Text = str
 
 
 def path_leaf(path):
@@ -87,39 +60,6 @@ def fix_abs_path(path):
     if os.path.sep == '/' and not path.startswith('/'):
         path = '/' + path
     return path
-
-
-if PY2:
-    def correct_type(obj):
-        """
-        Returns the correct type of obj, regardless of __class__ assignment
-        or old-style classes:
-
-        >>> class A:
-        ...     pass
-        ...
-        ...
-        ... class B(object):
-        ...     pass
-        ...
-        ...
-        ... class C(object):
-        ...     __class__ = A
-        ...
-        >>> correct_type(A()) is A
-        True
-        >>> correct_type(B()) is B
-        True
-        >>> correct_type(C()) is C
-        True
-        """
-        t = type(obj)
-        # noinspection PyUnresolvedReferences
-        if t is types.InstanceType:
-            return obj.__class__
-        return t
-else:
-    correct_type = type
 
 
 def of_type(type_or_tuple, iterable):
@@ -169,27 +109,8 @@ class ProtocolEncoder(json.JSONEncoder):
 
 
 def read_source_file(filename):
-    if PY3:
-        from tokenize import detect_encoding, cookie_re
-    else:
-        from lib2to3.pgen2.tokenize import detect_encoding, cookie_re
-
     lines = linecache.getlines(filename)
-    text = ''.join(lines)
-
-    if not isinstance(text, Text):
-        encoding = detect_encoding(io.BytesIO(text).readline)[0]
-        text = text.decode(encoding)  # noqa
-        lines = [line.decode(encoding) for line in lines]
-
-    # In python 2 it's a syntax error to parse unicode
-    # with an encoding declaration, so we remove it but
-    # leave empty lines in its place to keep line numbers the same
-    return ''.join([
-        '\n' if i < 2 and cookie_re.match(line)
-        else line
-        for i, line in enumerate(lines)
-    ])
+    return ''.join(lines)
 
 
 def source_without_decorators(tokens, function_node):

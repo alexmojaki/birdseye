@@ -11,6 +11,7 @@ from functools import partial
 from itertools import chain, islice
 from threading import Lock
 from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
+from typing import Deque
 from uuid import uuid4
 
 from asttokens import ASTTokens
@@ -31,15 +32,9 @@ from birdseye.tracer import (
     ChangeValue,
 )
 from birdseye.utils import (
-    correct_type,
-    PY3,
-    PY2,
     one_or_none,
     of_type,
-    Deque,
-    Text,
     flatten_list,
-    lru_cache,
     ProtocolEncoder,
     IPYTHON_FILE_PATH,
     source_without_decorators,
@@ -50,11 +45,9 @@ from birdseye.utils import (
     html_escape,
     format_pandas_index,
 )
+from functools import lru_cache
 
-try:
-    from collections.abc import Sequence, Set, Mapping
-except ImportError:
-    from collections import Sequence, Set, Mapping
+from collections.abc import Sequence, Set, Mapping
 
 try:
     from numpy import ndarray
@@ -468,7 +461,7 @@ class BirdsEye(TreeTracerBase):
         filename = os.path.abspath(filename)
 
         if frame.f_globals.get('__name__') != '__main__':
-            if PY3 and "_treetrace_hidden_" not in str(frame.f_globals.keys()):
+            if "_treetrace_hidden_" not in str(frame.f_globals.keys()):
                 raise RuntimeError(
                     'To trace an imported module, you must import birdseye before '
                     'importing that module.')
@@ -907,12 +900,7 @@ class IterationList:
 
 class TypeRegistry(object):
     basic_types = (type(None), bool, int, float, complex)
-    if PY2:
-        basic_types += (long,)
     special_types = basic_types + (list, dict, tuple, set, frozenset, str)
-    if PY2:
-        special_types += (unicode if PY2 else bytes,)
-
     num_special_types = len(special_types)
 
     def __init__(self):
@@ -923,7 +911,7 @@ class TypeRegistry(object):
             _ = self.data[t]
 
     def __getitem__(self, item):
-        t = correct_type(item)
+        t = type(item)
         with self.lock:
             return self.data[t]
 
@@ -1062,11 +1050,7 @@ class NodeValue(object):
                     add_child(k, v)
             return result
 
-        if (level <= 0 or
-                isinstance(val,
-                           (str, bytes, range)
-                           if PY3 else
-                           (str, unicode, xrange))):
+        if level <= 0 or isinstance(val, (str, bytes, range)):
             return result
 
         if isinstance(val, (Sequence, ndarray)) and length is not None:

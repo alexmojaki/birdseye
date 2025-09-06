@@ -20,24 +20,19 @@ from functools import partial
 from importlib import import_module
 from multiprocessing.dummy import Pool as ThreadPool
 from time import sleep
-from unittest import skipUnless
 
 from bs4 import BeautifulSoup
 from cheap_repr import register_repr
-from littleutils import file_to_json, string_to_file, only
+from littleutils import file_to_json, only
 
 from birdseye import eye
 from birdseye.bird import NodeValue, is_interesting_expression, is_obvious_builtin
-from birdseye.utils import PY2, PY3, PYPY
+from birdseye.utils import PYPY
 from tests.utils import SharedCounter
+from collections.abc import Set, Mapping
 
 Session = eye.db.Session
 Call = eye.db.Call
-
-try:
-    from collections.abc import Set, Mapping
-except ImportError:
-    from collections import Set, Mapping
 
 
 @eye
@@ -147,22 +142,8 @@ def get_call_stuff(sess, c_id):
 
 
 def byteify(x):
-    """
-    This converts unicode objects to plain str so that the diffs in test failures
-    aren't filled with false differences where there's a u prefix.
-    """
-    if PY3:
-        return x
-
-    # noinspection PyUnresolvedReferences
-    if isinstance(x, dict):
-        return dict((byteify(key), byteify(value)) for key, value in x.items())
-    elif isinstance(x, list):
-        return [byteify(element) for element in x]
-    elif isinstance(x, unicode):
-        return x.encode('utf-8')
-    else:
-        return x
+    # Legacy from Python 2 days
+    return x
 
 
 def normalise_call_data(call_data):
@@ -232,9 +213,7 @@ class TestBirdsEye(unittest.TestCase):
                 actual_node_loops[text] = [str(x) for x in this_node_loops]
 
         def func_value(f):
-            result = [repr(f), 'function', {}]  # type: list
-            if PY3:
-                result.append(['__wrapped__', [repr(f.__wrapped__), 'function', {}]])
+            result = [repr(f), 'function', {}, ['__wrapped__', [repr(f.__wrapped__), 'function', {}]]]
             return result
 
         s = ['', -2, {}]
@@ -466,36 +445,6 @@ class TestBirdsEye(unittest.TestCase):
         self.assertEqual(str(e.exception),
                          'Decorating classes is no longer supported')
 
-    @skipUnless(PY2, 'Nested arguments are only possible in Python 2')
-    def test_nested_arguments(self):
-        # Python 3 sees nested arguments as a syntax error, so I can't
-        # define the function here normally
-        # birdseye requires a source file so I can't just use exec
-        # The file can't just live there because then the test runner imports it
-        path = os.path.join(os.path.dirname(__file__),
-                            'nested_arguments.py')
-        string_to_file(
-            """
-def f((x, y), z):
-    return x, y, z
-""",
-            path)
-
-        try:
-            from tests.nested_arguments import f
-            f = eye(f)
-            call = get_call_stuff(get_call_ids(lambda: f((1, 2), 3))[0]).call
-            self.assertEqual(call.arguments, '[["x", "1"], ["y", "2"], ["z", "3"]]')
-            self.assertEqual(call.result, "(1, 2, 3)")
-        finally:
-            os.remove(path)
-
-    @skipUnless(PY2, 'Division future import only changes things in Python 2')
-    def test_future_imports(self):
-        from tests.future_tests import with_future, without_future
-        self.assertEqual(with_future.foo(), eye(with_future.foo)())
-        self.assertEqual(without_future.foo(), eye(without_future.foo)())
-
     def test_expand_exceptions(self):
         expand = partial(NodeValue.expression, eye.num_samples)
 
@@ -603,8 +552,6 @@ def f((x, y), z):
         self.assertFalse(check('max', len))
         self.assertFalse(check('0', False))
         self.assertFalse(check('not True', False))
-        if PY2:
-            self.assertFalse(check('None', False))
 
     def test_tracing_magic_methods(self):
         class A(object):
