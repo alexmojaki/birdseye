@@ -2,6 +2,7 @@
 
 import ast
 import linecache
+import sys
 import unittest
 from tempfile import mkstemp
 
@@ -122,7 +123,13 @@ class TestUtils(unittest.TestCase):
         # Wrong encodings
 
         write(u'# coding=utf8\né'.encode('gbk'))
-        assert read() == ''
+        try:
+            result = read()
+        except UnicodeDecodeError:
+            assert sys.version_info[:2] <= (3, 9)
+        else:
+            assert sys.version_info[:2] >= (3, 10)
+            assert result == ''
 
         write(u'# coding=gbk\né'.encode('utf8'))
         self.assertFalse(u'é' in read())
@@ -132,7 +139,13 @@ class TestUtils(unittest.TestCase):
 
         write(u'é'.encode('gbk'))
 
-        assert read() == ''
+        try:
+            result = read()
+        except SyntaxError:
+            assert sys.version_info[:2] <= (3, 9)
+        else:
+            assert sys.version_info[:2] >= (3, 10)
+            assert result == ''
 
     def test_source_without_decorators(self):
         source = read_source_file(__file__)
