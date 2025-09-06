@@ -1,11 +1,8 @@
-import birdseye.trace_module_deep
-
-
 def deco(f):
     return f
 
 
-def m():
+def main():
     qwe = 9
     str(qwe)
 
@@ -31,6 +28,3 @@ def m():
             return 1 + 3
 
     A().foo().bar()
-
-
-m()

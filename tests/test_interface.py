@@ -1,37 +1,14 @@
-import os
 import unittest
-from threading import Thread
+from textwrap import dedent
 from time import sleep
 
-import requests
 from littleutils import only
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 
-from birdseye import eye
-from birdseye.server import app
-
-
-@eye
-def foo():
-    for i in range(20):
-        for j in range(3):
-            int(i * 13 + j * 17)
-            if i > 0:
-                try:
-                    assert j
-                except AssertionError:
-                    pass
-    str(bar())
-
-    x = list(range(1, 30, 2))
-    list(x)
-
-
-@eye
-def bar():
-    pass
+from tests.test_birdseye import run_traced
 
 
 class TestInterface(unittest.TestCase):
@@ -42,44 +19,68 @@ class TestInterface(unittest.TestCase):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(options=chrome_options)
-        self.driver.set_window_size(1400, 1000)
+        self.driver.set_window_size(1600, 1200)
         self.driver.implicitly_wait(2)
-        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
-            Thread(target=lambda: app.run(port=7777)).start()
 
     def test(self):
         try:
             self._do_test()
         except:
+            print(self.driver.current_url)
             self.driver.save_screenshot('error_screenshot.png')
             raise
 
     def _do_test(self):
-        foo()
+        eye, _ = run_traced(
+            dedent(
+                """
+                def foo():
+                    for i in range(20):
+                        for j in range(3):
+                            int(i * 13 + j * 17)
+                            if i > 0:
+                                try:
+                                    assert j
+                                except AssertionError:
+                                    pass
+                    str(bar())
+        
+                    x = list(range(1, 30, 2))
+                    list(x)
+        
+                def bar():
+                    pass
+            """
+            ),
+            "foo",
+        )
+
         driver = self.driver
 
-        # On the index page, note the links to the function and call
-        driver.get('http://localhost:7777/')
-        function_link = driver.find_element_by_link_text('foo')
-        function_url = function_link.get_attribute('href')
-        call_url = function_link.find_element_by_xpath('..//i/..').get_attribute('href')
-
-        # On the file page, check that the links still match
-        driver.find_element_by_partial_link_text('test_interface').click()
-        function_link = driver.find_element_by_link_text('foo')
-        self.assertEqual(function_link.get_attribute('href'), function_url)
-        self.assertEqual(call_url, function_link.find_element_by_xpath('..//i/..').get_attribute('href'))
-
-        # Finally navigate to the call and check the original call_url
-        function_link.click()
-        driver.find_element_by_css_selector('table a').click()
-        self.assertEqual(driver.current_url, call_url)
+        # Must run in birdseye/static folder:
+        # python -m http.server 7778
+        driver.get("http://localhost:7778/")
+        sleep(1)  # wait for page and scripts to load
+        driver.execute_script(
+            """
+          const store = arguments[0];
+          ["functions", "calls"].forEach(rootKey => {
+            const blob = store[rootKey];
+            Object.keys(blob).forEach(key => {
+              localforage.setItem(rootKey + "/" + key, blob[key]);
+            });
+          })
+            """,
+            eye.store,
+        )
+        sleep(1)  # wait for insert into storage to complete
+        driver.get("http://localhost:7778/?call_id=" + eye._last_call_id)
 
         # Test hovering, clicking on expressions, and stepping through loops
 
         vals = {'i': 0, 'j': 0}
-        exprs = driver.find_elements_by_class_name('has_value')
-        expr_value = driver.find_element_by_id('box_value')
+        exprs = driver.find_elements(By.CLASS_NAME, 'has_value')
+        expr_value = driver.find_element(By.ID, 'box_value')
 
         expr_strings = [
             'i * 13 + j * 17',
@@ -94,7 +95,7 @@ class TestInterface(unittest.TestCase):
             return find_by_text(text, exprs)
 
         def tree_nodes(root=driver):
-            return root.find_elements_by_class_name('jstree-node')
+            return root.find_elements(By.CLASS_NAME, 'jstree-node')
 
         def select(node, prefix, value_text):
             self.assertIn('box', classes(node))
@@ -118,7 +119,7 @@ class TestInterface(unittest.TestCase):
 
         def step(loop, increment):
             selector = '.loop-navigator > .btn:%s-child' % ('first' if increment == -1 else 'last')
-            buttons = driver.find_elements_by_css_selector(selector)
+            buttons = driver.find_elements(By.CSS_SELECTOR, selector)
             self.assertEqual(len(buttons), 2)
             buttons[loop].click()
             vals['ij'[loop]] += increment
@@ -131,7 +132,7 @@ class TestInterface(unittest.TestCase):
                             if n.text.startswith(expr + ' ='))
                 self.assertEqual(node.text, '%s = int: %s' % (expr, value))
 
-        stmt = find_by_text('assert j', driver.find_elements_by_class_name('stmt'))
+        stmt = find_by_text('assert j', driver.find_elements(By.CLASS_NAME, 'stmt'))
         assert_classes(stmt, 'stmt', 'stmt_uncovered', 'box')
 
         step(0, 1)
@@ -148,7 +149,7 @@ class TestInterface(unittest.TestCase):
         # Expanding values
         x_node = find_expr('x')
         tree_node = select(x_node, 'x = list: ', '[1, 3, 5, ..., 25, 27, 29]')
-        tree_node.find_element_by_class_name('jstree-ocl').click()  # expand
+        tree_node.find_element(By.CLASS_NAME, 'jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in tree_nodes(tree_node)],
                          ['len() = 15',
@@ -164,11 +165,7 @@ class TestInterface(unittest.TestCase):
                           '14 = int: 29']),
 
         # Click on an inner call
-        find_expr('bar()').find_element_by_class_name('inner-call').click()
-        self.assertEqual(driver.find_element_by_tag_name('h2').text,
-                         'Call to function: bar')
-
-    def tearDown(self):
-        if not os.environ.get('BIRDSEYE_SERVER_RUNNING'):
-            self.assertEqual(requests.post('http://localhost:7777/kill').text,
-                             'Server shutting down...')
+        find_expr('bar()').find_element(By.CLASS_NAME, 'inner-call').click()
+        self.assertEqual(
+            driver.find_element(By.ID, "code").text.strip(), "def bar():\n    pass"
+        )
