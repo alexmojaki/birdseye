@@ -11,19 +11,22 @@ import inspect
 import sys
 from collections import namedtuple, defaultdict
 from copy import deepcopy
-from functools import partial, update_wrapper, wraps
+from functools import partial, update_wrapper, wraps, lru_cache
 from itertools import takewhile
 from types import FrameType, TracebackType, CodeType, FunctionType
 from uuid import uuid4
 
-from birdseye.utils import PY3, Type, is_lambda, lru_cache, read_source_file, is_ipython_cell, \
-    is_future_import, PYPY
+from birdseye.utils import (
+    is_lambda,
+    read_source_file,
+    is_ipython_cell,
+    is_future_import,
+    PYPY,
+)
 
-# noinspection PyUnreachableCode
-if False:
-    from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union
+from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union
 
-    Loop = Union[ast.For, ast.While, ast.comprehension]
+Loop = Union[ast.For, ast.While, ast.comprehension]
 
 
 class TracedFile(object):
@@ -245,8 +248,7 @@ class TreeTracerBase(object):
         # noinspection PyArgumentList
         new_func = FunctionType(new_func_code, func.__globals__, func.__name__, func.__defaults__, func.__closure__)
         update_wrapper(new_func, func)  # type: FunctionType
-        if PY3:
-            new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
+        new_func.__kwdefaults__ = getattr(func, '__kwdefaults__', None)
         new_func.traced_file = traced_file
         return new_func
 
@@ -536,16 +538,10 @@ class _NodeVisitor(ast.NodeTransformer):
             super(_NodeVisitor, self).generic_visit(node),
             TreeTracerBase._treetrace_hidden_with_stmt)
 
-        if PY3:
-            wrapped = ast.With(
-                items=[ast.withitem(context_expr=context_expr)],
-                body=[node],
-            )
-        else:
-            wrapped = ast.With(
-                context_expr=context_expr,
-                body=[node],
-            )
+        wrapped = ast.With(
+            items=[ast.withitem(context_expr=context_expr)],
+            body=[node],
+        )
         ast.copy_location(wrapped, node)
         ast.fix_missing_locations(wrapped)
         return wrapped
@@ -559,7 +555,7 @@ class _NodeVisitor(ast.NodeTransformer):
         """
         return ast.Call(
             func=ast.Name(id=self.traced_file.trace_methods[func], ctx=ast.Load()),
-            args=[ast.Num(node._tree_index)],
+            args=[ast.Constant(node._tree_index)],
             keywords=[],
         )
 

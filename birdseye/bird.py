@@ -1,4 +1,5 @@
 import ast
+import builtins
 import hashlib
 import inspect
 import json
@@ -10,6 +11,7 @@ from functools import partial
 from itertools import chain, islice
 from threading import Lock
 from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
+from typing import Deque
 from uuid import uuid4
 
 from asttokens import ASTTokens
@@ -30,15 +32,9 @@ from birdseye.tracer import (
     ChangeValue,
 )
 from birdseye.utils import (
-    correct_type,
-    PY3,
-    PY2,
     one_or_none,
     of_type,
-    Deque,
-    Text,
     flatten_list,
-    lru_cache,
     ProtocolEncoder,
     IPYTHON_FILE_PATH,
     source_without_decorators,
@@ -49,11 +45,9 @@ from birdseye.utils import (
     html_escape,
     format_pandas_index,
 )
+from functools import lru_cache
 
-try:
-    from collections.abc import Sequence, Set, Mapping
-except ImportError:
-    from collections import Sequence, Set, Mapping
+from collections.abc import Sequence, Set, Mapping
 
 try:
     from numpy import ndarray
@@ -467,7 +461,7 @@ class BirdsEye(TreeTracerBase):
         filename = os.path.abspath(filename)
 
         if frame.f_globals.get('__name__') != '__main__':
-            if PY3 and "_treetrace_hidden_" not in str(frame.f_globals.keys()):
+            if "_treetrace_hidden_" not in str(frame.f_globals.keys()):
                 raise RuntimeError(
                     'To trace an imported module, you must import birdseye before '
                     'importing that module.')
@@ -906,12 +900,7 @@ class IterationList:
 
 class TypeRegistry(object):
     basic_types = (type(None), bool, int, float, complex)
-    if PY2:
-        basic_types += (long,)
     special_types = basic_types + (list, dict, tuple, set, frozenset, str)
-    if PY2:
-        special_types += (unicode if PY2 else bytes,)
-
     num_special_types = len(special_types)
 
     def __init__(self):
@@ -922,7 +911,7 @@ class TypeRegistry(object):
             _ = self.data[t]
 
     def __getitem__(self, item):
-        t = correct_type(item)
+        t = type(item)
         with self.lock:
             return self.data[t]
 
@@ -1061,11 +1050,7 @@ class NodeValue(object):
                     add_child(k, v)
             return result
 
-        if (level <= 0 or
-                isinstance(val,
-                           (str, bytes, range)
-                           if PY3 else
-                           (str, unicode, xrange))):
+        if level <= 0 or isinstance(val, (str, bytes, range)):
             return result
 
         if isinstance(val, (Sequence, ndarray)) and length is not None:
@@ -1130,6 +1115,11 @@ def _sample_indices(length, max_length):
                            length))
 
 
+@try_register_repr('numpy', 'int64')
+def _repr_numpy_int(x, _helper):
+    return repr(int(x))
+
+
 @try_register_repr('pandas', 'Series')
 def _repr_series_one_line(x, helper):
     n = len(x)
@@ -1154,20 +1144,18 @@ def is_interesting_expression(node):
     return True. Put differently, return False if this is just a literal.
     """
     return (isinstance(node, ast.expr) and
-            not (isinstance(node, (ast.Num, ast.Str, getattr(ast, 'NameConstant', ()))) or
+            not (isinstance(node, ast.Constant) or
                  isinstance(getattr(node, 'ctx', None),
                             (ast.Store, ast.Del)) or
                  (isinstance(node, ast.UnaryOp) and
                   isinstance(node.op, (ast.UAdd, ast.USub)) and
-                  isinstance(node.operand, ast.Num)) or
+                  isinstance(node.operand, ast.Constant) and
+                  isinstance(node.operand.value, (int, float, complex))) or
                  (isinstance(node, (ast.List, ast.Tuple, ast.Dict)) and
                   not any(is_interesting_expression(n) for n in ast.iter_child_nodes(node)))))
 
 
-# noinspection PyUnresolvedReferences
-builtins_dict = __builtins__
-if not isinstance(builtins_dict, dict):
-    builtins_dict = builtins_dict.__dict__
+builtins_dict: dict = builtins.__dict__  # type: ignore
 
 
 def is_obvious_builtin(node, value):
@@ -1179,4 +1167,4 @@ def is_obvious_builtin(node, value):
     return ((isinstance(node, ast.Name) and
              node.id in builtins_dict and
              builtins_dict[node.id] is value) or
-            isinstance(node, getattr(ast, 'NameConstant', ())))
+            isinstance(node, ast.Constant) and node.value is value)

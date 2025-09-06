@@ -7,13 +7,14 @@ Here’s how you can get started if you want to help:
 
 2. Run ::
 
-        pip install -e .
+        pip install -e '.[tests]'
 
    in the root of the repo. This will install it
    using a symlink such that changes to the code immediately affect the
    installed library. In other words, you can edit a ``.py`` file in your copy of birdseye, then debug a
    separate program, and the results of your edit will be
    visible. This makes development and testing straightforward.
+   The `[tests]` part installs extra dependencies needed for development.
 
    If you have one or more other projects that you’re working on where birdseye
    might be useful for development and debugging, install birdseye into
@@ -127,18 +128,13 @@ When a function runs
 Testing
 -------
 
-Run ``python setup.py test`` to install test requirements and run all
+Run ``./misc/test.sh`` to run all
 tests with a single Python interpreter. You will need to have
-`phantomjs`_ installed, e.g. via::
-
-    npm install --global phantomjs
+`chromedriver` installed.
 
 Run `tox`_ (``pip install tox``) to run tests on all supported
-versions of Python: 2.7, 3.5, and 3.6. You must install the interpreters
+versions of Python. You must install the interpreters
 separately yourself.
-
-Pushes to GitHub will trigger a build on Travis to run tests
-automatically. This will run ``misc/travis_test.sh``.
 
 ``test_against_files``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,13 +155,10 @@ interpreters, so tox is recommended.
 Browser screenshots for test failures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``test_interface.py`` runs a test using selenium and phantomjs. If it
+``test_interface.py`` runs a test using selenium and headless Chrome. If it
 fails, it produces a file ``error_screenshot.png`` which is helpful for
-debugging the failure locally. If the test only fails on travis, you can
-use the ``misc/travis_screenshot.py`` script to obtain the screenshot. See
-the module docstring for details.
+debugging the failure locally.
 
-.. _phantomjs: http://phantomjs.org/download.html
 .. _tox: https://tox.readthedocs.io/en/latest/
 
 

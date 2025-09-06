@@ -225,17 +225,17 @@
         ],
         "105": {
           "0": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "1": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<lambda> at 0xABC>",
             "function",
             {}
           ],
           "2": [
-            "<function m.<locals>.A.<setcomp>.<lambda> at 0xABC>",
+            "<function m.<locals>.A.<lambda> at 0xABC>",
             "function",
             {}
           ]
@@ -334,12 +334,30 @@
                 ]
               ],
               [
+                "__firstlineno__",
+                [
+                  "16",
+                  "int",
+                  {}
+                ]
+              ],
+              [
                 "__module__",
                 [
                   "'test_scripts.traced'",
                   "str",
                   {
                     "len": 19
+                  }
+                ]
+              ],
+              [
+                "__static_attributes__",
+                [
+                  "()",
+                  "tuple",
+                  {
+                    "len": 0
                   }
                 ]
               ],
@@ -370,12 +388,30 @@
             ]
           ],
           [
+            "__firstlineno__",
+            [
+              "12",
+              "int",
+              {}
+            ]
+          ],
+          [
             "__module__",
             [
               "'test_scripts.traced'",
               "str",
               {
                 "len": 19
+              }
+            ]
+          ],
+          [
+            "__static_attributes__",
+            [
+              "()",
+              "tuple",
+              {
+                "len": 0
               }
             ]
           ],
@@ -524,7 +560,7 @@
           "int",
           {
             "inner_calls": [
-              "test_id_18"
+              "test_id_17"
             ]
           }
         ],
@@ -689,11 +725,7 @@
         "69": [
           "<test_scripts.traced.m.<locals>.A object at 0xABC>",
           "m.<locals>.A",
-          {
-            "inner_calls": [
-              "test_id_17"
-            ]
-          }
+          {}
         ],
         "73": {
           "0": [
@@ -1702,185 +1734,6 @@
       "name": "deco"
     },
     "return_value": "<function m.<locals>.A.foo at 0xABC>",
-    "traceback": null
-  },
-  {
-    "arguments": [
-      [
-        "self",
-        "<test_scripts.traced.m.<locals>.A object at 0xABC>"
-      ]
-    ],
-    "data": {
-      "loop_iterations": {},
-      "node_values": {
-        "110": [
-          "3",
-          "int",
-          {}
-        ],
-        "112": [
-          "0",
-          "int",
-          {}
-        ],
-        "40": [
-          "",
-          -2,
-          {}
-        ],
-        "41": [
-          "",
-          -2,
-          {}
-        ],
-        "42": [
-          "",
-          -2,
-          {}
-        ],
-        "63": [
-          "0",
-          "int",
-          {}
-        ],
-        "64": [
-          "'3'",
-          "str",
-          {
-            "len": 1
-          }
-        ],
-        "65": [
-          "<test_scripts.traced.m.<locals>.A object at 0xABC>",
-          "m.<locals>.A",
-          {}
-        ],
-        "88": [
-          "3",
-          "int",
-          {}
-        ]
-      },
-      "num_special_types": 11,
-      "type_names": [
-        "MyClass",
-        "NoneType",
-        "SlotClass",
-        "ValueError",
-        "bool",
-        "builtin_function_or_method",
-        "complex",
-        "dict",
-        "float",
-        "frozenset",
-        "function",
-        "generator",
-        "getset_descriptor",
-        "int",
-        "islice",
-        "list",
-        "m.<locals>.A",
-        "member_descriptor",
-        "method",
-        "method_descriptor",
-        "range",
-        "set",
-        "str",
-        "tuple",
-        "type",
-        "wrapper_descriptor"
-      ]
-    },
-    "exception": null,
-    "function": {
-      "data": {
-        "loop_ranges": [],
-        "node_loops": {},
-        "node_ranges": [
-          {
-            "classes": [
-              "stmt"
-            ],
-            "depth": 4,
-            "end": 36,
-            "start": 27,
-            "tree_index": 40
-          },
-          {
-            "classes": [
-              "stmt"
-            ],
-            "depth": 4,
-            "end": 63,
-            "start": 49,
-            "tree_index": 41
-          },
-          {
-            "classes": [
-              "stmt"
-            ],
-            "depth": 4,
-            "end": 87,
-            "start": 76,
-            "tree_index": 42
-          },
-          {
-            "classes": [],
-            "depth": 5,
-            "end": 36,
-            "start": 31,
-            "tree_index": 63
-          },
-          {
-            "classes": [],
-            "depth": 5,
-            "end": 63,
-            "start": 49,
-            "tree_index": 64
-          },
-          {
-            "classes": [],
-            "depth": 5,
-            "end": 87,
-            "start": 83,
-            "tree_index": 65
-          },
-          {
-            "classes": [],
-            "depth": 6,
-            "end": 52,
-            "start": 49,
-            "tree_index": 87
-          },
-          {
-            "classes": [],
-            "depth": 6,
-            "end": 62,
-            "start": 53,
-            "tree_index": 88
-          },
-          {
-            "classes": [],
-            "depth": 7,
-            "end": 58,
-            "start": 53,
-            "tree_index": 110
-          },
-          {
-            "classes": [],
-            "depth": 7,
-            "end": 62,
-            "start": 61,
-            "tree_index": 112
-          }
-        ]
-      },
-      "html_body": "<span data-index=\"24\" class=\"stmt\">        @<span data-index=\"43\" class=\"\">deco</span>\n        def foo(self):\n            <span data-index=\"40\" class=\"stmt\">x = <span data-index=\"63\" class=\"\">9 * 0</span></span>\n            <span data-index=\"41\" class=\"stmt\"><span data-index=\"64\" class=\"\"><span data-index=\"87\" class=\"\">str</span>(<span data-index=\"88\" class=\"\"><span data-index=\"110\" class=\"\">1 + 2</span> + <span data-index=\"112\" class=\"\">x</span></span>)</span></span>\n            <span data-index=\"42\" class=\"stmt\">return <span data-index=\"65\" class=\"\">self</span></span></span>",
-      "lineno": 24,
-      "name": "foo"
-    },
-    "return_value": "<test_scripts.traced.m.<locals>.A object at 0xABC>",
     "traceback": null
   },
   {

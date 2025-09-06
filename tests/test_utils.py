@@ -2,6 +2,7 @@
 
 import ast
 import linecache
+import sys
 import unittest
 from tempfile import mkstemp
 
@@ -10,8 +11,14 @@ import numpy as np
 import pandas as pd
 from cheap_repr import cheap_repr
 
-from birdseye.utils import common_ancestor, short_path, flatten_list, is_lambda, source_without_decorators, PY3, \
-    read_source_file
+from birdseye.utils import (
+    common_ancestor,
+    short_path,
+    flatten_list,
+    is_lambda,
+    source_without_decorators,
+    read_source_file,
+)
 
 
 def def_decorator(_):
@@ -108,29 +115,37 @@ class TestUtils(unittest.TestCase):
         # Correctly declared encodings
 
         write(u'# coding=utf8\né'.encode('utf8'))
-        self.assertEqual(u'é', read())
+        self.assertEqual(u'# coding=utf8\né', read())
 
         write(u'# coding=gbk\né'.encode('gbk'))
-        self.assertEqual(u'é', read())
+        self.assertEqual(u'# coding=gbk\né', read())
 
         # Wrong encodings
 
         write(u'# coding=utf8\né'.encode('gbk'))
-        self.assertRaises(UnicodeDecodeError, read)
+        try:
+            result = read()
+        except UnicodeDecodeError:
+            assert sys.version_info[:2] <= (3, 9)
+        else:
+            assert sys.version_info[:2] >= (3, 10)
+            assert result == ''
 
         write(u'# coding=gbk\né'.encode('utf8'))
         self.assertFalse(u'é' in read())
 
-        # In Python 3 the default encoding is assumed to be UTF8
-        if PY3:
-            write(u'é'.encode('utf8'))
-            self.assertEqual(u'é', read())
+        write(u'é'.encode('utf8'))
+        self.assertEqual(u'é', read())
 
-            write(u'é'.encode('gbk'))
+        write(u'é'.encode('gbk'))
 
-            # The lack of an encoding when one is needed
-            # ultimately raises a SyntaxError
-            self.assertRaises(SyntaxError, read)
+        try:
+            result = read()
+        except SyntaxError:
+            assert sys.version_info[:2] <= (3, 9)
+        else:
+            assert sys.version_info[:2] >= (3, 10)
+            assert result == ''
 
     def test_source_without_decorators(self):
         source = read_source_file(__file__)
