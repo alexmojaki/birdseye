@@ -6,6 +6,8 @@ cd birdseye/static/
 python -m http.server 7778 &
 cd -
 
+set +e
+
 python -m pytest -vv
 result=$?
 kill $(ps aux | grep http.server | grep -v grep | awk '{print $2}')

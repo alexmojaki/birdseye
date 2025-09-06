@@ -7,13 +7,14 @@ Here’s how you can get started if you want to help:
 
 2. Run ::
 
-        pip install -e .
+        pip install -e '.[tests]'
 
    in the root of the repo. This will install it
    using a symlink such that changes to the code immediately affect the
    installed library. In other words, you can edit a ``.py`` file in your copy of birdseye, then debug a
    separate program, and the results of your edit will be
    visible. This makes development and testing straightforward.
+   The `[tests]` part installs extra dependencies needed for development.
 
    If you have one or more other projects that you’re working on where birdseye
    might be useful for development and debugging, install birdseye into
@@ -127,7 +128,7 @@ When a function runs
 Testing
 -------
 
-Run ``./misc/test.sh`` to install test requirements and run all
+Run ``./misc/test.sh`` to run all
 tests with a single Python interpreter. You will need to have
 `chromedriver` installed.
 
