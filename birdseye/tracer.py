@@ -17,11 +17,9 @@ from uuid import uuid4
 
 from birdseye.utils import is_future_import
 
-# noinspection PyUnreachableCode
-if False:
-    from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union, Type
+from typing import List, Dict, Any, Optional, Tuple, Iterator, Callable, Union, Type
 
-    Loop = Union[ast.For, ast.While, ast.comprehension]
+Loop = Union[ast.For, ast.While, ast.comprehension]
 
 
 class TracedFile(object):

@@ -15,7 +15,6 @@ import unittest
 import weakref
 from collections import namedtuple
 from collections.abc import Set, Mapping
-from copy import copy
 from functools import partial
 from pathlib import Path
 from textwrap import dedent

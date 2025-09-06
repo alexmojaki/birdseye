@@ -3,8 +3,7 @@ import builtins
 import inspect
 from collections import defaultdict, deque, namedtuple, Counter
 from collections.abc import Sequence, Set, Mapping
-from functools import lru_cache
-from functools import partial
+from functools import partial, lru_cache
 from itertools import chain, islice
 from threading import Lock
 from types import FrameType, TracebackType, CodeType, ModuleType
