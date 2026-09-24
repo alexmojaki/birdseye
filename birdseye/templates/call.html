@@ -37,6 +37,7 @@
                     </tr>
                 {% endfor %}
             </table>
+            <div id="argument-snapshots" class="snapshot-tree code-font"></div>
         {% else %}
             <p><strong>No arguments</strong></p>
         {% endif %}
@@ -47,7 +48,8 @@
     </p>
     <p><strong>Result:</strong>
         {% if call.success %}
-            <span class="code-font">{{ call.result }}</span></p>
+            <span id="result-summary" class="code-font">{{ call.result }}</span></p>
+            <div id="result-snapshot" class="snapshot-tree code-font"></div>
         {% else %}
             </p>
             <pre>{{ call.traceback }}</pre>

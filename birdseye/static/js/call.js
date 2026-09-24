@@ -430,6 +430,35 @@ $(function () {
 
     render();
 
+    // Complete copies of the arguments and return value are only present when
+    // capture_options asked for 'full'. They replace the short summaries.
+    function render_snapshots(selector, entries) {
+        var $container = $(selector);
+        if (!$container.length || !entries || !entries.length) {
+            return false;
+        }
+        $container.jstree({
+            core: {
+                themes: {
+                    name: 'proton',
+                    responsive: true
+                },
+                data: entries.map(function (entry) {
+                    return make_jstree_nodes(entry[0], [selector, entry[0]], entry[1]);
+                })
+            }
+        });
+        return true;
+    }
+
+    if (render_snapshots('#argument-snapshots', call_data.argument_snapshots)) {
+        $('.args-table').hide();
+    }
+    if (call_data.result_snapshot &&
+        render_snapshots('#result-snapshot', [['result', call_data.result_snapshot]])) {
+        $('#result-summary').hide();
+    }
+
     // This fixes a weird bug where the bottom panel disappears if the page
     // is scrolled to the bottom at page load
     setTimeout(function () {
