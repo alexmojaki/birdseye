@@ -7,7 +7,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-from birdseye import eye
+from birdseye import eye, BirdsEye
 
 
 @eye
@@ -31,6 +31,14 @@ def bar():
     pass
 
 
+full_eye = BirdsEye(capture_options=dict(arguments='full', result='full'))
+
+
+@full_eye
+def full_capture(items):
+    return {'total': len(items)}
+
+
 class TestInterface(unittest.TestCase):
     maxDiff = None
 
@@ -41,6 +49,9 @@ class TestInterface(unittest.TestCase):
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.set_window_size(1600, 1200)
         self.driver.implicitly_wait(2)
+
+    def tearDown(self):
+        self.driver.quit()
 
     def test(self):
         try:
@@ -162,3 +173,29 @@ class TestInterface(unittest.TestCase):
         find_expr('bar()').find_element(By.CLASS_NAME, 'inner-call').click()
         self.assertEqual(driver.find_element(By.TAG_NAME, 'h2').text,
                          'Call to function: bar')
+
+    def test_full_capture(self):
+        try:
+            self._do_test_full_capture()
+        except:
+            self.driver.save_screenshot('error_screenshot.png')
+            raise
+
+    def _do_test_full_capture(self):
+        full_capture(list(range(20)))
+        driver = self.driver
+        driver.get('http://localhost:7777/call/' + full_eye._last_call_id)
+
+        # Complete copies of the argument and result replace the short summaries
+        self.assertFalse(driver.find_element(By.CLASS_NAME, 'args-table').is_displayed())
+        self.assertFalse(driver.find_element(By.ID, 'result-summary').is_displayed())
+
+        argument = driver.find_element(By.CSS_SELECTOR, '#argument-snapshots .jstree-node')
+        self.assertEqual(argument.text, 'items = list: [0, 1, 2, ..., 17, 18, 19]')
+        argument.find_element(By.CLASS_NAME, 'jstree-ocl').click()  # expand
+        sleep(0.2)
+        self.assertEqual([n.text for n in argument.find_elements(By.CLASS_NAME, 'jstree-node')],
+                         ['len() = 20'] + ['%s = int: %s' % (i, i) for i in range(20)])
+
+        result = driver.find_element(By.CSS_SELECTOR, '#result-snapshot .jstree-node')
+        self.assertEqual(result.text, "result = dict: {'total': 20}")

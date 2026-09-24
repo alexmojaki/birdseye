@@ -124,4 +124,81 @@ inner keys correspond to different types:
    ``Series``.
 -  ``pandas_cols``: the number of columns of a ``pandas`` ``DataFrame``.
 
+.. _full-capture:
+
+Capturing complete values
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the arguments and return value of each call are stored as short
+summaries, e.g. ``[0, 1, 2, ..., 17, 18, 19]``, or a string cut down to 60
+characters. The rest of the value is never stored, so it can't be expanded
+later. To store complete copies instead, set ``capture_options`` when
+constructing a ``BirdsEye`` instance:
+
+.. code:: python
+
+   from birdseye import BirdsEye
+
+   eye = BirdsEye(capture_options=dict(arguments='full', result='full'))
+
+or change the existing instance before the traced functions are called:
+
+.. code:: python
+
+   from birdseye import eye
+
+   eye.capture_options['arguments'] = 'full'
+   eye.capture_options['result'] = 'full'
+
+You can also set the environment variable ``BIRDSEYE_CAPTURE`` before
+starting your program, without changing its code::
+
+   BIRDSEYE_CAPTURE=arguments,result python my_program.py
+
+``BIRDSEYE_CAPTURE=full`` means the same. Options given in code take
+priority over the environment. Invalid values in the environment only produce
+a warning, while invalid options given to ``BirdsEye`` raise ``ValueError``.
+
+The call page then shows each argument and the return value as a tree that
+can be expanded to every item. Arguments are copied when the call starts, so
+changes that the function makes to them later don't affect what is shown.
+
+What is captured:
+
+-  Every item of lists, tuples (including named tuples), sets, frozensets,
+   dicts (including ``OrderedDict``, ``defaultdict`` and ``Counter``),
+   ``collections.deque`` and ``array.array``, nested up to ``max_depth``
+   levels. These are read with the built-in methods, so a subclass that
+   overrides iteration can't hide or change what is captured.
+-  The complete ``repr()`` of strings, bytes, numbers, and other simple
+   values such as ``Decimal``, ``datetime``, ``UUID``, ``Path``, and enums.
+-  For other objects, their attributes from ``__dict__`` or ``__slots__``,
+   up to ``object_depth`` levels of attributes.
+-  numpy arrays and pandas objects keep their usual sampled display.
+-  Generators and iterators are never consumed.
+
+Anything that isn't captured is shown as a highlighted marker that explains
+why, e.g. a reference cycle or a limit being reached. These options limit
+how much is stored (the defaults are shown):
+
+.. code:: python
+
+   dict(
+       arguments='summary',  # or 'full'
+       result='summary',     # or 'full'
+       max_bytes=10000000,   # approximate characters stored per value, None for no limit
+       max_depth=50,         # levels of nesting
+       object_depth=2,       # levels of attributes of other objects
+   )
+
+``max_bytes`` can also be set with the environment variable
+``BIRDSEYE_CAPTURE_MAX_BYTES`` (``none`` for no limit).
+
+.. warning::
+
+   Complete values can make the database and the call pages much larger, and
+   tracing slower. They also store secrets such as passwords and API tokens in
+   full. The database isn't encrypted, and the birdseye server has no
+   authentication.
+
 .. _database URL used by SQLAlchemy: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
