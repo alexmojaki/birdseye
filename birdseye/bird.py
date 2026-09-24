@@ -108,7 +108,13 @@ DEFAULT_CAPTURE_OPTIONS = dict(
     arguments='summary',
     result='summary',
 
+    # How the values of expressions inside traced functions are stored:
+    # 'sampled' follows num_samples, 'full' is a complete expandable copy.
+    expressions='sampled',
+
     # Limits for 'full' copies, see NodeValue.snapshot.
+    # max_bytes applies to each argument and to the result separately,
+    # and to all the expression values of a call together.
     # max_depth stays well below the recursion limit, which also applies to JSON encoding.
     max_bytes=10 * 1000 * 1000,
     max_depth=50,
@@ -119,6 +125,7 @@ DEFAULT_CAPTURE_OPTIONS = dict(
 _CAPTURE_SCOPES = dict(
     arguments=('summary', 'full'),
     result=('summary', 'full'),
+    expressions=('sampled', 'full'),
 )
 
 
@@ -135,7 +142,7 @@ def _capture_options_from_env():
             options.update((name, 'full') for name in _CAPTURE_SCOPES)
         elif scope in _CAPTURE_SCOPES:
             options[scope] = 'full'
-        elif scope not in ('', 'summary'):
+        elif scope not in ('', 'summary', 'sampled'):
             warnings.warn('Ignoring unknown BIRDSEYE_CAPTURE value %r' % scope)
 
     max_bytes = os.environ.get('BIRDSEYE_CAPTURE_MAX_BYTES', '').strip()
@@ -182,9 +189,9 @@ class BirdsEye(TreeTracerBase):
         Set db_uri to specify where the database lives, as an alternative to
         the environment variable BIRDSEYE_DB.
 
-        capture_options controls how much of the arguments and return value
-        of each call is stored. See DEFAULT_CAPTURE_OPTIONS and the
-        'Capturing complete values' section of the documentation.
+        capture_options controls how much of the arguments, return value,
+        and expression values of each call is stored. See DEFAULT_CAPTURE_OPTIONS
+        and the 'Capturing complete values' section of the documentation.
         """
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
@@ -278,11 +285,7 @@ class BirdsEye(TreeTracerBase):
             if exc_value:
                 node_value = self._exception_value(node, frame, exc_value)
             else:
-                node_value = NodeValue.expression(
-                    self.num_samples,
-                    value,
-                    level=max(1, 3 - len(node._loops) * (not self._is_first_loop_iteration(node, frame))),
-                )
+                node_value = self._expression_value(node, frame, frame_info, value)
                 self._set_node_value(node, frame, node_value)
             self._check_inner_call(frame_info, node, node_value)
 
@@ -319,6 +322,32 @@ class BirdsEye(TreeTracerBase):
 
         # This effectively changes to code to `for x in comprehension_iter_proxy()`
         return ChangeValue(comprehension_iter_proxy())
+
+    def _expression_value(self, node, frame, frame_info, value):
+        # type: (ast.expr, FrameType, FrameInfo, Any) -> NodeValue
+        if self.capture_options.get('expressions') == 'full':
+            # All the expression values of a call share one max_bytes budget,
+            # however many expressions and loop iterations there are
+            budget = getattr(frame_info, 'expression_budget', None)
+            if budget is None or budget > 0:
+                builder = _Snapshot(self.capture_options, self.num_samples)
+                builder.remaining = budget
+                node_value = builder.build(value)
+                frame_info.expression_budget = builder.remaining
+                return node_value
+
+        node_value = NodeValue.expression(
+            self.num_samples,
+            value,
+            level=max(1, 3 - len(node._loops) * (not self._is_first_loop_iteration(node, frame))),
+        )
+        if self.capture_options.get('expressions') == 'full':
+            # The budget is used up, so this is the usual sample. Say so.
+            node_value.set_meta('sampled', 'max_bytes')
+            if node_value.children:
+                node_value.children.append(('...', _marker(
+                    'max_bytes', 'only a sample: this call already stored max_bytes of full values')))
+        return node_value
 
     def _check_inner_call(self, frame_info, node, node_value):
         # type: (FrameInfo, Union[ast.stmt, ast.expr], NodeValue) -> None
@@ -395,6 +424,8 @@ class BirdsEye(TreeTracerBase):
             ]
         else:
             frame_info.argument_snapshots = None
+        # Shared by all the expression values of this call when they are captured fully
+        frame_info.expression_budget = self.capture_options.get('max_bytes', DEFAULT_CAPTURE_OPTIONS['max_bytes'])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
         prev = self.stack.get(enter_info.caller_frame)
@@ -1211,6 +1242,10 @@ _SAMPLED_TYPES = (ndarray, Series, DataFrame, QuerySet, BirdsEye)
 # Approximate size of the JSON structure around each captured item, for the max_bytes budget
 _NODE_COST = 10
 
+# A captured container or object whose contents take at most this many characters
+# is labelled with its complete repr() instead of the short cheap_repr summary
+_FULL_LABEL_LIMIT = 1000
+
 
 def _marker(kind, message):
     # type: (str, str) -> NodeValue
@@ -1335,6 +1370,7 @@ class _Snapshot(object):
         object_depth = options.get('object_depth', DEFAULT_CAPTURE_OPTIONS['object_depth'])
         self.object_depth = self.max_depth if object_depth is None else object_depth
         self.expanding = set()  # type: Set[int]
+        self.used = 0  # characters captured so far
 
     def build(self, val):
         # type: (Any) -> NodeValue
@@ -1355,12 +1391,12 @@ class _Snapshot(object):
         Returns True if size more characters fit in the max_bytes budget, and uses them.
         Once something doesn't fit nothing else will, so omissions are reported in one place.
         """
-        if self.remaining is None:
-            return True
-        if size > self.remaining:
-            self.remaining = 0
-            return False
-        self.remaining -= size
+        if self.remaining is not None:
+            if size > self.remaining:
+                self.remaining = 0
+                return False
+            self.remaining -= size
+        self.used += size
         return True
 
     def node(self, val, depth, object_level):
@@ -1398,6 +1434,7 @@ class _Snapshot(object):
         if self.remaining is not None and len(text) > self.remaining:
             keep = self.remaining
             self.remaining = 0
+            self.used += keep
             result.val_repr = '%s... <%s more characters not captured: max_bytes reached>' % (
                 text[:keep], len(text) - keep)
             result.set_meta('truncated', 'max_bytes')
@@ -1420,6 +1457,7 @@ class _Snapshot(object):
             return result
 
         result.children = []
+        start = self.used
         self.expanding.add(id(val))
         try:
             for key, item in extras:
@@ -1427,6 +1465,7 @@ class _Snapshot(object):
             self.add_children(result, items, length, 'items', depth, object_level)
         finally:
             self.expanding.discard(id(val))
+        self.full_label(result, val, start)
         return result
 
     def expand_object(self, val, depth, object_level):
@@ -1443,12 +1482,34 @@ class _Snapshot(object):
             return result
 
         result.children = []
+        start = self.used
         self.expanding.add(id(val))
         try:
             self.add_children(result, attributes, len(attributes), 'attributes', depth, object_level + 1)
         finally:
             self.expanding.discard(id(val))
+        self.full_label(result, val, start)
         return result
+
+    def full_label(self, result, val, start):
+        # type: (NodeValue, Any, int) -> None
+        """
+        Label a small value with its complete repr() instead of the short summary,
+        so that the one-line views (e.g. the value shown when hovering) are complete too.
+        Only done when the contents captured since `start` are small, so repr() is cheap.
+        """
+        if self.used - start > _FULL_LABEL_LIMIT:
+            return
+        try:
+            text = repr(val)
+        except Exception:
+            return
+        extra = len(text) - len(result.val_repr)
+        if len(text) > _FULL_LABEL_LIMIT or self.remaining is not None and extra > self.remaining:
+            return
+        if self.remaining is not None:
+            self.remaining -= max(extra, 0)
+        result.val_repr = text
 
     def add_children(self, result, pairs, total, noun, depth, object_level):
         for index, (key, item) in enumerate(pairs):

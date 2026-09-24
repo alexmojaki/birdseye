@@ -31,7 +31,7 @@ def bar():
     pass
 
 
-full_eye = BirdsEye(capture_options=dict(arguments='full', result='full'))
+full_eye = BirdsEye(capture_options=dict(arguments='full', result='full', expressions='full'))
 
 
 @full_eye
@@ -190,8 +190,10 @@ class TestInterface(unittest.TestCase):
         self.assertFalse(driver.find_element(By.CLASS_NAME, 'args-table').is_displayed())
         self.assertFalse(driver.find_element(By.ID, 'result-summary').is_displayed())
 
+        # Small values are labelled with their complete repr
+        complete = 'items = list: %r' % list(range(20))
         argument = driver.find_element(By.CSS_SELECTOR, '#argument-snapshots .jstree-node')
-        self.assertEqual(argument.text, 'items = list: [0, 1, 2, ..., 17, 18, 19]')
+        self.assertEqual(argument.text, complete)
         argument.find_element(By.CLASS_NAME, 'jstree-ocl').click()  # expand
         sleep(0.2)
         self.assertEqual([n.text for n in argument.find_elements(By.CLASS_NAME, 'jstree-node')],
@@ -199,3 +201,12 @@ class TestInterface(unittest.TestCase):
 
         result = driver.find_element(By.CSS_SELECTOR, '#result-snapshot .jstree-node')
         self.assertEqual(result.text, "result = dict: {'total': 20}")
+
+        # Values inside the function are complete too, in the inspector at the bottom
+        only(n for n in driver.find_elements(By.CLASS_NAME, 'has_value') if n.text == 'items').click()
+        tree_node = driver.find_elements(By.CSS_SELECTOR, '#inspector .jstree-node')[-1]
+        self.assertEqual(tree_node.text, complete)
+        tree_node.find_element(By.CLASS_NAME, 'jstree-ocl').click()  # expand
+        sleep(0.2)
+        self.assertEqual([n.text for n in tree_node.find_elements(By.CLASS_NAME, 'jstree-node')],
+                         ['len() = 20'] + ['%s = int: %s' % (i, i) for i in range(20)])

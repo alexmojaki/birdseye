@@ -131,15 +131,16 @@ Capturing complete values
 
 By default the arguments and return value of each call are stored as short
 summaries, e.g. ``[0, 1, 2, ..., 17, 18, 19]``, or a string cut down to 60
-characters. The rest of the value is never stored, so it can't be expanded
-later. To store complete copies instead, set ``capture_options`` when
-constructing a ``BirdsEye`` instance:
+characters, and the values of expressions inside the function are only
+sampled (see :ref:`collecting-data`). The rest of each value is never stored,
+so it can't be expanded later. To store complete copies instead, set
+``capture_options`` when constructing a ``BirdsEye`` instance:
 
 .. code:: python
 
    from birdseye import BirdsEye
 
-   eye = BirdsEye(capture_options=dict(arguments='full', result='full'))
+   eye = BirdsEye(capture_options=dict(arguments='full', result='full', expressions='full'))
 
 or change the existing instance before the traced functions are called:
 
@@ -149,19 +150,27 @@ or change the existing instance before the traced functions are called:
 
    eye.capture_options['arguments'] = 'full'
    eye.capture_options['result'] = 'full'
+   eye.capture_options['expressions'] = 'full'
 
 You can also set the environment variable ``BIRDSEYE_CAPTURE`` before
 starting your program, without changing its code::
 
-   BIRDSEYE_CAPTURE=arguments,result python my_program.py
+   BIRDSEYE_CAPTURE=arguments,result,expressions python my_program.py
 
-``BIRDSEYE_CAPTURE=full`` means the same. Options given in code take
-priority over the environment. Invalid values in the environment only produce
-a warning, while invalid options given to ``BirdsEye`` raise ``ValueError``.
+``BIRDSEYE_CAPTURE=full`` means the same, and any of the three names can be
+used on its own. Options given in code take priority over the environment.
+Invalid values in the environment only produce a warning, while invalid
+options given to ``BirdsEye`` raise ``ValueError``.
 
 The call page then shows each argument and the return value as a tree that
 can be expanded to every item. Arguments are copied when the call starts, so
 changes that the function makes to them later don't affect what is shown.
+With ``expressions='full'``, clicking an expression in the code shows its
+complete value in the inspector at the bottom, in every loop iteration that
+birdseye keeps. Values whose contents take up to 1000 characters are
+labelled with their complete ``repr()``, including in the one-line preview
+shown when hovering over an expression. Larger values keep a short label,
+but expanding them shows every item.
 
 What is captured:
 
@@ -184,14 +193,19 @@ how much is stored (the defaults are shown):
 .. code:: python
 
    dict(
-       arguments='summary',  # or 'full'
-       result='summary',     # or 'full'
-       max_bytes=10000000,   # approximate characters stored per value, None for no limit
-       max_depth=50,         # levels of nesting
-       object_depth=2,       # levels of attributes of other objects
+       arguments='summary',    # or 'full'
+       result='summary',       # or 'full'
+       expressions='sampled',  # or 'full'
+       max_bytes=10000000,     # approximate characters stored, None for no limit
+       max_depth=50,           # levels of nesting
+       object_depth=2,         # levels of attributes of other objects
    )
 
-``max_bytes`` can also be set with the environment variable
+``max_bytes`` applies to each argument and to the return value separately,
+and to all the expression values of a call together, so a long loop can't
+store an unlimited amount. Once a call has used it up, its remaining
+expression values are sampled as usual, with a marker saying so.
+It can also be set with the environment variable
 ``BIRDSEYE_CAPTURE_MAX_BYTES`` (``none`` for no limit).
 
 .. warning::

@@ -1,12 +1,19 @@
+import enum
 import json
 import os
 import unittest
 import warnings
 from array import array
 from collections import Counter, OrderedDict, defaultdict, deque, namedtuple
+from datetime import datetime
+from decimal import Decimal
+from fractions import Fraction
+from pathlib import PurePosixPath
 from unittest import mock
+from uuid import UUID
 
 import numpy as np
+from bs4 import BeautifulSoup
 
 from birdseye.bird import BirdsEye, DEFAULT_CAPTURE_OPTIONS, NodeValue, eye, resolve_capture_options, type_registry
 from birdseye.utils import ProtocolEncoder
@@ -70,6 +77,33 @@ def last_call(tracer):
     return summary, arguments, result, data
 
 
+def expression_values(tracer):
+    """
+    The expression values of the most recent call traced by tracer, keyed by source text.
+    The values of expressions inside a loop are dicts from iteration index to value.
+    """
+    with tracer.db.session_scope() as session:
+        call = session.query(tracer.db.Call).filter_by(id=tracer._last_call_id).one()
+        data = json.loads(call.data)
+        html_body = call.function.html_body
+    names = data['type_names']
+    result = {}
+    for span in BeautifulSoup('<pre>' + html_body + '</pre>', 'html.parser')('span'):
+        value = data['node_values'].get(span['data-index'])
+        if isinstance(value, list):
+            result[span.text] = Tree(value, names)
+        elif isinstance(value, dict):
+            result[span.text] = {i: Tree(v, names) for i, v in value.items() if isinstance(v, list)}
+    return result
+
+
+def items(tree):
+    """
+    Keys of the children that are items, not facts such as maxlen or typecode.
+    """
+    return [key for key in tree.keys if key not in ('maxlen', 'typecode', 'default_factory')]
+
+
 class TestSnapshot(unittest.TestCase):
     def test_sequences_sets_and_arrays(self):
         numbers = [str(i) for i in range(20)]
@@ -126,6 +160,18 @@ class TestSnapshot(unittest.TestCase):
         for _ in range(5):
             tree = tree['0']
         self.assertEqual(tree.repr, "'deep'")
+
+    def test_labels(self):
+        # Small values are labelled with their complete repr, unlike cheap_repr
+        result = {'status': 'incomplete', 'episodes': {}, 'want_everything': True, 'total_seasons': 0, 'queued': 5}
+        self.assertEqual(snapshot(result).repr, repr(result))
+        self.assertEqual(snapshot(list(range(20))).repr, repr(list(range(20))))
+        self.assertEqual(snapshot(deque(range(20), maxlen=25)).repr, repr(deque(range(20), maxlen=25)))
+
+        # Large values keep the short summary, but their items are all there
+        tree = snapshot(list(range(1000)))
+        self.assertEqual(tree.repr, '[0, 1, 2, ..., 997, 998, 999]')
+        self.assertEqual(len(tree.children), 1000)
 
     def test_objects(self):
         class Node(object):
@@ -267,6 +313,134 @@ class TestCapturedCalls(unittest.TestCase):
         self.assertEqual(data['argument_snapshots'], [])
         self.assertIsNone(result)
 
+    def test_expression_values(self):
+        tracer = self.tracer(expressions='full')
+
+        @tracer
+        def f(items):
+            doubled = [x * 2 for x in items]
+            table = {i: list(range(i * 10, i * 10 + 10)) for i in range(3)}
+            return doubled, table
+
+        f(list(range(20)))
+        values = expression_values(tracer)
+
+        self.assertEqual(values['items'].child_reprs, [str(i) for i in range(20)])
+        self.assertEqual(values['[x * 2 for x in items]'].child_reprs, [str(i * 2) for i in range(20)])
+
+        # Values inside loops are complete in every iteration,
+        # while sampling would show only part of them after the first
+        rows = values['list(range(i * 10, i * 10 + 10))']
+        self.assertEqual(sorted(rows), ['0', '1', '2'])
+        for i, row in rows.items():
+            start = int(i) * 10
+            self.assertEqual(row.child_reprs, [str(n) for n in range(start, start + 10)])
+
+    def test_expression_budget_is_shared_by_the_call(self):
+        tracer = self.tracer(expressions='full', max_bytes=500)
+
+        @tracer
+        def f():
+            first = list(range(100))
+            second = list(range(200))
+            return len(first) + len(second)
+
+        self.assertEqual(f(), 300)
+        values = expression_values(tracer)
+
+        # The first value uses up the budget
+        first = values['list(range(100))']
+        self.assertEqual(first.children[-1][1].marker, 'max_bytes')
+
+        # Later values are the usual samples, and say so
+        second = values['list(range(200))']
+        self.assertEqual(second.meta['sampled'], 'max_bytes')
+        self.assertIn('only a sample', second.children[-1][1].repr)
+        self.assertEqual(values['len(first) + len(second)'].repr, '300')
+
+    def test_supported_data_structures(self):
+        eye = self.tracer(arguments='full', result='full', expressions='full')
+
+        class Color(enum.Enum):
+            RED = 1
+
+        class Plain(object):
+            def __init__(self):
+                self.values = set(range(10))
+
+        class Slotted(object):
+            __slots__ = ('items', 'name')
+
+            def __init__(self):
+                self.items = list(range(10))
+                self.name = 'slotted'
+
+        containers = dict(
+            a_list=list(range(20)),
+            a_tuple=tuple(range(20)),
+            a_set=set(range(20)),
+            a_frozenset=frozenset(range(20)),
+            a_dict={'k%s' % i: i for i in range(20)},
+            an_ordered_dict=OrderedDict(('k%s' % i, i) for i in range(20)),
+            a_defaultdict=defaultdict(list, {i: [i] for i in range(20)}),
+            a_counter=Counter({'k%s' % i: i + 1 for i in range(20)}),
+            a_deque=deque(range(20), maxlen=30),
+            an_array=array('d', [i / 2 for i in range(20)]),
+        )
+        leaves = dict(
+            text='x' * 200,
+            data=bytes(range(100)),
+            number=10 ** 50,
+            ratio=Fraction(1, 3),
+            price=Decimal('19.99'),
+            moment=datetime(2026, 9, 24, 21, 55),
+            identifier=UUID(int=1),
+            path=PurePosixPath('/tmp/example'),
+            color=Color.RED,
+        )
+        nested = [{'level': 1, 'items': [{'level': 2, 'items': list(range(20))}]}]
+        numbers = (i for i in range(3))
+
+        @eye
+        def process(a_list, a_tuple, a_set, a_frozenset, a_dict, an_ordered_dict, a_defaultdict,
+                    a_counter, a_deque, an_array, point, nested, plain, slotted, leaves, numbers):
+            everything = [a_list, a_tuple, a_set, a_frozenset, a_dict, an_ordered_dict,
+                          a_defaultdict, a_counter, a_deque, an_array]
+            return {'everything': everything, 'nested': nested, 'leaves': leaves}
+
+        process(point=Point(1, 2), nested=nested, plain=Plain(), slotted=Slotted(),
+                leaves=leaves, numbers=numbers, **containers)
+        summary, arguments, result, data = last_call(eye)
+        values = expression_values(eye)
+
+        # Every item, as an argument, as a value inside the function, and in the result
+        for i, name in enumerate(containers):
+            self.assertEqual(len(items(arguments[name])), 20, name)
+            self.assertEqual(len(items(values[name])), 20, name)
+            self.assertEqual(len(items(result["'everything'"][str(i)])), 20, name)
+        self.assertEqual(arguments['a_deque']['maxlen'].repr, '30')
+        self.assertEqual(arguments['an_array']['typecode'].repr, "'d'")
+        self.assertEqual(arguments['a_defaultdict']['default_factory'].repr, "<class 'list'>")
+
+        # Nested values at every level
+        deepest = arguments['nested']['0']["'items'"]['0']["'items'"]
+        self.assertEqual(deepest.child_reprs, [str(i) for i in range(20)])
+        self.assertEqual(result["'nested'"]['0']["'items'"]['0']["'items'"].child_reprs, deepest.child_reprs)
+
+        # Complete simple values
+        for key, value in leaves.items():
+            self.assertEqual(arguments['leaves'][repr(key)].repr, repr(value))
+
+        # Objects and named tuples
+        self.assertEqual(sorted(arguments['plain']['values'].child_reprs, key=int), [str(i) for i in range(10)])
+        self.assertEqual(arguments['slotted']['items'].child_reprs, [str(i) for i in range(10)])
+        self.assertEqual(arguments['slotted']['name'].repr, "'slotted'")
+        self.assertEqual(arguments['point'].keys, ['x', 'y'])
+
+        # Generators are summarised, never consumed
+        self.assertEqual(arguments['numbers'].children, [])
+        self.assertEqual(list(numbers), [0, 1, 2])
+
     def test_unstorable_snapshots_are_dropped_with_a_warning(self):
         tracer = self.full_eye()
         unstorable = NodeValue('x', 0)
@@ -288,13 +462,21 @@ class TestCapturedCalls(unittest.TestCase):
         self.assertTrue(any('could not store full values' in str(w.message) for w in caught))
 
     def test_environment_variables(self):
+        def scopes(options):
+            return options['arguments'], options['result'], options['expressions']
+
         with environment(BIRDSEYE_CAPTURE='arguments, result', BIRDSEYE_CAPTURE_MAX_BYTES='1234'):
             options = resolve_capture_options()
-        self.assertEqual((options['arguments'], options['result'], options['max_bytes']), ('full', 'full', 1234))
+        self.assertEqual(scopes(options), ('full', 'full', 'sampled'))
+        self.assertEqual(options['max_bytes'], 1234)
+
+        with environment(BIRDSEYE_CAPTURE='expressions'):
+            self.assertEqual(scopes(resolve_capture_options()), ('summary', 'summary', 'full'))
 
         with environment(BIRDSEYE_CAPTURE='full', BIRDSEYE_CAPTURE_MAX_BYTES='none'):
             options = BirdsEye().capture_options
-        self.assertEqual((options['arguments'], options['result'], options['max_bytes']), ('full', 'full', None))
+        self.assertEqual(scopes(options), ('full', 'full', 'full'))
+        self.assertIsNone(options['max_bytes'])
 
         # Options given in code take priority over the environment
         with environment(BIRDSEYE_CAPTURE='full'):
