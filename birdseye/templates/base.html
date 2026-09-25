@@ -6,6 +6,46 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    {% if dark_mode %}
+    <style>
+        html, body { background: #171a1f; color: #f2f4f8; }
+        a { color: #8ab4f8; }
+        a:hover, a:focus { color: #b8d3ff; }
+        hr { border-color: #5c687a; }
+        .text-muted { color: #bbc3cf; }
+        .table { color: inherit; }
+        .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td { border-color: #4f5b6d; }
+        .table-striped > tbody > tr:nth-of-type(odd), .table-hover > tbody > tr:hover { background-color: #262d38; }
+        .panel, .well, #box_value, #inspector { background: #222832; border-color: #596579; color: inherit; }
+        pre, code, kbd, samp { background: #20252d; border-color: #596579; color: #f2f4f8; }
+        code { color: #ffbf7f; }
+        pre code { background: transparent; color: inherit; }
+        #code, #code.hljs { background: #20252d; border-color: #596579; color: #f2f4f8; }
+        #example-code.hljs { background: #20252d; color: #f2f4f8; }
+        #example-code .hljs-comment { color: #abb4c2; }
+        #example-code .hljs-type, #example-code .hljs-string, #example-code .hljs-number, #example-code .hljs-title, #example-code .hljs-section { color: #ff9e9e; }
+        #example-code .hljs-regexp, #example-code .hljs-symbol, #example-code .hljs-variable, #example-code .hljs-template-variable, #example-code .hljs-link { color: #f3b6c5; }
+        #example-code .hljs-literal, #example-code .hljs-built_in, #example-code .hljs-bullet, #example-code .hljs-code, #example-code .hljs-addition { color: #a9d98a; }
+        #example-code .hljs-meta, #example-code .hljs-meta-string { color: #8ed7f8; }
+        .panel-default > .panel-heading, .panel-info > .panel-heading { background: #303947; border-color: #596579; color: #f2f4f8; }
+        .panel-info > .panel-leftheading { background: #263b4d; border-color: #52718c; color: #d4ecff; }
+        .btn-default { background: #303947; border-color: #667489; color: #f2f4f8; }
+        .btn-default:hover, .btn-default:focus { background: #3b4758; border-color: #8291a6; color: #ffffff; }
+        .form-control { background: #20252d; border-color: #667489; color: #f2f4f8; }
+        .jstree-anchor, .jstree-proton .jstree-disabled { color: #d9e1eb; }
+        .jstree-proton .jstree-disabled.jstree-clicked, .jstree-proton > .jstree-striped { background: #222832; }
+        .vakata-context, .vakata-context ul { background: #222832; border-color: #596579; }
+        .vakata-context li > a { color: #f2f4f8; text-shadow: none; }
+        .vakata-context li > a:hover, .vakata-context .vakata-context-hover > a { background: #303947; }
+        .vakata-context .vakata-context-separator > a, .vakata-context .vakata-context-separator > a:hover, .vakata-context li > a .vakata-contextmenu-sep { background: #596579; border-color: #596579; }
+        #resize-handle { background-color: #596579; }
+        .box { border-color: #7b8798; }
+        .box.hovering { background-color: #274f5a; }
+        .box.selected { border-color: #9ca9bd; }
+        .box.selected.has_value { border-color: #9cb7ff; }
+        #code span span.stmt_uncovered, #code span span.stmt_uncovered span[class^="hljs-"] { color: #abb4c2; }
+    </style>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/libs/jquery-3.2.1.js') }}"></script>
     <script src="{{ url_for('static', filename='js/libs/bootstrap.js') }}"></script>
     {% block head %}{% endblock %}

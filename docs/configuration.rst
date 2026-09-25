@@ -7,15 +7,18 @@ Server
 The server provides the user interface which can be accessed in the browser. You can run it using the ``birdseye`` command in a terminal. The command has a couple of options which can be viewed using ``--help``::
 
    $ birdseye --help
-   usage: birdseye [-h] [-p PORT] [--host HOST]
+   usage: birdseye [-h] [-p PORT] [--host HOST] [--dark-mode]
 
    optional arguments:
      -h, --help            show this help message and exit
      -p PORT, --port PORT  HTTP port, default is 7777
      --host HOST           HTTP host, default is 'localhost'
+     --dark-mode, --dark   use a high-contrast dark theme
 
 To run a remote server accessible from anywhere, run
 ``birdseye --host 0.0.0.0``.
+To use the high-contrast dark theme, run ``birdseye --dark-mode`` (or the
+shorter ``birdseye --dark``).
 
 The ``birdseye`` command uses the Flask development server, which is fine for local debugging but doesn't scale very well. You may want to use a proper WSGI server, especially if you host it remotely. `Here are some options <http://flask.pocoo.org/docs/1.0/deploying/>`_. The WSGI application is named ``app`` in the ``birdseye.server`` module. For example, you could use ``gunicorn`` as follows::
 

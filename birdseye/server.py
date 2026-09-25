@@ -22,6 +22,11 @@ app.jinja_env.auto_reload = True
 Humanize(app)
 
 
+@app.context_processor
+def inject_theme():
+    return dict(dark_mode=app.config.get('DARK_MODE', False))
+
+
 class FileConverter(PathConverter):
     part_isolating = False
     regex = '.*?'
@@ -251,8 +256,10 @@ def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Bird's Eye: A graphical Python debugger")
     parser.add_argument('-p', '--port', help='HTTP port, default is 7777', default=7777, type=int)
     parser.add_argument('--host', help="HTTP host, default is '127.0.0.1'", default=None)
+    parser.add_argument('--dark-mode', '--dark', dest='dark_mode', action='store_true', help='use a high-contrast dark theme')
 
     args = parser.parse_args(argv)
+    app.config['DARK_MODE'] = args.dark_mode
     app.run(
         port=args.port,
         host=args.host,
