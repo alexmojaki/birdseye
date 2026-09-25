@@ -1,3 +1,4 @@
+import os
 import unittest
 from time import sleep
 
@@ -54,7 +55,7 @@ class TestInterface(unittest.TestCase):
         driver = self.driver
 
         # On the index page, note the links to the function and call
-        driver.get('http://localhost:7777/')
+        driver.get('http://localhost:%s/' % os.environ.get('BIRDSEYE_TEST_PORT', '7777'))
         function_link = driver.find_element(By.LINK_TEXT, 'foo')
         function_url = function_link.get_attribute('href')
         call_url = function_link.find_element(By.XPATH, '..//i/..').get_attribute('href')

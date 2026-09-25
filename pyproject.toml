@@ -7,6 +7,11 @@ write_to = "birdseye/version.py"
 write_to_template = "__version__ = '{version}'\n"
 
 [tool.pytest.ini_options]
+norecursedirs = [
+    "backup",
+    ".venv",
+    ".test-home",
+]
 filterwarnings = [
     "ignore::outdated.OutdatedPackageWarning",
     "ignore::cheap_repr.ReprSuppressedWarning",

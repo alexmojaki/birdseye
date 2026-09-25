@@ -1,0 +1,8 @@
+2026-09-25T17:11:02Z Created issue-105-python-versions from master and reviewed issue requirements, test configuration, and locally available interpreters.
+2026-09-25T17:11:02Z Made the integration-test port configurable because the default port is occupied by the separate dark-mode server.
+2026-09-25T17:11:02Z Changed test cleanup to stop only the Gunicorn process created by the current run.
+2026-09-25T17:11:02Z Provisioned the CPython 3.8 virtual environment; corrected the test runner from a nonexistent venv-local shell to the system shell.
+2026-09-25T17:11:02Z CPython 3.8 collection found backup test copies; excluded backup and local test-environment directories from pytest recursion.
+2026-09-25T17:11:02Z Ran CPython 3.8 through 3.13 successfully; generated and verified the missing CPython 3.14 golden tracing fixtures.
+2026-09-25T17:11:02Z Extended the declared and documented test matrix through CPython 3.14.
+2026-09-25T17:11:02Z Verified all 26 tests on CPython 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, and 3.14; shell, patch, and CPython 3.14 package builds passed.

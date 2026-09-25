@@ -9,6 +9,8 @@ error_screenshot.png
 ghostdriver.log
 screen_*.png
 .mypy_cache/
+.venv/
+.test-home/
 sandbox.py
 test.txt
 _build/
