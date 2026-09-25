@@ -3,6 +3,7 @@
 set -eux
 
 export DB=${DB:-sqlite}
+export BIRDSEYE_TEST_PORT=${BIRDSEYE_TEST_PORT:-7777}
 
 if [ ${DB} = sqlite ]; then
     rm ~/.birdseye_test.db || true
@@ -20,11 +21,12 @@ else
     exit 1
 fi
 
-python -m gunicorn -b 127.0.0.1:7777 birdseye.server:app &
+python -m gunicorn -b 127.0.0.1:${BIRDSEYE_TEST_PORT} birdseye.server:app &
+server_pid=$!
+trap 'kill ${server_pid} 2>/dev/null || true' EXIT
 
 set +e
 
 python -m pytest -vv
 result=$?
-kill $(ps aux | grep birdseye.server:app | grep -v grep | awk '{print $2}')
 exit ${result}

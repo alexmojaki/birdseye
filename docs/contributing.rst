@@ -132,9 +132,10 @@ Run ``./misc/test.sh`` to run all
 tests with a single Python interpreter. You will need to have
 `chromedriver` installed.
 
-Run `tox`_ (``pip install tox``) to run tests on all supported
-versions of Python. You must install the interpreters
-separately yourself.
+Run `tox`_ (``pip install tox``) to run tests on every supported Python
+version (currently CPython 3.8 through 3.14). Install the interpreters
+separately first; for example, ``uv python install 3.8 3.9 3.10 3.11 3.12
+3.13 3.14`` provisions the complete matrix.
 
 ``test_against_files``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,8 +150,8 @@ If you’re satisfied that the code is doing the correct thing and the
 golden files need to be updated, set the environment variable ``FIX_TESTS=1``,
 then rerun the tests. This will write
 to the files instead of comparing to them. Since there are files for
-each version of python, you will need to run the tests on all supported
-interpreters, so tox is recommended.
+each Python version, run the tests on every supported interpreter, so tox is
+recommended.
 
 Browser screenshots for test failures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
