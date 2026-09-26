@@ -20,7 +20,8 @@ traced. This means that:
       loop, in which case up to two iterations where it was evaluated
       will also be included (see :ref:`middle-of-loop`).
    -  A limited version of the ``repr()`` of values is used, provided by
-      the `cheap_repr`_ package.
+      the `cheap_repr`_ package. Arguments and return values can be stored
+      completely instead, see :ref:`full-capture`.
    -  Nested data structures and objects can only be expanded by up to 3
       levels. Inside loops this is decreased, except when all current loops
       are in their first iteration.

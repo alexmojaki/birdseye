@@ -1,22 +1,29 @@
 import ast
 import builtins
+import datetime
+import decimal
+import enum
+import fractions
 import hashlib
 import inspect
 import json
 import os
+import pathlib
 import sys
 import traceback
-from collections import defaultdict, deque, namedtuple, Counter
+import warnings
+from array import array
+from collections import defaultdict, deque, namedtuple, Counter, OrderedDict
 from functools import partial
 from itertools import chain, islice
 from threading import Lock
-from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType
+from types import FrameType, TracebackType, CodeType, FunctionType, ModuleType, BuiltinFunctionType, MethodType
 from typing import Deque
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from asttokens import ASTTokens
 from cached_property import cached_property
-from cheap_repr import cheap_repr, try_register_repr
+from cheap_repr import cheap_repr, try_register_repr, basic_repr
 from cheap_repr.utils import safe_qualname, exception_string
 from littleutils import group_by_key_func, only
 
@@ -95,6 +102,81 @@ if False:
 
 CodeInfo = namedtuple('CodeInfo', 'db_func traced_file arg_names')
 
+DEFAULT_CAPTURE_OPTIONS = dict(
+    # How the arguments and the return value of each call are stored:
+    # 'summary' is a short cheap_repr string, 'full' is a complete expandable copy.
+    arguments='summary',
+    result='summary',
+
+    # How the values of expressions inside traced functions are stored:
+    # 'sampled' follows num_samples, 'full' is a complete expandable copy.
+    expressions='sampled',
+
+    # Limits for 'full' copies, see NodeValue.snapshot.
+    # max_bytes applies to each argument and to the result separately,
+    # and to all the expression values of a call together.
+    # max_depth stays well below the recursion limit, which also applies to JSON encoding.
+    max_bytes=10 * 1000 * 1000,
+    max_depth=50,
+    object_depth=2,
+)
+
+# Options that choose how much of a value is stored, and their allowed values
+_CAPTURE_SCOPES = dict(
+    arguments=('summary', 'full'),
+    result=('summary', 'full'),
+    expressions=('sampled', 'full'),
+)
+
+
+def _capture_options_from_env():
+    # type: () -> Dict[str, Any]
+    """
+    Options set by the environment variables BIRDSEYE_CAPTURE and BIRDSEYE_CAPTURE_MAX_BYTES.
+    Invalid values only produce a warning, so they never stop the program.
+    """
+    options = {}  # type: Dict[str, Any]
+
+    for scope in os.environ.get('BIRDSEYE_CAPTURE', '').lower().replace(' ', '').split(','):
+        if scope == 'full':
+            options.update((name, 'full') for name in _CAPTURE_SCOPES)
+        elif scope in _CAPTURE_SCOPES:
+            options[scope] = 'full'
+        elif scope not in ('', 'summary', 'sampled'):
+            warnings.warn('Ignoring unknown BIRDSEYE_CAPTURE value %r' % scope)
+
+    max_bytes = os.environ.get('BIRDSEYE_CAPTURE_MAX_BYTES', '').strip()
+    if max_bytes.lower() in ('none', 'unlimited'):
+        options['max_bytes'] = None
+    elif max_bytes:
+        try:
+            options['max_bytes'] = int(max_bytes)
+        except ValueError:
+            warnings.warn('Ignoring invalid BIRDSEYE_CAPTURE_MAX_BYTES value %r' % max_bytes)
+
+    return options
+
+
+def resolve_capture_options(capture_options=None):
+    # type: (Optional[Dict[str, Any]]) -> Dict[str, Any]
+    """
+    Combine the defaults, the environment variables, and options given in code,
+    in increasing order of priority.
+    """
+    result = dict(DEFAULT_CAPTURE_OPTIONS)
+    result.update(_capture_options_from_env())
+    if capture_options:
+        unknown = set(capture_options) - set(DEFAULT_CAPTURE_OPTIONS)
+        if unknown:
+            raise ValueError('Unknown capture options: %s' % ', '.join(sorted(unknown)))
+        result.update(capture_options)
+
+    for name, allowed in _CAPTURE_SCOPES.items():
+        if result[name] not in allowed:
+            raise ValueError('capture_options[%r] must be one of %s, not %r'
+                             % (name, ', '.join(map(repr, allowed)), result[name]))
+    return result
+
 
 class BirdsEye(TreeTracerBase):
     """
@@ -102,16 +184,21 @@ class BirdsEye(TreeTracerBase):
     or just use the existing instance `eye`.
     """
 
-    def __init__(self, db_uri=None, num_samples=None):
+    def __init__(self, db_uri=None, num_samples=None, capture_options=None):
         """
         Set db_uri to specify where the database lives, as an alternative to
         the environment variable BIRDSEYE_DB.
+
+        capture_options controls how much of the arguments, return value,
+        and expression values of each call is stored. See DEFAULT_CAPTURE_OPTIONS
+        and the 'Capturing complete values' section of the documentation.
         """
         super(BirdsEye, self).__init__()
         self._db_uri = db_uri
         self._code_infos = {}  # type: Dict[CodeType, CodeInfo]
         self._last_call_id = None
         self._ipython_cell_value = None
+        self.capture_options = resolve_capture_options(capture_options)
         self.num_samples = num_samples or dict(
             big=dict(
                 attributes=50,
@@ -198,11 +285,7 @@ class BirdsEye(TreeTracerBase):
             if exc_value:
                 node_value = self._exception_value(node, frame, exc_value)
             else:
-                node_value = NodeValue.expression(
-                    self.num_samples,
-                    value,
-                    level=max(1, 3 - len(node._loops) * (not self._is_first_loop_iteration(node, frame))),
-                )
+                node_value = self._expression_value(node, frame, frame_info, value)
                 self._set_node_value(node, frame, node_value)
             self._check_inner_call(frame_info, node, node_value)
 
@@ -239,6 +322,32 @@ class BirdsEye(TreeTracerBase):
 
         # This effectively changes to code to `for x in comprehension_iter_proxy()`
         return ChangeValue(comprehension_iter_proxy())
+
+    def _expression_value(self, node, frame, frame_info, value):
+        # type: (ast.expr, FrameType, FrameInfo, Any) -> NodeValue
+        if self.capture_options.get('expressions') == 'full':
+            # All the expression values of a call share one max_bytes budget,
+            # however many expressions and loop iterations there are
+            budget = getattr(frame_info, 'expression_budget', None)
+            if budget is None or budget > 0:
+                builder = _Snapshot(self.capture_options, self.num_samples)
+                builder.remaining = budget
+                node_value = builder.build(value)
+                frame_info.expression_budget = builder.remaining
+                return node_value
+
+        node_value = NodeValue.expression(
+            self.num_samples,
+            value,
+            level=max(1, 3 - len(node._loops) * (not self._is_first_loop_iteration(node, frame))),
+        )
+        if self.capture_options.get('expressions') == 'full':
+            # The budget is used up, so this is the usual sample. Say so.
+            node_value.set_meta('sampled', 'max_bytes')
+            if node_value.children:
+                node_value.children.append(('...', _marker(
+                    'max_bytes', 'only a sample: this call already stored max_bytes of full values')))
+        return node_value
 
     def _check_inner_call(self, frame_info, node, node_value):
         # type: (FrameInfo, Union[ast.stmt, ast.expr], NodeValue) -> None
@@ -307,6 +416,16 @@ class BirdsEye(TreeTracerBase):
                             if it[0][0] != '.'  # Appears when using nested tuple arguments
                         ]
         frame_info.arguments = json.dumps([[k, cheap_repr(v)] for k, v in arguments])
+        if self.capture_options.get('arguments') == 'full':
+            # Copy the arguments now, before the function can change them
+            frame_info.argument_snapshots = [
+                [k, NodeValue.snapshot(v, self.capture_options, self.num_samples)]
+                for k, v in arguments
+            ]
+        else:
+            frame_info.argument_snapshots = None
+        # Shared by all the expression values of this call when they are captured fully
+        frame_info.expression_budget = self.capture_options.get('max_bytes', DEFAULT_CAPTURE_OPTIONS['max_bytes'])
         frame_info.call_id = self._call_id()
         frame_info.inner_calls = defaultdict(list)
         prev = self.stack.get(enter_info.caller_frame)
@@ -342,6 +461,16 @@ class BirdsEye(TreeTracerBase):
         else:
             traceback_str = exception = None
 
+        # Complete copies of values, only present when requested by capture_options.
+        # They must be made before type_registry.names() is called below.
+        snapshots = {}
+        argument_snapshots = getattr(frame_info, 'argument_snapshots', None)
+        if argument_snapshots is not None:
+            snapshots['argument_snapshots'] = argument_snapshots
+        if self.capture_options.get('result') == 'full' and not exc:
+            snapshots['result_snapshot'] = NodeValue.snapshot(
+                exit_info.return_value, self.capture_options, self.num_samples)
+
         @retry_db
         def add_call():
             Call = self.db.Call
@@ -351,16 +480,7 @@ class BirdsEye(TreeTracerBase):
                         return_value=cheap_repr(exit_info.return_value),
                         exception=exception,
                         traceback=traceback_str,
-                        data=json.dumps(
-                            dict(
-                                node_values=node_values,
-                                loop_iterations=top_iteration.extract_iterations()['loops'],
-                                type_names=type_registry.names(),
-                                num_special_types=type_registry.num_special_types,
-                            ),
-                            cls=ProtocolEncoder,
-                            separators=(',', ':')
-                        ),
+                        data=_call_data_json(node_values, top_iteration, snapshots),
                         start_time=frame_info.start_time)
             with self.db.session_scope() as session:
                 session.add(call)
@@ -1092,6 +1212,340 @@ class NodeValue(object):
                 else:
                     add_child(str(s), attr)
         return result
+
+    @classmethod
+    def snapshot(cls, val, options, samples):
+        # type: (Any, dict, dict) -> NodeValue
+        """
+        A complete copy of val as a tree of NodeValues, limited only by the
+        max_bytes, max_depth, and object_depth capture options.
+        Used for arguments and return values when capture_options asks for 'full'.
+        Never raises: anything that can't be captured becomes a marker node.
+        """
+        return _Snapshot(options, samples).build(val)
+
+
+# Values stored with their complete repr() in full snapshots
+_FULL_REPR_TYPES = (
+    type(None), bool, int, float, complex, str, bytes, bytearray, range,
+    decimal.Decimal, fractions.Fraction, UUID, enum.Enum,
+    datetime.date, datetime.time, datetime.timedelta, datetime.tzinfo,
+    pathlib.PurePath,
+)
+
+# Values that full snapshots summarise without expanding
+_OPAQUE_TYPES = (type, ModuleType, FunctionType, BuiltinFunctionType, MethodType, TracedFile)
+
+# Values that keep their usual sampled representation, see NodeValue.expression
+_SAMPLED_TYPES = (ndarray, Series, DataFrame, QuerySet, BirdsEye)
+
+# Approximate size of the JSON structure around each captured item, for the max_bytes budget
+_NODE_COST = 10
+
+# A captured container or object whose contents take at most this many characters
+# is labelled with its complete repr() instead of the short cheap_repr summary
+_FULL_LABEL_LIMIT = 1000
+
+
+def _marker(kind, message):
+    # type: (str, str) -> NodeValue
+    """
+    A node explaining why part of a value was not captured.
+    It uses the exception type index so that the UI highlights it.
+    """
+    result = NodeValue('<%s>' % message, -1)
+    result.set_meta('marker', kind)
+    return result
+
+
+def _safe_repr(val):
+    # type: (Any) -> str
+    try:
+        return repr(val)
+    except Exception as e:
+        return '<repr() failed: %s>' % exception_string(e)
+
+
+def _indexed(items):
+    return ((str(i), item) for i, item in enumerate(items))
+
+
+def _keyed(items):
+    return ((_safe_repr(key), item) for key, item in items)
+
+
+# The functions below describe the built-in containers that full snapshots expand.
+# Each returns (extra children, (key, item) pairs, length).
+# They read the container through the built-in methods, so a subclass
+# that overrides iteration can't hide or change what is captured.
+
+def _expand_list(val):
+    return [], _indexed(list.__iter__(val)), list.__len__(val)
+
+
+def _expand_tuple(val):
+    length = tuple.__len__(val)
+    fields = getattr(type(val), '_fields', None)  # namedtuple
+    if isinstance(fields, tuple) and len(fields) == length:
+        return [], zip(map(str, fields), tuple.__iter__(val)), length
+    return [], _indexed(tuple.__iter__(val)), length
+
+
+def _expand_dict(val):
+    return [], _keyed(dict.items(val)), dict.__len__(val)
+
+
+def _expand_ordered_dict(val):
+    return [], _keyed(OrderedDict.items(val)), dict.__len__(val)
+
+
+def _expand_defaultdict(val):
+    return [('default_factory', val.default_factory)], _keyed(dict.items(val)), dict.__len__(val)
+
+
+def _expand_set(val):
+    base = frozenset if isinstance(val, frozenset) else set
+    items = (('<%s>' % i, item) for i, item in enumerate(base.__iter__(val)))
+    return [], items, base.__len__(val)
+
+
+def _expand_deque(val):
+    extras = [] if val.maxlen is None else [('maxlen', val.maxlen)]
+    return extras, _indexed(deque.__iter__(val)), deque.__len__(val)
+
+
+def _expand_array(val):
+    return [('typecode', val.typecode)], _indexed(array.__iter__(val)), array.__len__(val)
+
+
+_EXPANDERS = {
+    list: _expand_list,
+    tuple: _expand_tuple,
+    dict: _expand_dict,
+    OrderedDict: _expand_ordered_dict,
+    defaultdict: _expand_defaultdict,
+    set: _expand_set,
+    frozenset: _expand_set,
+    deque: _expand_deque,
+    array: _expand_array,
+}
+
+
+def _attributes(val):
+    # type: (Any) -> List[Tuple[str, Any]]
+    """
+    (name, value) pairs from __dict__ or __slots__, as in NodeValue.expression.
+    """
+    try:
+        d = getattr(val, '__dict__', None)
+    except Exception:
+        d = None
+    if isinstance(d, dict) and d:
+        return sorted(((str(k), v) for k, v in dict.items(d)
+                       if not isinstance(v, TracedFile)),
+                      key=lambda pair: pair[0])
+
+    slots = getattr(type(val), '__slots__', None) or ()
+    if isinstance(slots, str):
+        slots = (slots,)
+    result = []
+    for name in sorted(slots):
+        try:
+            result.append((name, getattr(val, name)))
+        except Exception:
+            pass
+    return result
+
+
+class _Snapshot(object):
+    """
+    Builds the tree for NodeValue.snapshot, tracking the remaining max_bytes
+    budget and the values being expanded (to detect cycles).
+    """
+
+    def __init__(self, options, samples):
+        self.samples = samples
+        self.remaining = options.get('max_bytes', DEFAULT_CAPTURE_OPTIONS['max_bytes'])  # None: unlimited
+        self.max_depth = options.get('max_depth') or DEFAULT_CAPTURE_OPTIONS['max_depth']
+        object_depth = options.get('object_depth', DEFAULT_CAPTURE_OPTIONS['object_depth'])
+        self.object_depth = self.max_depth if object_depth is None else object_depth
+        self.expanding = set()  # type: Set[int]
+        self.used = 0  # characters captured so far
+
+    def build(self, val):
+        # type: (Any) -> NodeValue
+        return self.child(val, 0, 0)
+
+    def child(self, val, depth, object_level):
+        # type: (Any, int, int) -> NodeValue
+        try:
+            return self.node(val, depth, object_level)
+        except Exception as e:
+            # e.g. RecursionError, or a container changed by another thread.
+            # Capturing must never break the traced program, and the rest of the value is kept.
+            return _marker('error', 'value not captured: %s' % exception_string(e))
+
+    def take(self, size):
+        # type: (int) -> bool
+        """
+        Returns True if size more characters fit in the max_bytes budget, and uses them.
+        Once something doesn't fit nothing else will, so omissions are reported in one place.
+        """
+        if self.remaining is not None:
+            if size > self.remaining:
+                self.remaining = 0
+                return False
+            self.remaining -= size
+        self.used += size
+        return True
+
+    def node(self, val, depth, object_level):
+        # type: (Any, int, int) -> NodeValue
+        if isinstance(val, _FULL_REPR_TYPES):
+            return self.full_repr(val)
+        if isinstance(val, _SAMPLED_TYPES):
+            return NodeValue.expression(self.samples, val, 3)
+        if id(val) in self.expanding:
+            return _marker('cycle', 'cycle: refers to an enclosing value')
+
+        for cls in type(val).__mro__:
+            expander = _EXPANDERS.get(cls)
+            if expander:
+                extras, items, length = expander(val)
+                return self.expand_container(val, depth, object_level, extras, items, length)
+        return self.expand_object(val, depth, object_level)
+
+    def summary(self, val):
+        # type: (Any) -> str
+        try:
+            text = cheap_repr(val)
+        except Exception:
+            text = basic_repr(val)
+        self.take(len(text))
+        return text
+
+    def full_repr(self, val):
+        # type: (Any) -> NodeValue
+        try:
+            text = repr(val)
+        except Exception as e:
+            return _marker('error', 'repr() failed: %s' % exception_string(e))
+        result = NodeValue(text, type_registry[val])
+        if self.remaining is not None and len(text) > self.remaining:
+            keep = self.remaining
+            self.remaining = 0
+            self.used += keep
+            result.val_repr = '%s... <%s more characters not captured: max_bytes reached>' % (
+                text[:keep], len(text) - keep)
+            result.set_meta('truncated', 'max_bytes')
+        else:
+            self.take(len(text))
+
+        try:
+            result.set_meta('len', len(val))
+        except Exception:
+            pass
+        return result
+
+    def expand_container(self, val, depth, object_level, extras, items, length):
+        result = NodeValue(self.summary(val), type_registry[val])
+        result.set_meta('len', length)
+        if not (length or extras):
+            return result
+        if depth >= self.max_depth:
+            result.children = [('...', _marker('max_depth', 'contents not captured: max_depth reached'))]
+            return result
+
+        result.children = []
+        start = self.used
+        self.expanding.add(id(val))
+        try:
+            for key, item in extras:
+                result.children.append((key, self.child(item, depth + 1, object_level)))
+            self.add_children(result, items, length, 'items', depth, object_level)
+        finally:
+            self.expanding.discard(id(val))
+        self.full_label(result, val, start)
+        return result
+
+    def expand_object(self, val, depth, object_level):
+        result = NodeValue(self.summary(val), type_registry[val])
+        if isinstance(val, _OPAQUE_TYPES):
+            return result
+        attributes = _attributes(val)
+        if not attributes:
+            return result
+        if object_level >= self.object_depth or depth >= self.max_depth:
+            limit = 'object_depth' if object_level >= self.object_depth else 'max_depth'
+            result.children = [('...', _marker(
+                limit, '%s attributes not captured: %s reached' % (len(attributes), limit)))]
+            return result
+
+        result.children = []
+        start = self.used
+        self.expanding.add(id(val))
+        try:
+            self.add_children(result, attributes, len(attributes), 'attributes', depth, object_level + 1)
+        finally:
+            self.expanding.discard(id(val))
+        self.full_label(result, val, start)
+        return result
+
+    def full_label(self, result, val, start):
+        # type: (NodeValue, Any, int) -> None
+        """
+        Label a small value with its complete repr() instead of the short summary,
+        so that the one-line views (e.g. the value shown when hovering) are complete too.
+        Only done when the contents captured since `start` are small, so repr() is cheap.
+        """
+        if self.used - start > _FULL_LABEL_LIMIT:
+            return
+        try:
+            text = repr(val)
+        except Exception:
+            return
+        extra = len(text) - len(result.val_repr)
+        if len(text) > _FULL_LABEL_LIMIT or self.remaining is not None and extra > self.remaining:
+            return
+        if self.remaining is not None:
+            self.remaining -= max(extra, 0)
+        result.val_repr = text
+
+    def add_children(self, result, pairs, total, noun, depth, object_level):
+        for index, (key, item) in enumerate(pairs):
+            if not self.take(len(key) + _NODE_COST):
+                result.children.append(('...', _marker(
+                    'max_bytes', '%s more %s not captured: max_bytes reached' % (total - index, noun))))
+                result.set_meta('truncated', 'max_bytes')
+                return
+            result.children.append((key, self.child(item, depth + 1, object_level)))
+
+
+def _call_data_json(node_values, top_iteration, snapshots):
+    # type: (dict, Iteration, Dict[str, Any]) -> str
+    """
+    The JSON stored in Call.data. If full snapshots can't be encoded
+    (e.g. they are nested too deeply), the call is stored without them.
+    """
+    def dumps(**extra):
+        return json.dumps(
+            dict(
+                node_values=node_values,
+                loop_iterations=top_iteration.extract_iterations()['loops'],
+                type_names=type_registry.names(),
+                num_special_types=type_registry.num_special_types,
+                **extra
+            ),
+            cls=ProtocolEncoder,
+            separators=(',', ':')
+        )
+
+    if snapshots:
+        try:
+            return dumps(**snapshots)
+        except Exception as e:
+            warnings.warn('birdseye could not store full values for a call: %s' % exception_string(e))
+    return dumps()
 
 
 def iteritems(obj):

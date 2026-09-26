@@ -138,8 +138,13 @@ body > .container {
     vertical-align: top;
 }
 
-#inspector .jstree-anchor {
+#inspector .jstree-anchor, .snapshot-tree .jstree-anchor {
     height: auto;
+}
+
+.snapshot-tree {
+    overflow-x: auto;
+    margin-bottom: 10px;
 }
 
 table.dataframe.table {
