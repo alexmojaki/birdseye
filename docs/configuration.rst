@@ -18,7 +18,10 @@ The server provides the user interface which can be accessed in the browser. You
 To run a remote server accessible from anywhere, run
 ``birdseye --host 0.0.0.0``.
 To use the high-contrast dark theme, run ``birdseye --dark-mode`` (or the
-shorter ``birdseye --dark``).
+shorter ``birdseye --dark``). Alternatively, set ``BIRDSEYE_DARK`` before
+starting the server, e.g. ``BIRDSEYE_DARK=true birdseye``. The environment
+variable enables the dark theme when its value, ignoring case and surrounding
+whitespace, starts with ``1``, ``t``, ``y``, or ``on``.
 
 The ``birdseye`` command uses the Flask development server, which is fine for local debugging but doesn't scale very well. You may want to use a proper WSGI server, especially if you host it remotely. `Here are some options <http://flask.pocoo.org/docs/1.0/deploying/>`_. The WSGI application is named ``app`` in the ``birdseye.server`` module. For example, you could use ``gunicorn`` as follows::
 

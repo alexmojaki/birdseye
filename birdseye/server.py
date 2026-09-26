@@ -154,6 +154,9 @@ def get_calls(session, path, func_name, limit):
                 .filter_by(file=path, name=func_name)
                 .order_by(Call.start_time.desc())[:limit])
 
+def env_var_is_truthy(value):
+    return bool(value) and value.strip().lower().startswith(('1', 't', 'y', 'on'))
+
 
 @db.provide_session
 def base_call_view(session, call_id, template):
@@ -259,7 +262,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('--dark-mode', '--dark', dest='dark_mode', action='store_true', help='use a high-contrast dark theme')
 
     args = parser.parse_args(argv)
-    app.config['DARK_MODE'] = args.dark_mode
+    app.config['DARK_MODE'] = args.dark_mode or env_var_is_truthy(os.environ.get('BIRDSEYE_DARK'))
     app.run(
         port=args.port,
         host=args.host,

@@ -26,6 +26,26 @@ def test_dark_mode_defaults_to_disabled():
     assert not server.app.config['DARK_MODE']
 
 
+@pytest.mark.parametrize('value', ['1', 'true', 'TRUE', 'yes', 'YES', 'on', 'ON', 'online'])
+def test_dark_mode_can_be_enabled_with_environment_variable(monkeypatch, value):
+    monkeypatch.setenv('BIRDSEYE_DARK', value)
+
+    with patch.object(server.app, 'run'):
+        server.main([])
+
+    assert server.app.config['DARK_MODE']
+
+
+@pytest.mark.parametrize('value', ['', '0', 'false', 'no', 'off', 'disabled'])
+def test_dark_mode_environment_variable_ignores_falsey_values(monkeypatch, value):
+    monkeypatch.setenv('BIRDSEYE_DARK', value)
+
+    with patch.object(server.app, 'run'):
+        server.main([])
+
+    assert not server.app.config['DARK_MODE']
+
+
 def test_dark_theme_is_rendered_only_when_enabled():
     with server.app.test_request_context():
         server.app.config['DARK_MODE'] = True
